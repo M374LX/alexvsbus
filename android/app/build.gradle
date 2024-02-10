@@ -1,0 +1,60 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.github.m374lx.alexvsbus'
+    compileSdk 34
+
+    ndkVersion '21.4.7075529'
+    buildToolsVersion '33.0.2'
+
+    defaultConfig {
+        applicationId 'com.github.m374lx.alexvsbus'
+        resValue 'string', 'app_name', 'Alex vs Bus: The Race'
+        versionCode 1
+        versionName '2024.02.10.0'
+        minSdk 16
+        targetSdk 34
+    }
+
+    sourceSets {
+        main {
+            assets.srcDirs = ['../../assets']
+        }
+    }
+
+    buildTypes {
+        debug {
+            debuggable true
+            jniDebuggable true
+        }
+
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+
+            debuggable false
+            jniDebuggable false
+            pseudoLocalesEnabled false
+            zipAlignEnabled true
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    externalNativeBuild {
+        ndkBuild {
+            path 'src/main/Android.mk'
+        }
+    }
+
+    buildFeatures {
+        viewBinding true
+    }
+}
+

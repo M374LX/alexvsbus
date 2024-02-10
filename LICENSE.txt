@@ -1,0 +1,27 @@
+Code license
+============
+Alex vs Bus is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Alex vs Bus is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along
+with Alex vs Bus. If not, see https://www.gnu.org/licenses/.
+
+For the full license text, see the file docs/licenses/GPL-3.0.txt or
+https://www.gnu.org/licenses/gpl-3.0.en.html.
+
+
+Assets license
+==============
+The assets under the assets directory are released under the Creative Commons
+Attribution-ShareAlike 4.0 (CC BY-SA 4.0) license.
+
+For the full license text, see the file docs/licenses/CC-BY-SA-4.0.txt or
+https://creativecommons.org/licenses/by-sa/4.0/legalcode.
+

@@ -1,0 +1,78 @@
+body {
+	margin: 0 auto;
+	padding: 10px;
+	max-width: 800px;
+	font-family: sans-serif;
+}
+
+h1, h2, h3 {
+	text-align: center;
+}
+
+table, th, td {
+	border: 1px solid black;
+	border-collapse: collapse;
+}
+
+table {
+	width: 100%;
+}
+
+th, td {
+	text-align: left;
+	padding: 5px;
+}
+
+figure {
+	margin: 0 0 20px 0;
+	padding: 0;
+	text-align: center
+}
+
+a:link, a:visited {
+	color: #00F;
+}
+
+.no-bold {
+	font-weight: normal;
+}
+
+.monospace {
+	font-family: monospace;
+	white-space: nowrap;
+}
+
+.overflow-auto {
+	overflow: auto;
+}
+
+.width25 {
+	width: 25%;
+}
+
+.width35 {
+	width: 35%;
+}
+
+.width65 {
+	width: 65%;
+}
+
+.width75 {
+	width: 75%;
+}
+
+.img-center {
+	text-align: center;
+}
+
+@page {
+	margin: 0.5cm;
+}
+
+@media print {
+	h2, h3 {
+		page-break-before: always;
+	}
+}
+

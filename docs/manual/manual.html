@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+  <title>Alex vs Bus: The Race - User Manual</title>
+  <link rel="stylesheet" type="text/css" href="style.css">
+  <meta charset="UTF-8">
+</head>
+<body>
+
+<h1>Alex vs Bus: The Race<br>User Manual</h1>
+
+<p class="img-center">
+  <img src="img/screenshot1.png" alt="Screenshot">
+  <img src="img/screenshot2.png" alt="Screenshot">
+</p>
+
+
+
+<h2>About the Game</h2>
+
+<p><b>Alex vs Bus: The Race</b> is a free and open source platform runner game
+in which Alex is just a man who depends on public transportation in a
+developing country and needs to run in order to catch the bus, or else he will
+have to wait an eternity for the next bus to come.</p>
+
+<p>Key features include:</p>
+
+<ul>
+  <li>A finished game, no longer WIP, complete with 13 levels across 3
+      different difficulties and an ending sequence.</li>
+  <li>Audio and visual style inspired by the 8-bit era, although the game is
+      not bound to all of the technical limitations of the period.</li>
+  <li>Keyboard, gamepad, and touchscreen (Android only) supported as input
+      devices.</li>
+  <li>A different cutscene when clearing each level.</li>
+  <li>Customizable screen size.</li>
+  <li>Scanlines visual effect.</li>
+  <li>Cross-platform.</li>
+</ul>
+
+<p>The repository can be found at
+<a href="https://github.com/M374LX/alexvsbus">https://github.com/M374LX/alexvsbus</a>.
+</p>
+
+
+
+<h2>Controls</h2>
+
+<p>The game can be controlled by using a keyboard, gamepad, or touchscreen
+buttons (Android only).</p>
+
+<p>When using a keyboard, the ingame controls are:</p>
+
+<table>
+  <colgroup>
+    <col class="width35">
+    <col class="width65">
+  </colgroup>
+  <tr>
+    <th>Left/Right arrows<br>A/D</th>
+    <td>Move character</td>
+  </tr>
+  <tr>
+    <th>Ctrl<br>Spacebar<br>Up arrow<br>W</th>
+    <td>Jump</td>
+  </tr>
+  <tr>
+    <th>Escape</th>
+    <td>Pause</td>
+  </tr>
+  <tr>
+    <th>F9</th>
+    <td>Toggle audio</td>
+  </tr>
+</table>
+
+<p>When using a keyboard, the controls during menus are:</p>
+
+<table>
+  <colgroup>
+    <col class="width35">
+    <col class="width65">
+  </colgroup>
+  <tr>
+    <th>Arrow keys<br>W/A/S/D</th>
+    <td>Select item</td>
+  </tr>
+  <tr>
+    <th>Ctrl<br>Spacebar<br>Enter <span class="no-bold">(aka</span>
+        Return<span class="no-bold">)</span></th>
+    <td>Confirm selection</td>
+  </tr>
+  <tr>
+    <th>Escape</th>
+    <td>Close current menu</td>
+  </tr>
+  <tr>
+    <th>F9</th>
+    <td>Toggle audio</td>
+  </tr>
+</table>
+
+<p>On French (AZERTY) keyboards, W becomes Z and A becomes Q.</p>
+
+<p>Touchscreen functionality is currently not supported on desktop platforms,
+but can be simulated by using the mouse if the command-line option
+<span class="monospace">--touch</span> is used.</p>
+
+<p>On a touchscreen, menu items can be selected by touching them.</p>
+
+
+
+<h2>Main Menu</h2>
+
+<p class="img-center"><img src="img/main-menu.png" alt="Image"></p>
+
+<p>The main menu is displayed when the game is launched and contains the
+following items:</p>
+
+<table>
+  <colgroup>
+    <col class="width35">
+    <col class="width65">
+  </colgroup>
+  <tr>
+    <th><img src="img/icon-play.png" alt="Icon"> Play</th>
+    <td>To start the game after selecting a difficulty and then a level.</td>
+  </tr>
+  <tr>
+    <th><img src="img/icon-jukebox.png" alt="Icon"> Jukebox</th>
+    <td>To listen to the game's music.</td>
+  </tr>
+  <tr>
+    <th><img src="img/icon-settings.png" alt="Icon"> Settings</th>
+    <td>To change the game's settings, which are detailed in the section
+        "Settings" of this manual.</td>
+  </tr>
+  <tr>
+    <th><img src="img/icon-about.png" alt="Icon"> About</th>
+    <td>To view some information about the game, including the copyright
+        notice, release, repository URL, licenses, and credits.</td>
+  </tr>
+  <tr>
+    <th><img src="img/icon-quit.png" alt="Icon"> Quit</th>
+    <td>To end the game after a confirmation prompt.</td>
+  </tr>
+  <tr>
+    <th><img src="img/icon-audio.png" alt="Icon"> Audio on/off</th>
+    <td>A shortcut to disable the audio entirely.</td>
+  </tr>
+</table>
+
+
+
+<h2>Starting the game</h2>
+
+<p>To start playing the game from the main menu:</p>
+
+<ol>
+<li>Select "Play".<br>
+    <img src="img/main-menu-small.png" alt="Image">
+</li>
+<li>Select a difficulty (normal, hard, or super). Only normal is available
+    initially, but clearing all levels of a difficulty unlocks the next
+    one.<br>
+    <img src="img/difficulty-select.png" alt="Image">
+</li>
+<li>Select the level to play. Only the first level is available initially, but
+    clearing a level unlocks the next one.<br>
+    <img src="img/level-select.png" alt="Image">
+</li>
+</ol>
+
+
+
+<h2>Gameplay</h2>
+
+<p class="img-center"><img src="img/screenshot2.png" alt="Image"></p>
+
+<p>The game can be described as a "platform runner" (not an endless runner). In
+each level, the player has 90 seconds to catch the bus while jumping over
+holes, banana peels, crates, and other obstacles.</p>
+
+<p>For extra score, you can optionally collect the coins found in the levels.
+Collecting a silver coin adds 50 to your score, while collecting a gold coin
+adds 100 to it.</p>
+
+<p>When reaching the bus, 10 is added to your score for each remaining second
+before the next level starts. If you run out of time before reaching the bus,
+however, it will depart without Alex in it and you will be offered the option
+to try again. By selecting the check mark
+(<img src="img/check.png" alt="Image">), the current level is restarted, but
+your score is cleared to zero.</p>
+
+
+
+<h2>Settings</h2>
+
+<p class="img-center"><img src="img/settings.png" alt="Image"></p>
+
+<p>You can access the game's settings from either the main or the pause menu.</p>
+
+<p>The settings menu contains the following items:</p>
+
+<table>
+  <colgroup>
+    <col class="width35">
+    <col class="width65">
+  </colgroup>
+  <tr>
+    <th>Display settings</th>
+    <td>To open the display settings menu.</td>
+  </tr>
+  <tr>
+    <th>Audio settings</th>
+    <td>To open the audio settings menu.</td>
+  </tr>
+  <tr>
+    <th>Touchscreen buttons on/off<br>
+        <span class="no-bold">(only if touchscreen functionality is
+        enabled)</span></th>
+    <td>To show or hide the touchscreen buttons during the game. You might want
+        to hide the buttons if using a physical gamepad on a phone, for
+        example.</td>
+  </tr>
+</table>
+
+
+<h3>Display Settings</h3>
+
+<p class="img-center"><img src="img/display-settings.png" alt="Image"></p>
+
+<p>The display settings menu contains the following items:</p>
+
+<table>
+  <colgroup>
+    <col class="width35">
+    <col class="width65">
+  </colgroup>
+  <tr>
+    <th>Fullscreen on/off<br><span class="no-bold">(desktop only)</span></th>
+    <td>To select between running the game in fullscreen or windowed mode.</td>
+  </tr>
+  <tr>
+    <th>Window scale<br><span class="no-bold">(desktop only)</span></th>
+    <td>To select the size of the window when running the game in windowed
+        mode, which can be one, two, or three times the size of the game's
+        virtual screen (vscreen).</td>
+  </tr>
+  <tr>
+    <th>Vscreen size</th>
+    <td>To customize the size of the game's virtual screen (vscreen). More
+        details can be found in the section "Virtual Screen (Vscreen)" of this
+        manual.</td>
+  </tr>
+  <tr>
+    <th>Scanlines on/off</th>
+    <td>To enable or disable a scanlines visual effect, which simulates the
+        visible scanlines of an old CRT television set. The scanlines will
+        appear only if the physical screen or window is at least twice the size
+        of the game's virtual screen (vscreen).</td>
+  </tr>
+</table>
+
+
+<h3>Virtual Screen (Vscreen)</h3>
+
+<p class="img-center"><img src="img/vscreen-size.png" alt="Image"></p>
+
+<p>In order to look more like a game from the 8-bit (or even 16-bit) era, the
+game uses a virtual screen (also referred to as "vscreen") ranging from 256 to
+480 pixels in width and from 192 to 270 pixels in height, which is scaled to
+fill larger physical screens.</p>
+
+<p>The size of the vscreen can be customized by selecting "Vscreen size" on the
+settings menu.</p>
+
+<p>The vscreen sizing mode can be set to "auto" or "manual". When set to "auto",
+the size that best fits in the physical screen is determined automatically. If
+set to "manual", however, the size can be set manually.</p>
+
+<p>A vscreen size of 480x270 will be scaled perfectly on a modern 1920x1080
+monitor, while a smaller vscreen size can be used to simulate an old console's
+screen size (and make the game more challenging), like 256x192 for the Sega
+Master System or 320x224 for the Sega Genesis/Mega Drive. Similarly, a vscreen
+size of 320x256 will be scaled perfectly on a 1280x1024 monitor.</p>
+
+<figure>
+  <img src="img/vscreen-480x270.png" alt="Image">
+  <figcaption>480x270 vscreen</figcaption>
+</figure>
+
+<figure>
+  <img src="img/vscreen-320x256.png" alt="Image">
+  <figcaption>320x256 vscreen</figcaption>
+</figure>
+
+
+<h3>Audio Settings</h3>
+
+<p class="img-center"><img src="img/audio-settings.png" alt="Image"></p>
+
+<p>The audio settings menu contains the following items:</p>
+
+<table>
+  <colgroup>
+    <col class="width35">
+    <col class="width65">
+  </colgroup>
+  <tr>
+    <th>Audio on/off</th>
+    <td>If set to "off", the audio is disabled entirely. This is the same as
+        disabling the audio from the main or pause menu.</td>
+  </tr>
+  <tr>
+    <th>Music on/off</th>
+    <td>To enable or disable music.</td>
+  </tr>
+  <tr>
+    <th>SFX on/off</th>
+    <td>To enable or disable sound effects (SFX).</td>
+  </tr>
+</table>
+
+
+
+<h2>Pause Menu</h2>
+
+<p class="img-center"><img src="img/pause-menu.png" alt="Image"></p>
+
+<p>The game can be paused by pressing Escape or, if using a touchscreen, by
+ tapping the pause button (<img src="img/pause-button.png" alt="Image">), found
+at the top-right corner of the screen.</p>
+
+<p>When pausing the game, a menu with the following items appears:</p>
+
+<table>
+  <colgroup>
+    <col class="width35">
+    <col class="width65">
+  </colgroup>
+  <tr>
+    <th><img src="img/icon-play.png" alt="Icon"> Resume</th>
+    <td>To unpause the game and continue playing.</td>
+  </tr>
+  <tr>
+    <th><img src="img/icon-try-again.png" alt="Icon"> Try again</th>
+    <td>To restart the current level after a confirmation prompt. By
+        restarting the level, your score is cleared to zero.</td>
+  </tr>
+  <tr>
+    <th><img src="img/icon-settings.png" alt="Icon"> Settings</th>
+    <td>To change the game's settings, which are detailed in the section
+        "Settings" of this manual.</td>
+  </tr>
+  <tr>
+    <th><img src="img/icon-quit.png" alt="Icon"> Quit</th>
+    <td>To quit the game and return to the main menu after a confirmation
+        prompt.</td>
+  </tr>
+  <tr>
+    <th><img src="img/icon-audio.png" alt="Icon"> Audio on/off</th>
+    <td>A shortcut to disable the audio entirely.</td>
+  </tr>
+</table>
+
+
+
+<h2>Config File Location</h2>
+
+<p>The table below gives the default location of the config file, in which the
+game progress and settings are saved, for each platform:</p>
+
+<table>
+  <colgroup>
+    <col class="width25">
+    <col class="width75">
+  </colgroup>
+  <tr>
+    <th>Android</th>
+    <td>Internal storage</td>
+  </tr>
+  <tr>
+    <th>Windows</th>
+    <td>C:\Users\&lt;username&gt;\AppData\Roaming\alexvsbus\alexvsbus.cfg</td>
+  </tr>
+  <tr>
+    <th>macOS</th>
+    <td>/Users/&lt;username&gt;/Library/Preferences/alexvsbus/alexvsbus.cfg</td>
+  </tr>
+  <tr>
+    <th>Linux and others</th>
+    <td>/home/&lt;username&gt;/.config/alexvsbus/alexvsbus.cfg</td>
+  </tr>
+</table>
+
+<p>On Linux and other operating systems, the XDG Base Directory Specification
+is implemented, which means that the directory prefix can be changed by setting
+the <span class="monospace">XDG_CONFIG_HOME</span> environment variable.</p>
+
+<p>On desktop platforms, a non-default location for the config file can be set
+by using the <span class="monospace">--config</span> command-line option.</p>
+
+
+
+<h2>Command-line Options (Desktop Only)</h2>
+
+<p>On desktop platforms, the following command-line options can be used:</p>
+
+<table>
+  <colgroup>
+    <col class="width35">
+    <col class="width65">
+  </colgroup>
+  <tr>
+    <th class="monospace">-h, --help</th>
+    <td>Show usage information and exit.</td>
+  </tr>
+  <tr>
+    <th class="monospace">-v, --version</th>
+    <td>Show version and license information and exit.</td>
+  </tr>
+  <tr>
+    <th class="monospace">-c, --config &lt;file&gt;</th>
+    <td>Set the config file to use.</td>
+  </tr>
+  <tr>
+    <th class="monospace">-f, --fullscreen</th>
+    <td>Run in fullscreen mode.</td>
+  </tr>
+  <tr>
+    <th class="monospace">-w, --windowed</th>
+    <td>Run in windowed mode.</td>
+  </tr>
+  <tr>
+    <th class="monospace">--assets-dir &lt;directory&gt;</th>
+    <td>Set assets directory to use.</td>
+  </tr>
+  <tr>
+    <th class="monospace">--window-scale &lt;scale&gt;</th>
+    <td>Set window scale (1 to 3).</td>
+  </tr>
+  <tr>
+    <th class="monospace">--vscreen-size &lt;size&gt;</th>
+    <td>Set the size of the game's virtual screen (vscreen), which can be
+        either <span class="monospace">auto</span> or a width and a height
+        separated by an "x" (example: <span class="monospace">480x270</span>).
+        The supported values for the width are 480, 432, 416, 320, and 256,
+        while the supported values for the height are 270, 256, 240, 224, and
+        192.</td>
+  </tr>
+  <tr>
+    <th class="monospace">--fixed-window-mode</th>
+    <td>Remove the ability to toggle between fullscreen and windowed mode and
+        to change the window scale, as if the game were running on a mobile
+        device.</td>
+  </tr>
+  <tr>
+    <th class="monospace">--scanlines-on</th>
+    <td>Enable scanlines visual effect.</td>
+  </tr>
+  <tr>
+    <th class="monospace">--scanlines-off</th>
+    <td>Disable scanlines visual effect.</td>
+  </tr>
+  <tr>
+    <th class="monospace">--audio-on</th>
+    <td>Enable audio output.</td>
+  </tr>
+  <tr>
+    <th class="monospace">--audio-off</th>
+    <td>Disable audio output.</td>
+  </tr>
+  <tr>
+    <th class="monospace">--music-on</th>
+    <td>Enable music.</td>
+  </tr>
+  <tr>
+    <th class="monospace">--music-off</th>
+    <td>Disable music.</td>
+  </tr>
+  <tr>
+    <th class="monospace">--sfx-on</th>
+    <td>Enable sound effects.</td>
+  </tr>
+  <tr>
+    <th class="monospace">--sfx-off</th>
+    <td>Disable sound effects.</td>
+  </tr>
+  <tr>
+    <th class="monospace">--touch</th>
+    <td>Enable the use of the mouse to simulate a touchscreen.</td>
+  </tr>
+  <tr>
+    <th class="monospace">--touch-buttons-on</th>
+    <td>Enable left, right, and jump buttons on touchscreen (visible only if
+        <span class="monospace">--touch</span> is also used).</td>
+  </tr>
+  <tr>
+    <th class="monospace">--touch-buttons-off</th>
+    <td>Disable left, right, and jump buttons on touchscreen (visible only if
+        <span class="monospace">--touch</span> is also used).</td>
+  </tr>
+  <tr>
+    <th class="monospace">--mobile</th>
+    <td>As a shorthand for <span class="monospace">--fixed-window-mode</span>
+        and <span class="monospace">--touch</span>, cause the game to act as
+        if it were running on a mobile device.</td>
+  </tr>
+</table>
+
+
+
+<h2>Credits</h2>
+
+<p>Game design, programming, music, sound effects, and graphics by
+Alexandre Almeida, aka M374LX
+(<a href="http://m374lx.users.sourceforge.net">http://m374lx.users.sourceforge.net</a>,
+wilsalx&lt;at&gt;gmail&lt;dot&gt;com).</p>
+
+<p>Additional game design by Hoton Bastos.</p>
+
+<p>Testing by Harim Pires.</p>
+
+<p>The logo font is Telegrama, by YoWorks
+(<a href="https://www.yoworks.com">https://www.yoworks.com</a>).</p>
+
+<p>The character set font is Press Start 2P, by codeman38
+(<a href="https://www.zone38.net">https://www.zone38.net</a>).</p>
+
+
+
+<h2>Copyright and Licenses</h2>
+
+<p>Alex vs Bus: The Race<br>
+   &copy; 2021-2024 M374LX</p>
+
+<p>The code as a whole is under GNU GPLv3
+(<a href="https://www.gnu.org/licenses/gpl-3.0.en.html">https://www.gnu.org/licenses/gpl-3.0.en.html</a>),
+with third-party libraries in other free licenses. For details, see the
+respective source files.</p>
+
+<p>The assets, including graphics, music, sound effects, and level definitions,
+are under Creative Commons Attribution-ShareAlike (CC BY-SA) 4.0
+(<a href="https://creativecommons.org/licenses/by-sa/4.0">https://creativecommons.org/licenses/by-sa/4.0</a>).
+</p>
+
+</body>
+</html>
+

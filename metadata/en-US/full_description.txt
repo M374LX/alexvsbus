@@ -1,0 +1,22 @@
+<b>Alex vs Bus: The Race</b> is a free and open source platform runner game
+in which Alex is just a man who depends on public transportation in a
+developing country and needs to run in order to catch the bus, or else he will
+have to wait an eternity for the next bus to come.
+
+Key features include:
+
+<ul>
+  <li>A finished game, no longer WIP, complete with 13 levels across 3
+      different difficulties and an ending sequence.</li>
+  <li>Audio and visual style inspired by the 8-bit era, although the game is
+      not bound to all of the technical limitations of the period.</li>
+  <li>Keyboard, gamepad, and touchscreen (Android only) supported as input
+      devices.</li>
+  <li>A different cutscene when clearing each level.</li>
+  <li>Customizable screen size.</li>
+  <li>Scanlines visual effect.</li>
+  <li>Cross-platform.</li>
+</ul>
+
+The manual can be found at
+https://github.com/M374LX/alexvsbus/tree/main/docs/manual.

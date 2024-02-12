@@ -4,6 +4,9 @@ PROGNAME := alexvsbus
 #Default installation prefix (on Unix)
 PREFIX := /usr/local
 
+#Default installation prefix (on Unix) for the main executable
+EXECPREFIX := $(PREFIX)/games
+
 #Toolchain prefix (none by default, but can be set through the CLI)
 TOOLCHAIN_PREFIX :=
 
@@ -78,8 +81,8 @@ install_windows:
 	echo "The install target is not supported on Windows"
 
 install_unix:
-	mkdir -p $(PREFIX)/games
-	cp $(EXECNAME) $(PREFIX)/games/$(EXECNAME)
+	mkdir -p $(EXECPREFIX)
+	cp $(EXECNAME) $(EXECPREFIX)/$(EXECNAME)
 	rm -rf $(PREFIX)/share/games/$(PROGNAME)
 	mkdir -p $(PREFIX)/share/games
 	cp -r assets $(PREFIX)/share/games/$(PROGNAME)

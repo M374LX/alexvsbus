@@ -83,16 +83,23 @@ to be installed on the system.
 
 ## Installing the game ##
 
-On Linux, you can install the game by running ``make install`` after it is
-built. The default install prefix is ``/usr/local``, but a different one can
-be specified by setting the ``PREFIX`` variable:
+On Linux, you can install the game by running ``make install`` (as superuser)
+after it is built.
 
-``make PREFIX=/usr install``.
+The default install prefix is ``/usr/local``, but a different one can be
+specified by setting the ``PREFIX`` variable:
 
-The game's main executable is placed in ``PREFIX/games``, while the assets are
-placed in ``PREFIX/share/games/alexvsbus``. Additionally, an icon is placed in
-``PREFIX/share/pixmaps/alexvsbus.png`` and a desktop entry is placed in
-``PREFIX/share/applications``.
+``make PREFIX=/usr install``
+
+The game's main executable is placed in ``PREFIX/games`` by default, but a
+different directory can be specified by the ``EXECPREFIX`` variable, which is
+not relative to ``PREFIX`` and needs to contain the full path:
+
+``make PREFIX=/usr EXECPREFIX=/usr/bin install``
+
+The assets are placed in ``PREFIX/share/games/alexvsbus``. Additionally, an
+icon is placed in ``PREFIX/share/pixmaps/alexvsbus.png`` and a desktop entry is
+placed in ``PREFIX/share/applications``.
 
 The ``install`` target is not supported on Windows, but you can place the
 executable (``alexvsbus.exe``) and the ``assets`` folder anywhere you want

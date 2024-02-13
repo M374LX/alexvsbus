@@ -25,9 +25,11 @@ CFILES += $(addprefix raylib/,raudio.c rcore.c utils.c)
 #Common compiler flags
 CFLAGS := -std=c99 -ffunction-sections -Wall -O1 -fPIC -fno-strict-aliasing
 
-#Add compier flags required by raylib
+#Add compiler flags required by raylib
 CFLAGS += -DGRAPHICS_API_OPENGL_21 -D_GNU_SOURCE
-CFLAGS += -Iraylib -Iraylib/external/glfw/include -Iraylib/external/glfw/deps/mingw
+
+#Directories to be checked by the #include directive
+INCLUDE_DIRS := -Iraylib -Iraylib/external/glfw/include -Iraylib/external/glfw/deps/mingw
 
 #Check if the host system is Windows
 ifeq ($(OS),Windows_NT)
@@ -70,7 +72,7 @@ endif
 # ==============================================================================
 
 $(EXECNAME): $(EXEC_PREREQS)
-	$(TOOLCHAIN_PREFIX)$(CC) -o $(EXECNAME) $(CFLAGS) $(CFILES) $(RES) $(LIBS)
+	$(TOOLCHAIN_PREFIX)$(CC) -o $(EXECNAME) $(INCLUDE_DIRS) $(CFLAGS) $(CFILES) $(RES) $(LIBS)
 	
 $(RES): src/alexvsbus.rc
 	$(TOOLCHAIN_PREFIX)$(WINDRES) -O coff $< $@

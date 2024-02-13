@@ -1,0 +1,7 @@
+- Add the assets directory, which was missing in the source code of the
+  previous release.
+
+- Add metadata for a future F-Droid submission.
+
+- Add Gradle distribution hash.
+

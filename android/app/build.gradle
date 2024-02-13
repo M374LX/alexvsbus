@@ -12,8 +12,8 @@ android {
     defaultConfig {
         applicationId 'com.github.m374lx.alexvsbus'
         resValue 'string', 'app_name', 'Alex vs Bus: The Race'
-        versionCode 1
-        versionName '2024.02.10.0'
+        versionCode 2
+        versionName '2024.02.13.0'
         minSdk 16
         targetSdk 34
     }

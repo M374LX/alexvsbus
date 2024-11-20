@@ -77,7 +77,7 @@ can be changed by setting the ``SDL_INCLUDE_PATH`` variable. For example:
 
 ``make SDL=1 SDL_INCLUDE_PATH=/usr/local/include/SDL2``
 
-As said in "Building from Linux for Linux", SDL with the development files need
+As said in "Building from Linux for Linux", SDL with the development files needs
 to be installed on the system.
 
 

@@ -89,7 +89,7 @@ You can verify the signature by running:
 
 ``apksigner verify app-release.apk``
 
-It might show some warnings about files in the ``M̀ETA-INF`` directory being
+It might show some warnings about files in the ``META-INF`` directory being
 unprotected. These files are unimportant and the warnings can be ignored.
 
 For more details, see

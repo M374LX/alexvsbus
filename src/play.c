@@ -342,12 +342,12 @@ static void position_camera()
 
 	//Keep the camera within the level boundaries
 	if (cam->fixed_at_rightmost || cam->x > cam->xmax) {
-	    cam->x = cam->xmax;
-	    cam->xvel = 0;
+		cam->x = cam->xmax;
+		cam->xvel = 0;
 	}
 	if (cam->fixed_at_leftmost || cam->x < cam->xmin) {
-	    cam->x = cam->xmin;
-	    cam->xvel = 0;
+		cam->x = cam->xmin;
+		cam->xvel = 0;
 	}
 }
 
@@ -605,7 +605,7 @@ static void move_objects()
 
 		gush->y = y;
 		ctx.objs[gush->obj].y = (int)y;
-    }
+	}
 
 	//Grabbed rope
 	if (ctx.grabbed_rope.obj != NONE) {
@@ -616,7 +616,7 @@ static void move_objects()
 		if (ctx.grabbed_rope.x >= ctx.grabbed_rope.xmax) {
 			ctx.grabbed_rope.x = ctx.grabbed_rope.xmax;
 			ctx.grabbed_rope.xvel = -192;
-        } else if (ctx.grabbed_rope.x <= ctx.grabbed_rope.xmin) {
+		} else if (ctx.grabbed_rope.x <= ctx.grabbed_rope.xmin) {
 			ctx.grabbed_rope.x = ctx.grabbed_rope.xmin;
 			ctx.grabbed_rope.obj = NONE;
 		}
@@ -884,7 +884,7 @@ static void handle_solids()
 			if (check_limit && top < limit) {
 				limit = top;
 			}
-        } else if (moved_up) {
+		} else if (moved_up) {
 			if (sol->type == SOL_PASSAGEWAY_EXIT && pl->yvel < -160) {
 				//Ignore passageway exit solids if the player is moving
 				//upwards at a high enough velocity, as when hitting a
@@ -1023,41 +1023,41 @@ static void handle_player_interactions()
 		//Determine the bounding box of the object
 		switch (obj->type) {
 			case OBJ_BANANA_PEEL:
-			obj_left += 1;
-			obj_right = obj_left + 6;
-			obj_top += 2;
-			obj_bottom = obj_top;
-			break;
+				obj_left += 1;
+				obj_right = obj_left + 6;
+				obj_top += 2;
+				obj_bottom = obj_top;
+				break;
 
-		case OBJ_COIN_SILVER:
-		case OBJ_COIN_GOLD:
-			obj_left += 2;
-			obj_right = obj_left + 4;
-			obj_top += 2;
-			obj_bottom = obj_top + 4;
-			break;
+			case OBJ_COIN_SILVER:
+			case OBJ_COIN_GOLD:
+				obj_left += 2;
+				obj_right = obj_left + 4;
+				obj_top += 2;
+				obj_bottom = obj_top + 4;
+				break;
 
-		case OBJ_GUSH:
-			obj_left += 3;
-			obj_right = obj_left + 9;
-			obj_bottom += 72;
-			break;
+			case OBJ_GUSH:
+				obj_left += 3;
+				obj_right = obj_left + 9;
+				obj_bottom += 72;
+				break;
 
-	    case OBJ_GUSH_CRACK:
-			obj_left += 3;
-			obj_right = obj_left + 10;
-			break;
+			case OBJ_GUSH_CRACK:
+				obj_left += 3;
+				obj_right = obj_left + 10;
+				break;
 
-	    case OBJ_ROPE_VERTICAL:
-			obj_right += 4;
-			obj_bottom += 64;
-			break;
+			case OBJ_ROPE_VERTICAL:
+				obj_right += 4;
+				obj_bottom += 64;
+				break;
 
-	    case OBJ_SPRING:
-			obj_right += 16;
-			obj_top += 8;
-			obj_bottom += 8;
-			break;
+			case OBJ_SPRING:
+				obj_right += 16;
+				obj_top += 8;
+				obj_bottom += 8;
+				break;
 		}
 
 		if (obj->type == OBJ_ROPE_VERTICAL) {

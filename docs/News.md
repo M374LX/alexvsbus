@@ -1,3 +1,8 @@
+## 2024.11.21.0
+
+- Fix Android build and make it reproducible.
+
+
 ## 2024.02.13.0
 
 - Add the assets directory, which was missing in the source code of the
@@ -6,6 +11,7 @@
 - Add metadata for a future F-Droid submission.
 
 - Add Gradle distribution hash.
+
 
 ## 2024.02.10.0
 

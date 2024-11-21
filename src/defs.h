@@ -41,7 +41,7 @@
 
 //Game title, release, and repository URL
 #define GAME_TITLE "Alex vs Bus: The Race"
-#define RELEASE "2024.02.13.0"
+#define RELEASE "2024.11.21.0"
 #define REPOSITORY "https://github.com/M374LX/alexvsbus"
 
 //Maximum delta time

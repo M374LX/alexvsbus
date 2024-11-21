@@ -18,10 +18,10 @@ of some of the packages can be changed by editing the file
 The packages are:
 ```
 build-tools;33.0.2
-ndk;21.4.7075529
+ndk;25.1.8937393
 patcher;v4
 platform-tools
-platforms;android-31
+platforms;android-34
 ```
 
 You need to point to the location of the Android SDK. To do so, you have two

@@ -6,7 +6,7 @@ android {
     namespace 'com.github.m374lx.alexvsbus'
     compileSdk 34
 
-    ndkVersion '21.4.7075529'
+    ndkVersion '25.1.8937393'
     buildToolsVersion '33.0.2'
 
     defaultConfig {

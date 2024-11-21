@@ -1,6 +1,6 @@
 This document describes the steps to create a new release.
 
-We use the YYYY.0M.0D.MINOR calender versioning (CalVer) scheme.
+We use the YYYY.0M.0D.MINOR calendar versioning (CalVer) scheme.
 
 1. Update the release (or version) number in the following files:
 

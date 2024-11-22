@@ -1,1 +1,2 @@
-- First official release of the new C port of the game
+First official release of the new C port of the game.
+

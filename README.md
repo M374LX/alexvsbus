@@ -24,7 +24,9 @@ https://github.com/M374LX/alexvsbus-java.
 **Note: not officially on Google Play.** Someone has published the original
 Java edition of the game on Google Play without having contacted us and charges
 for it. It is not official and we cannot ensure it is identical to the official
-build. At present, the game is officially distributed only through GitHub,
+build. At present, the game is officially distributed through 
+[GitHub](https://github.com/M374LX/alexvsbus/releases/latest) and 
+[F-Droid](https://f-droid.org/packages/com.github.m374lx.alexvsbus/),
 where it is free of charge.
 
 The library used by this port of the game is raylib (https://raylib.com) with

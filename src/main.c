@@ -97,7 +97,7 @@ bool str_starts_with(const char* str, const char* start);
 bool str_only_whitespaces(const char* str);
 int get_file_size(const char* path);
 const char* file_from_path(const char* path);
-void process_path(const char* in, char* out, int maxlen);
+void process_path(const char* in, char* out, size_t maxlen);
 bool readable_dir(const char* path);
 bool create_parent_dirs(const char* path);
 void msgbox_error(const char* msg);
@@ -908,7 +908,7 @@ static void start_level(int level_num, int difficulty, bool skip_initial_sequenc
 		case DIFFICULTY_SUPER:  diffch = 's'; break;
 	}
 
-	snprintf(filename, 530, "%slevel%d%c", config.assets_dir, level_num, diffch);
+	snprintf(filename, sizeof(filename), "%slevel%d%c", config.assets_dir, level_num, diffch);
 
 	renderer_show_save_error(false);
 	play_clear();
@@ -1004,7 +1004,7 @@ static bool find_assets_dir()
 	if (cli.assets_dir != NULL) { //Directory set from CLI
 		int len;
 
-		process_path(cli.assets_dir, config.assets_dir, 512);
+		process_path(cli.assets_dir, config.assets_dir, sizeof(config.assets_dir));
 		len = strlen(cli.assets_dir);
 
 		if (len <= 510) {
@@ -1020,19 +1020,19 @@ static bool find_assets_dir()
 		char base_path[480];
 		char path[512];
 
-		process_path(GetApplicationDirectory(), base_path, 480);
+		process_path(GetApplicationDirectory(), base_path, sizeof(base_path));
 
-		snprintf(path, 512, "%s/%s", base_path, "assets/");
+		snprintf(path, sizeof(path), "%s/%s", base_path, "assets/");
 		if (readable_dir(path)) {
-			snprintf(config.assets_dir, 512, "%s", path);
+			snprintf(config.assets_dir, sizeof(config.assets_dir), "%s", path);
 
 			return true;
 		}
 
 #ifndef _WIN32
-		snprintf(path, 512, "%s/%s", base_path, "../share/games/alexvsbus/");
+		snprintf(path, sizeof(path), "%s/%s", base_path, "../share/games/alexvsbus/");
 		if (readable_dir(path)) {
-			snprintf(config.assets_dir, 512, "%s", path);
+			snprintf(config.assets_dir, sizeof(config.assets_dir), "%s", path);
 
 			return true;
 		}
@@ -1051,25 +1051,25 @@ static void find_config_path()
 	char tmp[512];
 
 	if (cli.config != NULL) {
-		snprintf(tmp, 512, "%s", cli.config);
+		snprintf(tmp, sizeof(tmp), "%s", cli.config);
 	} else {
 #if defined(_WIN32)
-		snprintf(tmp, 512, "%s/alexvsbus/alexvsbus.cfg", getenv("APPDATA"));
+		snprintf(tmp, sizeof(tmp), "%s/alexvsbus/alexvsbus.cfg", getenv("APPDATA"));
 #elif defined(__APPLE__)
-		snprintf(tmp, 512,
+		snprintf(tmp, sizeof(tmp),
 			"%s/Library/Preferences/alexvsbus/alexvsbus.cfg", getenv("HOME"));
 #else
 		const char* xdg_config = getenv("XDG_CONFIG_HOME");
 
 		if (xdg_config == NULL) {
-			snprintf(tmp, 512, "%s/.config/alexvsbus/alexvsbus.cfg", getenv("HOME"));
+			snprintf(tmp, sizeof(tmp), "%s/.config/alexvsbus/alexvsbus.cfg", getenv("HOME"));
 		} else {
-			snprintf(tmp, 512, "%s/alexvsbus/alexvsbus.cfg", xdg_config);
+			snprintf(tmp, sizeof(tmp), "%s/alexvsbus/alexvsbus.cfg", xdg_config);
 		}
 #endif
 	}
 
-	process_path(tmp, config_path, 512);
+	process_path(tmp, config_path, sizeof(config_path));
 #endif //__ANDROID__
 }
 

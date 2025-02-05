@@ -111,10 +111,10 @@ const char* file_from_path(const char* path)
 //1. If running on Windows, replaces backslashes (\) with forward slashes (/)
 //2. Removes consecutive slashes
 //3. Removes the slash at the end if present
-void process_path(const char* in, char* out, int maxlen)
+void process_path(const char* in, char* out, size_t maxlen)
 {
-	int outlen = 0;
-	int i = 0;
+	size_t outlen = 0;
+	size_t i = 0;
 
 	while (in[i] != '\0') {
 		bool is_slash = (in[i] == '/');

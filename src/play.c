@@ -765,81 +765,88 @@ static void handle_solids()
 {
 	Player* pl = &ctx.player;
 
-	int pl_left = (int)pl->oldx + PLAYER_BOX_OFFSET_X;
-	int pl_right = (int)pl_left + PLAYER_BOX_WIDTH;
-	int pl_top = (int)pl->oldy;
-	int pl_bottom = (int)pl_top + pl->height;
+	int pl_left   = (int)pl->oldx + PLAYER_BOX_OFFSET_X;
+	int pl_right  = pl_left + PLAYER_BOX_WIDTH;
+	int pl_top    = (int)pl->oldy;
+	int pl_bottom = pl_top + pl->height;
 
-	int pl_new_left = (int)pl->x + PLAYER_BOX_OFFSET_X;
-	int pl_new_right = pl_new_left + PLAYER_BOX_WIDTH;
+	//Do the X axis (if the player character has moved in this axis)
+	if (pl->x != pl->oldx) {
+		bool moved_right = (pl->x > pl->oldx);
+		int limit = moved_right ? 30000 : 0;
+		int i;
 
-	bool moved_right = (pl->x > pl->oldx);
-	bool moved_left = (pl->x < pl->oldx);
-	bool moved_down = (pl->y > pl->oldy);
-	bool moved_up = (pl->y < pl->oldy);
+		//Iterate through the solids to find the horizontal limit
+		for (i = 0; i < MAX_SOLIDS; i++) {
+			Solid* sol = &ctx.solids[i];
 
-	int ledge_solid = NONE;
+			//Ignore inexistent solids
+			if (sol->type == NONE) continue;
 
-	int limit;
-	int i;
+			//Only solids of type SOL_FULL are taken into account
+			if (sol->type != SOL_FULL) continue;
 
+			//Ignore solids that are out of the reach of the player character's
+			//bounding box in the opposite axis (Y)
+			if (sol->top >= pl_bottom || sol->bottom < pl_top) continue;
 
-	//--------------------------------------------------------------------------
-	// First, do the X axis
-	//
-	limit = moved_right ? 30000 : 0;
+			if (moved_right) {
+				if (sol->left < limit && sol->left >= pl_right) {
+					limit = sol->left;
+				}
+			} else {
+				if (sol->right > limit && sol->right <= pl_left) {
+					limit = sol->right;
+				}
+			}
+		}
 
-	for (i = 0; i < MAX_SOLIDS; i++) {
-		Solid* sol = &ctx.solids[i];
+		pl_left = (int)pl->x + PLAYER_BOX_OFFSET_X;
+		pl_right = pl_left + PLAYER_BOX_WIDTH;
 
-		//Ignore inexistent solids
-		if (sol->type == NONE) continue;
-
-		if (sol->type != SOL_FULL) continue;
-		if (sol->top >= pl_bottom || sol->bottom < pl_top) continue;
-
-		if (moved_right && sol->left < limit && sol->left >= pl_right) {
-			limit = sol->left;
-		} else if (moved_left && sol->right > limit && sol->right <= pl_left) {
-			limit = sol->right;
+		if (moved_right) {
+			if (pl_right >= limit) {
+				pl_right = limit;
+				pl_left = pl_right - PLAYER_BOX_WIDTH;
+				pl->x = pl_left - PLAYER_BOX_OFFSET_X;
+				pl->xvel = 0;
+			}
+		} else {
+			if (pl_left <= limit) {
+				pl_left = limit;
+				pl_right = pl_left + PLAYER_BOX_WIDTH;
+				pl->x = pl_left - PLAYER_BOX_OFFSET_X;
+				pl->xvel = 0;
+			}
 		}
 	}
 
-	if (moved_right && limit <= pl_new_right) {
-		pl_new_right = limit;
-		pl_new_left = pl_new_right - PLAYER_BOX_WIDTH;
-		pl->x = pl_new_left - PLAYER_BOX_OFFSET_X;
-		pl->xvel = 0;
-	} else if (moved_left && limit >= pl_new_left) {
-		pl_new_left = limit;
-		pl_new_right = pl_new_left + PLAYER_BOX_WIDTH;
-		pl->x = pl_new_left - PLAYER_BOX_OFFSET_X;
-		pl->xvel = 0;
-	}
-
-	pl_left = pl_new_left;
-	pl_right = pl_left + PLAYER_BOX_WIDTH;
-
-
-	//--------------------------------------------------------------------------
-	// Second, do the Y axis
-	//
-	limit = moved_up ? 0 : 30000;
-
-	for (i = 0; i < MAX_SOLIDS; i++) {
-		Solid* sol = &ctx.solids[i];
-
-		//Ignore inexistent solids
-		if (sol->type == NONE) continue;
-
-		if (sol->left >= pl_right || sol->right <= pl_left) continue;
+	//Do the Y axis (if the player character has moved in this axis)
+	if (pl->y != pl->oldy) {
+		bool moved_down = (pl->y > pl->oldy);
+		int limit = moved_down ? 30000 : 0;
+		int ledge_solid = NONE;
+		int i;
 
 		//Detect if the player character's bounding box is on a ledge while
 		//the sprite appears to be standing on the air, so we can prevent
 		//this weird visual effect
-		if (sol->type == SOL_FULL && pl->xvel == 0 && sol->top == pl_bottom) {
+		for (i = 0; i < MAX_SOLIDS; i++) {
+			Solid* sol = &ctx.solids[i];
+
+			//Ignore inexistent solids
+			if (sol->type == NONE) continue;
+
+			//Only solids of type SOL_FULL are taken into account
+			if (sol->type != SOL_FULL) continue;
+
+			//Ignore solids that are out of the reach of the player character's
+			//bounding box in the opposite axis (X)
+			if (sol->left >= pl_right || sol->right <= pl_left) continue;
+
+			if (pl->xvel != 0 || sol->top != pl_bottom) continue;
+
 			if (sol->right <= pl_left + 4) {
-				//If this is the case, store the solid number
 				ledge_solid = i;
 			} else if (ledge_solid != i && sol->left <= pl_right) {
 				//If the bottom-right point of the player character's
@@ -849,66 +856,85 @@ static void handle_solids()
 			}
 		}
 
-		if (moved_down) {
-			int type = sol->type;
-			int top = sol->top;
-			bool check_limit = false;
+		//Iterate through the solids to find the vertical limit
+		for (i = 0; i < MAX_SOLIDS; i++) {
+			Solid* sol = &ctx.solids[i];
 
-			if (sol->bottom < pl_top) {
-				continue;
-			}
+			//Ignore inexistent solids
+			if (sol->type == NONE) continue;
 
-			if (type == SOL_PASSAGEWAY_ENTRY) {
-				//When moving down, ignore passageway entry solids, which
-				//are intended to prevent the player character from leaving
-				//the passageway through the entry
-				continue;
-			} else if (type == SOL_SLOPE_UP) {
-				if (pl_right < sol->right) {
-					top = sol->bottom + (sol->left - pl_right);
+			//Ignore solids that are out of the reach of the player character's
+			//bounding box in the opposite axis (X)
+			if (sol->left >= pl_right || sol->right <= pl_left) continue;
+
+			if (moved_down) {
+				int type = sol->type;
+				int top  = sol->top;
+				bool check_limit;
+
+				if (sol->bottom < pl_top) {
+					continue;
 				}
-				check_limit = true;
-			} else if (type == SOL_SLOPE_DOWN) {
-				if (pl_left > sol->left) {
+
+				if (type == SOL_PASSAGEWAY_ENTRY) {
+					//When moving down, ignore passageway entry solids, which
+					//are intended to prevent the player character from leaving
+					//the passageway through the entry
+					continue;
+				}
+
+				//Determine the top of slope position the player character is at
+				if (type == SOL_SLOPE_UP && pl_right < sol->right) {
+					top = sol->bottom + (sol->left - pl_right);
+				} else if (type == SOL_SLOPE_DOWN && pl_left > sol->left) {
 					top = sol->top - (sol->left - pl_left);
 				}
-				check_limit = true;
-			} else if (type == SOL_KEEP_ON_TOP) {
-				check_limit = true;
-			} else {
+
+				//Determine if the limit should be checked
+				check_limit = false;
 				if (top >= pl_bottom) {
 					check_limit = true;
+				} else if (type == SOL_SLOPE_UP) {
+					check_limit = true;
+				} else if (type == SOL_SLOPE_DOWN) {
+					check_limit = true;
+				} else if (type == SOL_KEEP_ON_TOP) {
+					check_limit = true;
+				}
+
+				if (check_limit && top < limit) {
+					limit = top;
+				}
+			} else {
+				if (sol->type == SOL_PASSAGEWAY_EXIT && pl->yvel < -160) {
+					//Ignore passageway exit solids if the player character is
+					//moving upwards at a high enough velocity, as when hitting
+					//a spring
+					continue;
+				}
+
+				if (sol->bottom > limit && sol->bottom <= pl_top) {
+					limit = sol->bottom;
 				}
 			}
-
-			if (check_limit && top < limit) {
-				limit = top;
-			}
-		} else if (moved_up) {
-			if (sol->type == SOL_PASSAGEWAY_EXIT && pl->yvel < -160) {
-				//Ignore passageway exit solids if the player is moving
-				//upwards at a high enough velocity, as when hitting a
-				//spring
-				continue;
-			}
-
-			if (sol->bottom > limit && sol->bottom <= pl_top) {
-				limit = sol->bottom;
-			}
 		}
-	}
 
-	if (moved_down && limit <= pl->y + pl->height) {
-		if (ledge_solid != NONE) {
-			pl->x = ctx.solids[ledge_solid].right - PLAYER_BOX_OFFSET_X;
+		if (moved_down) {
+			if (pl->y + pl->height >= limit) {
+				if (ledge_solid != NONE) {
+					pl->x = ctx.solids[ledge_solid].right - PLAYER_BOX_OFFSET_X;
+				}
+
+				pl->y = limit - pl->height;
+				pl->yvel = 0;
+				pl->on_floor = true;
+			}
 		} else {
-			pl->y = limit - pl->height;
-			pl->yvel = 0;
-			pl->on_floor = true;
+			if (pl->y <= limit) {
+				pl->y = limit;
+				pl->yvel = 0;
+			}
 		}
-	} else if (moved_up && limit > pl->y) {
-		pl->y = limit;
-		pl->yvel = 0;
 	}
 }
 

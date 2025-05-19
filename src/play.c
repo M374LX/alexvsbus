@@ -624,7 +624,7 @@ static void move_objects()
 		obj->x = (int)ctx.grabbed_rope.x;
 	}
 
-	//Pushable crate
+	//Pushable crates
 	for (i = 0; i < MAX_PUSHABLE_CRATES; i++) {
 		PushableCrate* crate = &ctx.pushable_crates[i];
 
@@ -672,7 +672,7 @@ static void move_objects()
 		ptcl->x += ptcl->xvel * delta_time;
 		ptcl->y += ptcl->yvel * delta_time;
 
-		if (ptcl->y > 400) {
+		if (ptcl->y >= 400) {
 			ptcl->x = NONE;
 		}
 	}

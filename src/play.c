@@ -131,7 +131,7 @@ void play_clear()
 
 	ctx.player.x = 96;
 	ctx.player.oldx = 96;
-	ctx.player.y = 200;
+	ctx.player.y = 204;
 	ctx.player.oldy = 200;
 	ctx.player.xvel = 0;
 	ctx.player.yvel = 0;
@@ -2246,7 +2246,7 @@ static void update_sequence()
 			ctx.car.type = TRAFFIC_JAM;
 			ctx.car.xvel = 0;
 
-			bus->x = VSCREEN_MAX_WIDTH + 16 - 408;
+			bus->x = VSCREEN_MAX_WIDTH + 16 - 400;
 			bus->xvel = 0;
 			bus->route_sign = 0; //Finish (checkered flag) sign
 

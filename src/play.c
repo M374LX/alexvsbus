@@ -472,13 +472,8 @@ static void begin_update()
 	pl->old_anim_type = pl->anim_type;
 	pl->on_floor = false;
 
-	if (jump_timeout > 0) {
-		jump_timeout -= delta_time;
-
-		if (jump_timeout < 0) {
-			jump_timeout = 0;
-		}
-	}
+	jump_timeout -= delta_time;
+	if (jump_timeout < 0) jump_timeout = 0;
 }
 
 //Updates the remaining time and acts if the time has run out
@@ -487,19 +482,19 @@ static void update_remaining_time()
 	if (!ctx.time_running) return;
 
 	ctx.time_delay -= delta_time;
-	if (ctx.time_delay <= 0) {
-		ctx.time_delay = 1;
-		ctx.time--;
+	if (ctx.time_delay > 0) return;
 
-		if (ctx.time <= 10 && ctx.time >= 0) {
-			audio_play_sfx(SFX_TIME);
-		}
+	ctx.time_delay = 1;
+	ctx.time--;
 
-		if (ctx.time < 0) {
-			ctx.time = 0;
-			ctx.time_running = false;
-			ctx.time_up = true;
-		}
+	if (ctx.time <= 10 && ctx.time >= 0) {
+		audio_play_sfx(SFX_TIME);
+	}
+
+	if (ctx.time < 0) {
+		ctx.time = 0;
+		ctx.time_running = false;
+		ctx.time_up = true;
 	}
 }
 
@@ -509,21 +504,20 @@ static void update_score_count()
 {
 	if (!ctx.counting_score) return;
 
-	ctx.time_delay -= delta_time;
-	if (ctx.time_delay <= 0) {
-		ctx.time_delay = 0.1f;
+	if (ctx.time <= 0) {
+		ctx.time = 0;
+		ctx.counting_score = false;
 
-		if (ctx.time > 0) {
-			ctx.time--;
-			ctx.score += 10;
-			audio_play_sfx(SFX_SCORE);
-		}
-
-		if (ctx.time <= 0) {
-			ctx.time = 0;
-			ctx.counting_score = false;
-		}
+		return;
 	}
+
+	ctx.time_delay -= delta_time;
+	if (ctx.time_delay > 0) return;
+
+	ctx.time_delay = 0.1f;
+	ctx.time--;
+	ctx.score += 10;
+	audio_play_sfx(SFX_SCORE);
 }
 
 //Updates the positions of most game objects, not including the player

@@ -148,11 +148,7 @@ void play_clear()
 	ctx.bus.acc = 0;
 
 	ctx.grabbed_rope.obj = NONE;
-	ctx.slip_peel.obj = NONE;
-	ctx.thrown_peel.obj = NONE;
-
 	ctx.hit_spring = NONE;
-
 	ctx.car.x = NONE;
 	ctx.hen.x = NONE;
 
@@ -166,6 +162,10 @@ void play_clear()
 
 	for (i = 0; i < MAX_GUSHES; i++) {
 		ctx.gushes[i].obj = NONE;
+	}
+
+	for (i = 0; i < MAX_MOVING_PEELS; i++) {
+		ctx.moving_peels[i].obj = NONE;
 	}
 
 	for (i = 0; i < MAX_PUSHABLE_CRATES; i++) {
@@ -530,44 +530,36 @@ static void update_score_count()
 //character and the camera
 static void move_objects()
 {
-	MovingPeel* peel;
 	int i;
 
 	//Bus
 	ctx.bus.xvel += ctx.bus.acc * delta_time;
 	ctx.bus.x += ctx.bus.xvel * delta_time;
 
-	//Thrown peel
-	peel = &ctx.thrown_peel;
-	if (peel->obj != NONE) {
-		Obj* obj = &ctx.objs[peel->obj];
+	//Moving banana peels
+	for (i = 0; i < MAX_MOVING_PEELS; i++) {
+		MovingPeel* peel = &ctx.moving_peels[i];
+		Obj* obj;
+
+		if (peel->obj == NONE) continue;
+
+		obj = &ctx.objs[peel->obj];
 
 		peel->yvel += peel->grav * delta_time;
 		peel->x += peel->xvel * delta_time;
 		peel->y += peel->yvel * delta_time;
-		if (peel->y >= 256) {
-			//Stop the peel when it hits the floor
-			obj->type = OBJ_BANANA_PEEL;
-			peel->x = peel->xdest;
-			peel->y = 256;
+
+		//Deactivate the peel when it gets too far downwards
+		if (peel->y >= 400) {
+			obj->type = NONE;
 			peel->obj = NONE;
 		}
 
-		obj->x = (int)peel->x;
-		obj->y = (int)peel->y;
-	}
-
-	//Slipped peel
-	peel = &ctx.slip_peel;
-	if (peel->obj != NONE) {
-		Obj* obj = &ctx.objs[peel->obj];
-
-		peel->yvel += peel->grav * delta_time;
-		peel->x += peel->xvel * delta_time;
-		peel->y += peel->yvel * delta_time;
-		if (peel->y >= 400) {
-			//Deactivate the peel when it goes too far downwards
-			obj->type = NONE;
+		//Stop the peel when it hits the destination Y position
+		if (peel->y >= peel->ydest) {
+			obj->type = OBJ_BANANA_PEEL;
+			peel->x = peel->xdest;
+			peel->y = peel->ydest;
 			peel->obj = NONE;
 		}
 
@@ -701,16 +693,18 @@ static void handle_car_thrown_peel()
 
 	for (int i = 0; i < MAX_OBJS; i++) {
 		if (ctx.objs[i].type == NONE) {
+			MovingPeel* peel = &ctx.moving_peels[MOVING_PEEL_THROWN];
+
+			peel->obj = i;
+			peel->x = ctx.car.peel_throw_x + 90;
+			peel->y = 200;
+			peel->xvel = 140;
+			peel->yvel = -10;
+			peel->grav = 500;
+			peel->xdest = peel->x + 70;
+			peel->ydest = 256;
+
 			ctx.objs[i].type = OBJ_BANANA_PEEL_MOVING;
-
-			ctx.thrown_peel.obj = i;
-			ctx.thrown_peel.x = ctx.car.peel_throw_x + 90;
-			ctx.thrown_peel.y = 200;
-			ctx.thrown_peel.xdest = ctx.thrown_peel.x + 70;
-			ctx.thrown_peel.xvel = 140;
-			ctx.thrown_peel.yvel = -10;
-			ctx.thrown_peel.grav = 500;
-
 			ctx.car.threw_peel = true;
 
 			break;
@@ -1103,9 +1097,9 @@ static void handle_player_interactions()
 
 		switch (obj->type) {
 			case OBJ_BANANA_PEEL:
-				ctx.slip_peel.obj = i;
-				ctx.slip_peel.x = obj->x;
-				ctx.slip_peel.y = obj->y;
+				ctx.moving_peels[MOVING_PEEL_SLIPPED].obj = i;
+				ctx.moving_peels[MOVING_PEEL_SLIPPED].x = obj->x;
+				ctx.moving_peels[MOVING_PEEL_SLIPPED].y = obj->y;
 				obj->type = OBJ_BANANA_PEEL_MOVING;
 				slipped = true;
 				break;
@@ -1201,12 +1195,20 @@ static void handle_player_interactions()
 
 	//Act if the player character has slipped on a banana peel
 	if (slipped) {
+		MovingPeel* peel = &ctx.moving_peels[MOVING_PEEL_SLIPPED];
+
 		audio_play_sfx(SFX_SLIP);
 		pl->state = PLAYER_STATE_SLIP;
 
-		ctx.slip_peel.xvel = 150;
-		ctx.slip_peel.yvel = -200;
-		ctx.slip_peel.grav = 500;
+		peel->xvel = 150;
+		peel->yvel = -200;
+		peel->grav = 500;
+
+		//For the destination Y position, use a value below the limit,
+		//which is 400
+		peel->xdest = 0;
+		peel->ydest = 500;
+
 	}
 
 	//Act if the player character has been thrown back by a gush
@@ -1675,6 +1677,8 @@ static void update_sequence()
 	PlayCamera* cam = &ctx.cam;
 	int level_size = ctx.level_size;
 
+	MovingPeel* thrown_peel = &ctx.moving_peels[MOVING_PEEL_THROWN];
+
 	//Cutscene objects
 	CutsceneObject* cutscene_player = &ctx.cutscene_objects[0];
 	CutsceneObject* bearded_man = &ctx.cutscene_objects[1];
@@ -1854,13 +1858,14 @@ static void update_sequence()
 						ctx.objs[0].type = OBJ_BANANA_PEEL_MOVING;
 						ctx.objs[0].x = level_size;
 						ctx.objs[0].y = BUS_Y + 72;
-						ctx.thrown_peel.obj = 0;
-						ctx.thrown_peel.x = ctx.objs[0].x;
-						ctx.thrown_peel.y = ctx.objs[0].y;
-						ctx.thrown_peel.xdest = (int)bus->x + 345;
-						ctx.thrown_peel.xvel = -512;
-						ctx.thrown_peel.yvel = 200;
-						ctx.thrown_peel.grav = 500;
+						thrown_peel->obj = 0;
+						thrown_peel->x = ctx.objs[0].x;
+						thrown_peel->y = ctx.objs[0].y;
+						thrown_peel->xvel = -512;
+						thrown_peel->yvel = 200;
+						thrown_peel->grav = 500;
+						thrown_peel->xdest = (int)bus->x + 345;
+						thrown_peel->ydest = 256;
 						ctx.sequence_step++;
 					}
 				} else if (ctx.level_num == 4) {

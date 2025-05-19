@@ -395,6 +395,7 @@ enum {
 #define MAX_CRATE_BLOCKS 32
 #define MAX_HOLES 32
 #define MAX_GUSHES 32
+#define MAX_MOVING_PEELS 2
 #define MAX_PASSAGEWAYS 4
 #define MAX_PUSHABLE_CRATES MAX_PASSAGEWAYS
 #define MAX_CUTSCENE_OBJECTS 2
@@ -414,6 +415,11 @@ enum {
 #define POLE_DISTANCE 384 //Distance between light poles
 #define FLOOR_Y 264
 #define PASSAGEWAY_BOTTOM_Y 360
+
+//There are at most two moving banana peels at a time, one because the player
+//character has slipped on it and another because it has been thrown
+#define MOVING_PEEL_SLIPPED 0
+#define MOVING_PEEL_THROWN 1
 
 //Crate size
 #define CRATE_WIDTH  24
@@ -761,9 +767,9 @@ typedef struct {
 typedef struct {
 	int obj; //Index of the peel within PlayCtx.objs[]
 	float x, y;
-	float xdest; //Used only by thrown peels (not by slipped peels)
 	float xvel, yvel;
 	float grav;
+	float xdest, ydest; //Destination position
 } MovingPeel;
 
 typedef struct {
@@ -885,8 +891,7 @@ typedef struct {
 	CrateBlock crate_blocks[MAX_CRATE_BLOCKS];
 	Gush gushes[MAX_GUSHES];
 	GrabbedRope grabbed_rope;
-	MovingPeel slip_peel;
-	MovingPeel thrown_peel;
+	MovingPeel moving_peels[MAX_MOVING_PEELS];
 	PushableCrate pushable_crates[MAX_PUSHABLE_CRATES];
 	CutsceneObject cutscene_objects[MAX_CUTSCENE_OBJECTS];
 	Solid solids[MAX_SOLIDS];

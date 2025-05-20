@@ -1925,7 +1925,7 @@ static void update_sequence()
 
 
 		//----------------------------------------------------------------------
-		case 100: //SEQ_GOAL_REACHED_DEFAULT
+		case 60: //SEQ_GOAL_REACHED_DEFAULT
 			input_jump = false;
 			if (pl->yvel > 0 && pl->y >= BUS_Y + 36) {
 				//Player character is now in the bus and score count starts
@@ -1935,7 +1935,7 @@ static void update_sequence()
 			}
 			break;
 
-		case 101:
+		case 61:
 			if (!ctx.counting_score) {
 				//Score count finished
 				ctx.sequence_delay = 0.5f;
@@ -1943,13 +1943,13 @@ static void update_sequence()
 			}
 			break;
 
-		case 102:
+		case 62:
 			ctx.sequence_step = SEQ_BUS_LEAVING;
 			break;
 
 
 		//----------------------------------------------------------------------
-		case 200: //SEQ_GOAL_REACHED_LEVEL2
+		case 70: //SEQ_GOAL_REACHED_LEVEL2
 			input_jump = false;
 			if (pl->yvel > 0 && pl->y >= BUS_Y + 36) {
 				//Player character is now in the bus and score count starts
@@ -1959,7 +1959,7 @@ static void update_sequence()
 			}
 			break;
 
-		case 201:
+		case 71:
 			if (!ctx.counting_score) {
 				//Score count finished
 				ctx.sequence_delay = 0.5f;
@@ -1967,14 +1967,14 @@ static void update_sequence()
 			}
 			break;
 
-		case 202:
+		case 72:
 			//Bus front door closes
 			start_animation(ANIM_BUS_DOOR_FRONT);
 			ctx.sequence_delay = 0.5f;
 			ctx.sequence_step++;
 			break;
 
-		case 203:
+		case 73:
 			//Bearded man comes from the right side of the screen
 			cutscene_player->sprite = NONE;
 			bearded_man->sprite = SPR_BEARDED_MAN_WALK;
@@ -1990,7 +1990,7 @@ static void update_sequence()
 			ctx.sequence_step++;
 			break;
 
-		case 204:
+		case 74:
 			if (bearded_man->x <= bus->x + 380) {
 				//Bearded man decelerates
 				bearded_man->x = bus->x + 380;
@@ -1999,7 +1999,7 @@ static void update_sequence()
 			}
 			break;
 
-		case 205:
+		case 75:
 			if (bearded_man->xvel >= 0 || bearded_man->x <= bus->x + 337) {
 				//Bearded man stops and bus front door opens
 				bearded_man->sprite = SPR_BEARDED_MAN_STAND;
@@ -2015,7 +2015,7 @@ static void update_sequence()
 			}
 			break;
 
-		case 206:
+		case 76:
 			//Bearded man jumps into the bus
 			bearded_man->sprite = SPR_BEARDED_MAN_JUMP;
 			bearded_man->yvel = -154;
@@ -2023,7 +2023,7 @@ static void update_sequence()
 			ctx.sequence_step++;
 			break;
 
-		case 207:
+		case 77:
 			if (bearded_man->y >= BUS_Y + 35 && bearded_man->yvel > 0) {
 				//Bearded man is now in the bus
 				bearded_man->sprite = SPR_BEARDED_MAN_STAND;
@@ -2037,14 +2037,14 @@ static void update_sequence()
 			}
 			break;
 
-		case 208:
+		case 78:
 			ctx.anims[ANIM_BUS_DOOR_FRONT].reverse = true;
 			ctx.sequence_step = SEQ_BUS_LEAVING;
 			break;
 
 
 		//----------------------------------------------------------------------
-		case 300: //SEQ_GOAL_REACHED_LEVEL3
+		case 80: //SEQ_GOAL_REACHED_LEVEL3
 			//Player character slips on a banana peel and hits the floor
 			if (pl->on_floor) {
 				ctx.sequence_delay = 0.25f;
@@ -2052,7 +2052,7 @@ static void update_sequence()
 			}
 			break;
 
-		case 301:
+		case 81:
 			input_right = !input_right;
 			old_input_right = !input_right;
 			if (pl->state == PLAYER_STATE_GETUP) {
@@ -2064,7 +2064,7 @@ static void update_sequence()
 			}
 			break;
 
-		case 302:
+		case 82:
 			if (pl->x >= bus->x + 342) {
 				//Player character jumps into the bus
 				pl->x = bus->x + 342;
@@ -2075,7 +2075,7 @@ static void update_sequence()
 			}
 			break;
 
-		case 303:
+		case 83:
 			if (pl->yvel > 0 && pl->y >= BUS_Y + 36) {
 				//Player character is now in the bus and score count starts
 				show_player_in_bus();
@@ -2084,7 +2084,7 @@ static void update_sequence()
 			}
 			break;
 
-		case 304:
+		case 84:
 			if (!ctx.counting_score) {
 				//Score count finished
 				ctx.sequence_delay = 0.25f;
@@ -2092,13 +2092,13 @@ static void update_sequence()
 			}
 			break;
 
-		case 305:
+		case 85:
 			ctx.sequence_step = SEQ_BUS_LEAVING;
 			break;
 
 
 		//----------------------------------------------------------------------
-		case 400: //SEQ_GOAL_REACHED_LEVEL4
+		case 90: //SEQ_GOAL_REACHED_LEVEL4
 			if (pl->x >= bus->x + 342) {
 				//Player character stops at bus front door
 				pl->x = bus->x + 342;
@@ -2114,7 +2114,7 @@ static void update_sequence()
 			}
 			break;
 
-		case 401:
+		case 91:
 			if (dung->y >= pl->y + 12) {
 				//Bird dung hits the player character
 				dung->sprite = NONE;
@@ -2128,7 +2128,7 @@ static void update_sequence()
 			}
 			break;
 
-		case 402:
+		case 92:
 			//Player character cleans the dung
 			cutscene_player_anim->running = true;
 			cutscene_player_anim->frame = 0;
@@ -2140,7 +2140,7 @@ static void update_sequence()
 			ctx.sequence_step++;
 			break;
 
-		case 403:
+		case 93:
 			//Player character finishes cleaning the dung
 			pl->visible = true;
 			cutscene_player->sprite = NONE;
@@ -2148,13 +2148,13 @@ static void update_sequence()
 			ctx.sequence_step++;
 			break;
 
-		case 404:
+		case 94:
 			//Player character jumps into the bus
 			jump_timeout = JUMP_TIMEOUT; //Trigger a jump
 			ctx.sequence_step++;
 			break;
 
-		case 405:
+		case 95:
 			if (pl->yvel > 0 && pl->y >= BUS_Y + 36) {
 				//Player character is now in the bus and score count starts
 				show_player_in_bus();
@@ -2163,7 +2163,7 @@ static void update_sequence()
 			}
 			break;
 
-		case 406:
+		case 96:
 			if (!ctx.counting_score) {
 				//Score count finished
 				ctx.sequence_delay = 0.5f;
@@ -2171,13 +2171,13 @@ static void update_sequence()
 			}
 			break;
 
-		case 407:
+		case 97:
 			ctx.sequence_step = SEQ_BUS_LEAVING;
 			break;
 
 
 		//----------------------------------------------------------------------
-		case 500: //SEQ_GOAL_REACHED_LEVEL5
+		case 100: //SEQ_GOAL_REACHED_LEVEL5
 			//Bus leaves before the player character can enter it
 			start_animation(ANIM_BUS_DOOR_FRONT);
 			bus->acc = 256;
@@ -2185,7 +2185,7 @@ static void update_sequence()
 			ctx.sequence_step++;
 			break;
 
-		case 501:
+		case 101:
 			if (bus->x >= ctx.level_size + 32) {
 				//Player character starts running crazily
 				bus->acc = 0;
@@ -2205,7 +2205,7 @@ static void update_sequence()
 			}
 			break;
 
-		case 502:
+		case 102:
 			if (cutscene_player->x >= ctx.level_size + 32) {
 				//Score count starts
 				start_score_count();
@@ -2214,7 +2214,7 @@ static void update_sequence()
 			}
 			break;
 
-		case 503:
+		case 103:
 			if (!ctx.counting_score) {
 				//Score count finished
 				ctx.sequence_delay = 0.5f;
@@ -2222,20 +2222,20 @@ static void update_sequence()
 			}
 			break;
 
-		case 504:
+		case 104:
 			//Screen wipes to black
 			ctx.wipe_out = true;
 			ctx.sequence_delay = 1;
 			ctx.sequence_step++;
 			break;
 
-		case 505:
+		case 105:
 			ctx.sequence_step = SEQ_FINISHED;
 			break;
 
 
 		//----------------------------------------------------------------------
-		case 800: //SEQ_ENDING
+		case 110: //SEQ_ENDING
 			//Ending sequence, with a traffic jam and a flagman
 			pl->visible = false;
 			pl->state = PLAYER_STATE_INACTIVE;
@@ -2265,7 +2265,7 @@ static void update_sequence()
 			ctx.sequence_step++;
 			break;
 
-		case 801:
+		case 111:
 			//Camera moves to the right
 			cam->xvel = CAMERA_XVEL / 4;
 			cam->xdest = VSCREEN_MAX_WIDTH * 2 - 136;
@@ -2273,7 +2273,7 @@ static void update_sequence()
 			ctx.sequence_step++;
 			break;
 
-		case 802:
+		case 112:
 			//Traffic jam starts moving
 			ctx.car.xvel = 64;
 			bus->xvel = 64;
@@ -2283,7 +2283,7 @@ static void update_sequence()
 			ctx.sequence_step++;
 			break;
 
-		case 803:
+		case 113:
 			if (ctx.car.x >= VSCREEN_MAX_WIDTH + 152) {
 				//Traffic jam stops
 				ctx.car.x = VSCREEN_MAX_WIDTH + 152;
@@ -2297,7 +2297,7 @@ static void update_sequence()
 			}
 			break;
 
-		case 804:
+		case 114:
 			//Player character appears from the left side of the screen and
 			//is running crazily
 			cutscene_player->sprite = SPR_PLAYER_RUN;
@@ -2312,7 +2312,7 @@ static void update_sequence()
 			ctx.sequence_step++;
 			break;
 
-		case 805:
+		case 115:
 			if (cutscene_player->x > flagman->x && !ctx.player_reached_flagman) {
 				//Player character reaches the flagman, who swings the flag
 				ctx.player_reached_flagman = true;
@@ -2327,7 +2327,7 @@ static void update_sequence()
 			}
 			break;
 
-		case 806:
+		case 116:
 			if (cutscene_player->xvel <= 128) {
 				if (cutscene_player->sprite == SPR_PLAYER_RUN) {
 					cutscene_player->sprite = SPR_PLAYER_WALK;
@@ -2347,7 +2347,7 @@ static void update_sequence()
 			}
 			break;
 
-		case 807:
+		case 117:
 			//Traffic jam starts moving
 			ctx.car.xvel = 64;
 			bus->xvel = 64;
@@ -2355,7 +2355,7 @@ static void update_sequence()
 			ctx.sequence_step++;
 			break;
 
-		case 808:
+		case 118:
 			if (ctx.car.x >= VSCREEN_MAX_WIDTH + 424) {
 				//Traffic jam stops
 				ctx.car.x = VSCREEN_MAX_WIDTH + 424;
@@ -2369,7 +2369,7 @@ static void update_sequence()
 			}
 			break;
 
-		case 809:
+		case 119:
 			//Hen appears from the left side of the screen
 			ctx.hen.x = cam->x - 64;
 			ctx.hen.xvel = 350;
@@ -2377,7 +2377,7 @@ static void update_sequence()
 			ctx.sequence_step++;
 			break;
 
-		case 810:
+		case 120:
 			if (ctx.hen.x >= cam->x + 120) {
 				//Hen decelerates
 				ctx.hen.x = cam->x + 120;
@@ -2386,7 +2386,7 @@ static void update_sequence()
 			}
 			break;
 
-		case 811:
+		case 121:
 			if (ctx.hen.x > flagman->x && !ctx.hen_reached_flagman) {
 				//Hen reaches the flagman, who swings the flag
 				ctx.hen_reached_flagman = true;
@@ -2405,7 +2405,7 @@ static void update_sequence()
 			}
 			break;
 
-		case 812:
+		case 122:
 			//Traffic jam starts moving
 			ctx.car.xvel = 64;
 			bus->xvel = 64;
@@ -2413,7 +2413,7 @@ static void update_sequence()
 			ctx.sequence_step++;
 			break;
 
-		case 813:
+		case 123:
 			if (bus->x >= cam->x - 60) {
 				//Bus reaches the flagman, who swings the flag
 				ctx.bus_reached_flagman = true;
@@ -2433,14 +2433,14 @@ static void update_sequence()
 			}
 			break;
 
-		case 814:
+		case 124:
 			//Screen wipes to black
 			ctx.wipe_out = true;
 			ctx.sequence_delay = 1;
 			ctx.sequence_step++;
 			break;
 
-		case 815:
+		case 125:
 			ctx.sequence_step = SEQ_FINISHED;
 			break;
 	}

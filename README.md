@@ -102,5 +102,5 @@ in the manual or by launching the game with the ``--help`` (or ``-h``) option.
 
 ## Building from source
 
-See docs/Build-Desktop or docs/Build-Android.
+See docs/Building-Desktop or docs/Building-Android.
 

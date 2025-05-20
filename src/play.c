@@ -1844,40 +1844,37 @@ static void update_sequence()
 
 		//----------------------------------------------------------------------
 		case 50: //SEQ_GOAL_REACHED
-			if (ctx.difficulty != DIFFICULTY_SUPER) {
-				if (ctx.level_num == 3) {
-					if (pl->x > bus->x + 192) {
-						//A banana peel is thrown from the right side of the
-						//screen
-						ctx.objs[0].type = OBJ_BANANA_PEEL_MOVING;
-						ctx.objs[0].x = level_size;
-						ctx.objs[0].y = BUS_Y + 72;
-						thrown_peel->obj = 0;
-						thrown_peel->x = ctx.objs[0].x;
-						thrown_peel->y = ctx.objs[0].y;
-						thrown_peel->xvel = -512;
-						thrown_peel->yvel = 200;
-						thrown_peel->grav = 500;
-						thrown_peel->xdest = (int)bus->x + 345;
-						thrown_peel->ydest = 256;
-						ctx.sequence_step++;
-					}
-				} else if (ctx.level_num == 4) {
-					if (pl->x >= bus->x + 120) {
-						//A bird appears
-						bird->sprite = SPR_BIRD;
-						bird->x = cam->x - 16;
-						bird->y = 120;
-						bird->xvel = 304;
-						bird_anim->running = true;
-						bird_anim->frame = 0;
-						bird_anim->num_frames = 4;
-						bird_anim->delay = 0.1f;
-						bird_anim->max_delay = 0.1f;
-						bird_anim->loop = true;
-						ctx.sequence_step++;
-					}
-				} else {
+			if (ctx.difficulty == DIFFICULTY_SUPER) {
+				ctx.sequence_step++;
+			} else if (ctx.level_num == 3) {
+				if (pl->x > bus->x + 192) {
+					//A banana peel is thrown from the right side of the screen
+					ctx.objs[0].type = OBJ_BANANA_PEEL_MOVING;
+					ctx.objs[0].x = level_size;
+					ctx.objs[0].y = BUS_Y + 72;
+					thrown_peel->obj = 0;
+					thrown_peel->x = ctx.objs[0].x;
+					thrown_peel->y = ctx.objs[0].y;
+					thrown_peel->xvel = -512;
+					thrown_peel->yvel = 200;
+					thrown_peel->grav = 500;
+					thrown_peel->xdest = (int)bus->x + 345;
+					thrown_peel->ydest = 256;
+					ctx.sequence_step++;
+				}
+			} else if (ctx.level_num == 4) {
+				if (pl->x >= bus->x + 120) {
+					//A bird appears
+					bird->sprite = SPR_BIRD;
+					bird->x = cam->x - 16;
+					bird->y = 120;
+					bird->xvel = 304;
+					bird_anim->running = true;
+					bird_anim->frame = 0;
+					bird_anim->num_frames = 4;
+					bird_anim->delay = 0.1f;
+					bird_anim->max_delay = 0.1f;
+					bird_anim->loop = true;
 					ctx.sequence_step++;
 				}
 			} else {

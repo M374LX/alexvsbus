@@ -64,10 +64,10 @@ hydrant 0
 respawn-point 1 9
 deep-hole 1 5
 banana-peel 5 11
-crates 2 9 3 2
-crates 1 8 1 1
+crates 2 9 1 2
+crates 1 8 1 3
 respawn-point 1 5
-crates 0 7 1 2
+crates 0 7 1 4
 deep-hole 1 3
 overhead-sign 2 4
 coin-silver 0 7

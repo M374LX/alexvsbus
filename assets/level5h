@@ -81,9 +81,9 @@ respawn-point 3 9
 deep-hole 1 4
 hydrant 4
 coin-silver 2 7
-crates 0 9 1 1
-crates 0 10 4 1
-banana-peel 2 10
+crates 0 9 1 2
+crates 1 10 3 1
+banana-peel 1 10
 respawn-point 1 8
 deep-hole 1 4
 banana-peel 5 11

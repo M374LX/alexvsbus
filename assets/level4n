@@ -23,8 +23,8 @@ coin-silver 3 7
 crates 0 9 2 2
 respawn-point 1 7
 deep-hole 1 4
-crates 4 9 2 2
-crates 1 7 1 2
+crates 4 9 1 2
+crates 1 7 1 4
 coin-silver 1 6
 overhead-sign 1 4
 car-silver 4

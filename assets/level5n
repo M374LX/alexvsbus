@@ -4,8 +4,8 @@ bgm 3
 respawn-point 0 9
 deep-hole 1 5
 respawn-point 4 9
-coin-silver 1 8
-deep-hole 0 5
+deep-hole 1 5
+coin-silver 0 8
 spring 5 10
 respawn-point 1 9
 deep-hole 1 5
@@ -28,8 +28,8 @@ hydrant 0
 respawn-point 1 9
 deep-hole 1 6
 coin-silver 4 8
-banana-peel 2 11
-coin-silver 0 8
+coin-silver 2 8
+banana-peel 0 11
 car-yellow 2
 coin-silver 5 9
 spring 1 10
@@ -63,8 +63,8 @@ deep-hole 1 7
 coin-gold 8 4
 gush 0
 respawn-point 2 9
-coin-silver 1 10
-deep-hole 0 10
+deep-hole 1 10
+coin-silver 0 10
 coin-silver 5 8
 banana-peel 5 11
 coin-silver 2 7
@@ -92,8 +92,8 @@ respawn-point 2 9
 deep-hole 1 5
 gush-crack 5
 respawn-point 1 9
-coin-silver 1 9
-deep-hole 0 6
+deep-hole 1 6
+coin-silver 0 9
 coin-silver 6 7
 crates 0 9 1 2
 gush 2
@@ -127,10 +127,11 @@ coin-silver 1 8
 rope 1
 respawn-point 0 9
 deep-hole 1 15
-crates 18 9 4 2
-crates 1 8 2 1
-crates 1 7 1 1
-coin-silver 2 5
+crates 18 9 1 2
+crates 1 8 1 3
+crates 1 7 1 4
+crates 1 9 1 2
+coin-silver 1 5
 spring 1 10
 truck 1
 coin-silver 4 5
@@ -167,7 +168,7 @@ respawn-point 9 9
 deep-hole 1 4
 gush-crack 4
 respawn-point 1 9
-coin-gold 1 7
-deep-hole 0 3
+deep-hole 1 3
+coin-gold 0 7
 coin-silver 8 10
 coin-silver 5 10

@@ -637,8 +637,8 @@ static void draw_play()
 		PushableCrate* crate = &ctx->pushable_crates[i];
 
 		if (crate->obj != NONE && crate->show_arrow) {
-			x = ctx->objs[crate->obj].x - 24 + (int)ctx->push_arrow.xoffs;
-			y = FLOOR_Y - 20;
+			x = ctx->objs[crate->obj].x - 48 + (int)ctx->push_arrow.xoffs;
+			y = FLOOR_Y - 24;
 
 			draw_sprite(SPR_PUSH_ARROW, x, y, 0);
 		}

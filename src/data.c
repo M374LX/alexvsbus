@@ -130,7 +130,7 @@ const int data_sprites[] = {
 	232,  72,   48,  64,  //SPR_PLAYER_RUN
 	0,    72,   24,  64,  //SPR_PLAYER_CLEAN_DUNG
 	904,  24,   24,  136, //SPR_POLE
-	736,  128,  16,  16,  //SPR_PUSH_ARROW
+	712,  120,  40,  24,  //SPR_PUSH_ARROW
 	616,  168,  400, 16,  //SPR_ROPE_HORIZONTAL
 	936,  56,   8,   48,  //SPR_ROPE_VERTICAL
 	760,  120,  24,  16,  //SPR_SPRING

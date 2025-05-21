@@ -1,18 +1,19 @@
 level-size 18
 sky-color 3
 bgm 3
+goal-scene 1
 gush 2
 banana-peel 1 11
 gush 2
 coin-silver 2 9
-crates 0 10 1 1
+crates 0 1 1
 gush 3
 banana-peel 1 11
 coin-silver 2 7
 coin-silver 0 9
 spring 0 10
 respawn-point 1 4
-crates 0 6 1 5
+crates 0 1 5
 deep-hole 1 6
 gush 6
 coin-silver 1 7
@@ -104,7 +105,7 @@ coin-silver 2 6
 coin-silver 0 8
 spring 0 10
 respawn-point 1 4
-crates 0 6 1 5
+crates 0 1 5
 deep-hole 1 8
 overhead-sign 5 3
 coin-gold 0 5
@@ -124,7 +125,7 @@ coin-silver 2 10
 gush-crack 1
 gush 2
 coin-silver 2 10
-crates 3 10 1 1
+crates 3 1 1
 coin-silver 3 8
 banana-peel 0 11
 rope 2
@@ -141,13 +142,13 @@ gush 2
 coin-silver 3 9
 passageway-arrow 2 15
 banana-peel 1 15
-crates 2 6 1 5
+crates 2 1 5
 banana-peel 0 15
 coin-silver 1 13
 banana-peel 1 15
 banana-peel 2 15
 coin-silver 1 13
-crates 1 6 1 5
+crates 1 1 5
 banana-peel 0 15
 banana-peel 2 15
 coin-gold 1 9
@@ -157,7 +158,7 @@ spring 0 14
 coin-silver 2 7
 spring 0 10
 coin-silver 1 5
-crates 0 6 1 5
+crates 0 1 5
 coin-silver 1 7
 respawn-point 0 9
 deep-hole 1 9
@@ -170,7 +171,7 @@ gush 2
 car-blue 3
 coin-silver 2 7
 coin-silver 4 6
-crates 0 7 1 4
+crates 0 1 4
 coin-gold 1 10
 coin-silver 3 10
 gush 4

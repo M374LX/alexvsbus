@@ -1839,9 +1839,7 @@ static void update_sequence()
 
 		//----------------------------------------------------------------------
 		case 50: //SEQ_GOAL_REACHED
-			if (ctx.difficulty == DIFFICULTY_SUPER) {
-				ctx.sequence_step++;
-			} else if (ctx.level_num == 3) {
+			if (ctx.goal_scene == 3) {
 				if (pl->x > bus->x + 192) {
 					//A banana peel is thrown from the right side of the screen
 					ctx.objs[0].type = OBJ_BANANA_PEEL_MOVING;
@@ -1857,7 +1855,7 @@ static void update_sequence()
 					thrown_peel->ydest = 256;
 					ctx.sequence_step++;
 				}
-			} else if (ctx.level_num == 4) {
+			} else if (ctx.goal_scene == 4) {
 				if (pl->x >= bus->x + 120) {
 					//A bird appears
 					bird->sprite = SPR_BIRD;
@@ -1902,22 +1900,18 @@ static void update_sequence()
 			break;
 
 		case 53:
-			if (ctx.difficulty == DIFFICULTY_SUPER || ctx.level_num == 1) {
-				ctx.sequence_step = SEQ_GOAL_REACHED_DEFAULT;
-			} else if (ctx.level_num == 2) {
-				ctx.sequence_step = SEQ_GOAL_REACHED_LEVEL2;
-			} else if (ctx.level_num == 3) {
-				ctx.sequence_step = SEQ_GOAL_REACHED_LEVEL3;
-			} else if (ctx.level_num == 4) {
-				ctx.sequence_step = SEQ_GOAL_REACHED_LEVEL4;
-			} else if (ctx.level_num == 5) {
-				ctx.sequence_step = SEQ_GOAL_REACHED_LEVEL5;
+			ctx.sequence_step = SEQ_GOAL_REACHED_SCENE1;
+			switch (ctx.goal_scene) {
+				case 2: ctx.sequence_step = SEQ_GOAL_REACHED_SCENE2; break;
+				case 3: ctx.sequence_step = SEQ_GOAL_REACHED_SCENE3; break;
+				case 4: ctx.sequence_step = SEQ_GOAL_REACHED_SCENE4; break;
+				case 5: ctx.sequence_step = SEQ_GOAL_REACHED_SCENE5; break;
 			}
 			break;
 
 
 		//----------------------------------------------------------------------
-		case 60: //SEQ_GOAL_REACHED_DEFAULT
+		case 60: //SEQ_GOAL_REACHED_SCENE1
 			input_jump = false;
 			if (pl->yvel > 0 && pl->y >= BUS_Y + 36) {
 				//Player character is now in the bus and score count starts
@@ -1941,7 +1935,7 @@ static void update_sequence()
 
 
 		//----------------------------------------------------------------------
-		case 70: //SEQ_GOAL_REACHED_LEVEL2
+		case 70: //SEQ_GOAL_REACHED_SCENE2
 			input_jump = false;
 			if (pl->yvel > 0 && pl->y >= BUS_Y + 36) {
 				//Player character is now in the bus and score count starts
@@ -2036,7 +2030,7 @@ static void update_sequence()
 
 
 		//----------------------------------------------------------------------
-		case 80: //SEQ_GOAL_REACHED_LEVEL3
+		case 80: //SEQ_GOAL_REACHED_SCENE3
 			//Player character slips on a banana peel and hits the floor
 			if (pl->on_floor) {
 				ctx.sequence_delay = 0.25f;
@@ -2090,7 +2084,7 @@ static void update_sequence()
 
 
 		//----------------------------------------------------------------------
-		case 90: //SEQ_GOAL_REACHED_LEVEL4
+		case 90: //SEQ_GOAL_REACHED_SCENE4
 			if (pl->x >= bus->x + 342) {
 				//Player character stops at bus front door
 				pl->x = bus->x + 342;
@@ -2169,7 +2163,7 @@ static void update_sequence()
 
 
 		//----------------------------------------------------------------------
-		case 100: //SEQ_GOAL_REACHED_LEVEL5
+		case 100: //SEQ_GOAL_REACHED_SCENE5
 			//Bus leaves before the player character can enter it
 			start_animation(ANIM_BUS_DOOR_FRONT);
 			bus->acc = 256;

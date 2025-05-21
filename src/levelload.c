@@ -68,7 +68,7 @@ static int num_triggers, num_car_triggers;
 
 //Function prototypes
 static void add_obj(int type, int x, int y, bool use_y);
-static void add_crate_block(int x, int y, int w, int h);
+static void add_crate_block(int x, int w, int h);
 static void add_hole(int type, int x, int w);
 static void add_respawn_point(int x, int y);
 static void add_trigger(int x, int what);
@@ -115,12 +115,13 @@ int levelload_load(const char* filename)
 	ctx->level_size = NONE;
 	ctx->bg_color = NONE;
 	ctx->bgm = NONE;
+	ctx->goal_scene = NONE;
 
 	x = VSCREEN_MAX_WIDTH_LEVEL_BLOCKS;
 
 	while (!lineread_ended()) {
 		int num_tokens;
-		int token1, token2, token3, token4;
+		int token1, token2, token3;
 
 		lineread_getline(tmp);
 
@@ -134,14 +135,13 @@ int levelload_load(const char* filename)
 		}
 
 		num_tokens = lineread_num_tokens(tmp);
-		if (num_tokens < 2 || num_tokens > 5) {
+		if (num_tokens < 2 || num_tokens > 4) {
 			return LVLERR_INVALID;
 		}
 
 		token1 = lineread_token_int(tmp, 1);
 		token2 = lineread_token_int(tmp, 2);
 		token3 = lineread_token_int(tmp, 3);
-		token4 = lineread_token_int(tmp, 4);
 
 		if (token1 == NONE) {
 			return LVLERR_INVALID;
@@ -192,11 +192,27 @@ int levelload_load(const char* filename)
 			}
 
 			continue;
+		} else if (str_starts_with(tmp, "goal-scene ")) {
+			//Error: goal cutscene redefinition
+			if (ctx->goal_scene != NONE) {
+				return LVLERR_INVALID;
+			}
+
+			//Error: invalid goal cutscene number
+			if (token1 < 1 || token1 > 5) {
+				return LVLERR_INVALID;
+			}
+
+			ctx->goal_scene = token1;
+
+			continue;
 		}
 
 		//Error: adding objects without defining the level size, sky color,
-		//and BGM
-		if (ctx->level_size == NONE || ctx->bg_color == NONE || ctx->bgm == NONE) {
+		//BGM, and goal cutscene
+		if (ctx->level_size == NONE || ctx->bg_color == NONE ||
+				ctx->bgm == NONE || ctx->goal_scene == NONE) {
+
 			return LVLERR_INVALID;
 		}
 
@@ -216,7 +232,7 @@ int levelload_load(const char* filename)
 		} else if (str_starts_with(tmp, "coin-gold ")) {
 			add_obj(OBJ_COIN_GOLD, x, token2, true);
 		} else if (str_starts_with(tmp, "crates ")) {
-			add_crate_block(x, token2, token3, token4);
+			add_crate_block(x, token2, token3);
 		} else if (str_starts_with(tmp, "gush ")) {
 			add_obj(OBJ_GUSH, x, NONE, false);
 
@@ -584,20 +600,12 @@ static void add_obj(int type, int x, int y, bool use_y)
 	num_objs++;
 }
 
-static void add_crate_block(int x, int y, int w, int h)
+static void add_crate_block(int x, int w, int h)
 {
-	int x2 = x + w - 1;
-	int y2 = y + h - 1;
 	int i;
 
 	//Check if there are too many crate blocks
 	if (num_crate_blocks >= MAX_CRATE_BLOCKS) {
-		invalid = true;
-		return;
-	}
-
-	//Check if the crate block's position is within the allowed range
-	if (x > x_max - 2 || y < 3 || y > 15) {
 		invalid = true;
 		return;
 	}
@@ -608,7 +616,13 @@ static void add_crate_block(int x, int y, int w, int h)
 		return;
 	}
 
-	if (x2 > x_max - 2) {
+	//Check if the crate block's position is within the allowed range
+	if (x > x_max - 2) {
+		invalid = true;
+		return;
+	}
+
+	if (x + w - 1 > x_max - 2) {
 		//Error: crate block width extends beyond or too close to level's
 		//right boundary
 		invalid = true;
@@ -618,22 +632,15 @@ static void add_crate_block(int x, int y, int w, int h)
 	//Check crate block repetition or overlap
 	for (i = 0; i < num_crate_blocks; i++) {
 		CrateBlock ct = ctx->crate_blocks[i];
-		int cx2 = ct.x + ct.width - 1;
-		int cy2 = ct.y + ct.height - 1;
 
-		if (ct.x == x && ct.y == y) {
-			invalid = true;
-			return;
-		}
-
-		if (x <= cx2 && y2 >= ct.y && y <= cy2) {
+		if (x == ct.x || x <= ct.x + ct.width - 1) {
 			invalid = true;
 			return;
 		}
 	}
 
 	ctx->crate_blocks[num_crate_blocks].x = x;
-	ctx->crate_blocks[num_crate_blocks].y = y;
+	ctx->crate_blocks[num_crate_blocks].y = (11 - h);
 	ctx->crate_blocks[num_crate_blocks].width = w;
 	ctx->crate_blocks[num_crate_blocks].height = h;
 

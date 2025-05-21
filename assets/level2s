@@ -1,6 +1,7 @@
 level-size 18
 sky-color 2
 bgm 2
+goal-scene 1
 respawn-point 0 9
 deep-hole 1 6
 coin-silver 4 7
@@ -14,9 +15,9 @@ respawn-point 1 9
 deep-hole 1 11
 coin-silver 2 8
 coin-silver 5 8
-crates 5 9 1 2
+crates 5 1 2
 respawn-point 1 5
-crates 0 7 1 4
+crates 0 1 4
 deep-hole 1 6
 coin-silver 0 9
 coin-gold 1 7
@@ -61,7 +62,7 @@ banana-peel 2 11
 coin-silver 3 8
 banana-peel 4 11
 coin-silver 5 8
-crates 1 10 1 1
+crates 1 1 1
 coin-silver 5 9
 banana-peel 2 11
 gush 3
@@ -74,8 +75,8 @@ coin-silver 2 9
 banana-peel 1 11
 gush 3
 coin-silver 3 8
-crates 0 9 1 2
-crates 1 7 1 4
+crates 0 1 2
+crates 1 1 4
 coin-silver 1 7
 respawn-point 0 9
 deep-hole 1 8
@@ -95,9 +96,9 @@ gush 2
 coin-silver 2 10
 banana-peel 1 11
 coin-silver 3 8
-crates 0 9 1 2
+crates 0 1 2
 respawn-point 1 5
-crates 0 7 1 4
+crates 0 1 4
 deep-hole 1 8
 coin-silver 0 9
 overhead-sign 3 4
@@ -108,7 +109,7 @@ coin-silver 3 6
 coin-silver 0 8
 spring 0 10
 coin-silver 1 5
-crates 0 6 1 5
+crates 0 1 5
 coin-silver 1 7
 respawn-point 0 9
 deep-hole 1 8
@@ -121,7 +122,7 @@ coin-silver 2 8
 coin-silver 3 8
 passageway-arrow 3 11
 banana-peel 2 15
-crates 2 6 1 5
+crates 2 1 5
 banana-peel 0 15
 coin-silver 2 13
 banana-peel 0 15

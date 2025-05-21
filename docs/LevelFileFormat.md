@@ -29,6 +29,9 @@ The properties are:
 
 * `bgm <bgm>` - One of three background music (BGM) options (1-3).
 
+* `goal-scene <scene>` - One of five available cutscenes to use when the player
+  reaches the goal (1-5)
+
 
 ### Objects
 
@@ -55,7 +58,7 @@ The object types are:
 
 * `coin-gold <x> <y>`
 
-* `crates <x> <y> <w> <h>`
+* `crates <x> <w> <h>`
 
 * `gush <x>`
 
@@ -86,4 +89,13 @@ The object types are:
 * `passageway <x> <w>`
 
 * `passageway-arrow <x> <w>`
+
+
+### Changes
+
+Until release 2024.11.21.0, there was no `goal-scene`, as the cutscene to use
+was determined from the level number, and `crates` used four values instead of
+three (`crates <x> <y> <w> <h>`). The use of separate Y and height values turned
+out to be unnecessary because all blocks of crates are on the floor and the
+removal of `<y>` simplifies level file validation.
 

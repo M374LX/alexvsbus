@@ -549,11 +549,11 @@ enum {
 	SEQ_TIMEUP_BUS_NEAR = 30,
 	SEQ_TIMEUP_BUS_FAR = 40,
 	SEQ_GOAL_REACHED = 50,
-	SEQ_GOAL_REACHED_DEFAULT = 60,
-	SEQ_GOAL_REACHED_LEVEL2 = 70,
-	SEQ_GOAL_REACHED_LEVEL3 = 80,
-	SEQ_GOAL_REACHED_LEVEL4 = 90,
-	SEQ_GOAL_REACHED_LEVEL5 = 100,
+	SEQ_GOAL_REACHED_SCENE1 = 60,
+	SEQ_GOAL_REACHED_SCENE2 = 70,
+	SEQ_GOAL_REACHED_SCENE3 = 80,
+	SEQ_GOAL_REACHED_SCENE4 = 90,
+	SEQ_GOAL_REACHED_SCENE5 = 100,
 	SEQ_ENDING = 110,
 	SEQ_FINISHED = 255,
 };
@@ -865,6 +865,7 @@ typedef struct {
 	int bg_color;
 	int bg_offset_x;
 	int bgm;
+	int goal_scene; //Which of the five cutscenes to use when reaching the goal (1-5)
 
 	int bus_stop_sign_x;
 	int pole_x;

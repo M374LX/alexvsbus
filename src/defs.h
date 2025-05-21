@@ -505,10 +505,6 @@ enum {
 //Triggered objects (other than the car colors above)
 #define TRIGGER_HEN 3
 
-//Used as a type for the Car struct to represent the traffic jam of the ending
-//sequence
-#define TRAFFIC_JAM 4
-
 //Objects with a fixed Y position
 #define BUS_Y 128
 #define BUS_STOP_SIGN_Y 176

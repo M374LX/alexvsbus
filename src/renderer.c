@@ -430,29 +430,15 @@ static void draw_play()
 	frame = ctx->anims[ANIM_BUS_DOOR_FRONT].frame;
 	draw_sprite(SPR_BUS_DOOR, x + 344, y + 16, frame);
 
-	//Passing car and ending sequence traffic jam
-	if (ctx->car.x != NONE) {
-		int num_cars;
-
-		x = (int)ctx->car.x;
+	//Ending sequence traffic jam cars
+	if (ctx->level_num == LVLNUM_ENDING) {
+		x = (int)ctx->bus.x + 400;
 		y = PASSING_CAR_Y;
 		frame = ctx->anims[ANIM_CAR_WHEELS].frame;
+		spr = SPR_CAR_BLUE;
 
-		if (ctx->car.type == TRAFFIC_JAM) { //Traffic jam
-			num_cars = 6;
-			spr = SPR_CAR_BLUE;
-		} else { //Single car
-			num_cars = 1;
-
-			spr = SPR_CAR_BLUE;
-			if (ctx->car.type == CAR_SILVER) {
-				spr = SPR_CAR_SILVER;
-			} else if (ctx->car.type == CAR_YELLOW) {
-				spr = SPR_CAR_YELLOW;
-			}
-		}
-
-		for (i = 0; i < num_cars; i++) {
+		//Draw six cars
+		for (i = 0; i < 6; i++) {
 			draw_sprite(spr, x, y, 0); //Car body
 			draw_sprite(SPR_CAR_WHEEL, x + 16, y + 32, frame); //Rear wheel
 			draw_sprite(SPR_CAR_WHEEL, x + 96, y + 32, frame); //Front wheel
@@ -466,6 +452,24 @@ static void draw_play()
 				case SPR_CAR_YELLOW: spr = SPR_CAR_BLUE;   break;
 			}
 		}
+	}
+
+	//Passing car
+	if (ctx->car.x != NONE) {
+		x = (int)ctx->car.x;
+		y = PASSING_CAR_Y;
+		frame = ctx->anims[ANIM_CAR_WHEELS].frame;
+
+		spr = SPR_CAR_BLUE;
+		if (ctx->car.type == CAR_SILVER) {
+			spr = SPR_CAR_SILVER;
+		} else if (ctx->car.type == CAR_YELLOW) {
+			spr = SPR_CAR_YELLOW;
+		}
+
+		draw_sprite(spr, x, y, 0); //Car body
+		draw_sprite(SPR_CAR_WHEEL, x + 16, y + 32, frame); //Rear wheel
+		draw_sprite(SPR_CAR_WHEEL, x + 96, y + 32, frame); //Front wheel
 	}
 
 	//Hen

@@ -631,9 +631,7 @@ static void move_objects()
 		ctx.car.x += ctx.car.xvel * delta_time;
 
 		if (ctx.car.x >= ctx.cam.x + VSCREEN_MAX_WIDTH + 64) {
-			if (ctx.car.type != TRAFFIC_JAM) {
-				ctx.car.x = NONE;
-			}
+			ctx.car.x = NONE;
 		}
 	}
 
@@ -682,7 +680,6 @@ static void move_objects()
 static void handle_car_thrown_peel()
 {
 	if (ctx.car.x == NONE || ctx.car.threw_peel) return;
-	if (ctx.car.type == TRAFFIC_JAM) return;
 	if (ctx.car.x < ctx.car.peel_throw_x) return;
 
 	for (int i = 0; i < MAX_OBJS; i++) {
@@ -1737,11 +1734,9 @@ static void update_sequence()
 
 		//----------------------------------------------------------------------
 		case 10: //SEQ_INITIAL
-			if (ctx.level_num != LVLNUM_ENDING) {
-				//Start with bus rear door open
-				ctx.anims[ANIM_BUS_DOOR_REAR].frame = 3;
-				ctx.anims[ANIM_BUS_DOOR_REAR].reverse = true;
-			}
+			//Start with bus rear door open
+			ctx.anims[ANIM_BUS_DOOR_REAR].frame = 3;
+			ctx.anims[ANIM_BUS_DOOR_REAR].reverse = true;
 
 			ignore_user_input = true;
 			ctx.time_running = false;
@@ -2239,11 +2234,7 @@ static void update_sequence()
 
 			cam->x = VSCREEN_MAX_WIDTH + 24;
 
-			ctx.car.x = VSCREEN_MAX_WIDTH + 16;
-			ctx.car.type = TRAFFIC_JAM;
-			ctx.car.xvel = 0;
-
-			bus->x = VSCREEN_MAX_WIDTH + 16 - 400;
+			bus->x = 96;
 			bus->xvel = 0;
 			bus->route_sign = 0; //Finish (checkered flag) sign
 
@@ -2272,7 +2263,6 @@ static void update_sequence()
 
 		case 112:
 			//Traffic jam starts moving
-			ctx.car.xvel = 64;
 			bus->xvel = 64;
 			ctx.anims[ANIM_CAR_WHEELS].delay = 0.1f;
 			ctx.anims[ANIM_CAR_WHEELS].max_delay = 0.1f;
@@ -2281,11 +2271,9 @@ static void update_sequence()
 			break;
 
 		case 113:
-			if (ctx.car.x >= VSCREEN_MAX_WIDTH + 152) {
+			if (bus->x >= 232) {
 				//Traffic jam stops
-				ctx.car.x = VSCREEN_MAX_WIDTH + 152;
-				ctx.car.xvel = 0;
-				bus->x = ctx.car.x - 400;
+				bus->x = 232;
 				bus->xvel = 0;
 				ctx.anims[ANIM_CAR_WHEELS].running = false;
 				ctx.anims[ANIM_CAR_WHEELS].frame = 0;
@@ -2346,18 +2334,15 @@ static void update_sequence()
 
 		case 117:
 			//Traffic jam starts moving
-			ctx.car.xvel = 64;
 			bus->xvel = 64;
 			start_animation(ANIM_CAR_WHEELS);
 			ctx.sequence_step++;
 			break;
 
 		case 118:
-			if (ctx.car.x >= VSCREEN_MAX_WIDTH + 424) {
+			if (bus->x >= 504) {
 				//Traffic jam stops
-				ctx.car.x = VSCREEN_MAX_WIDTH + 424;
-				ctx.car.xvel = 0;
-				bus->x = ctx.car.x - 400;
+				bus->x = 504;
 				bus->xvel = 0;
 				ctx.anims[ANIM_CAR_WHEELS].running = false;
 				ctx.anims[ANIM_CAR_WHEELS].frame = 0;
@@ -2404,7 +2389,6 @@ static void update_sequence()
 
 		case 122:
 			//Traffic jam starts moving
-			ctx.car.xvel = 64;
 			bus->xvel = 64;
 			start_animation(ANIM_CAR_WHEELS);
 			ctx.sequence_step++;
@@ -2418,8 +2402,6 @@ static void update_sequence()
 				flagman_anim->running = true;
 
 				//Traffic jam stops
-				ctx.car.x = cam->x - 60 + 400;
-				ctx.car.xvel = 0;
 				bus->x = cam->x - 60;
 				bus->xvel = 0;
 				ctx.anims[ANIM_CAR_WHEELS].running = false;

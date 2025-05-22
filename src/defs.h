@@ -391,9 +391,10 @@ enum {
 #define LVLNUM_ENDING 8
 
 //Maximum numbers
+#define MAX_LEVEL_COLUMNS 480
 #define MAX_OBJS 160
 #define MAX_CRATE_BLOCKS 32
-#define MAX_HOLES 32
+#define MAX_DEEP_HOLES 32
 #define MAX_GUSHES 32
 #define MAX_MOVING_PEELS 2
 #define MAX_PASSAGEWAYS 4
@@ -422,14 +423,18 @@ enum {
 #define MOVING_PEEL_THROWN 1
 
 //Crate size
-#define CRATE_WIDTH  24
-#define CRATE_HEIGHT 24
+#define CRATE_WIDTH  LEVEL_BLOCK_SIZE
+#define CRATE_HEIGHT LEVEL_BLOCK_SIZE
 
-//Hole types
+//Level column types
 enum {
-	HOLE_DEEP = 0,
-	HOLE_PASSAGEWAY_EXIT_CLOSED = 1,
-	HOLE_PASSAGEWAY_EXIT_OPENED = 2,
+	LVLCOL_NORMAL_FLOOR = 0,
+	LVLCOL_DEEP_HOLE_LEFT = 1,
+	LVLCOL_DEEP_HOLE_MIDDLE = 2,
+	LVLCOL_DEEP_HOLE_RIGHT = 3,
+	LVLCOL_PASSAGEWAY_LEFT = 4,
+	LVLCOL_PASSAGEWAY_MIDDLE = 5,
+	LVLCOL_PASSAGEWAY_RIGHT = 6,
 };
 
 //Solid types
@@ -731,16 +736,16 @@ typedef struct {
 	int num_characters; //Number of characters at the rear door
 } Bus;
 
+typedef struct {
+	int type; //LVLCOL_* constants
+	int num_crates; //Number of stacked unpushable crates
+} LevelColumn;
+
 //Struct used for most game objects, which need only a type and a position
 typedef struct {
-	int type;
+	int type; //OBJ_* constants
 	int x, y;
 } Obj;
-
-typedef struct {
-	int x, y;
-	int width, height;
-} CrateBlock;
 
 typedef struct {
 	int obj; //Index of the gush within PlayCtx.objs[]
@@ -792,11 +797,11 @@ typedef struct {
 	int type, left, right, top, bottom;
 } Solid;
 
-//Used for both deep holes and underground passageways
+//Underground passageway
 typedef struct {
-	int type;
 	int x, width;
-} Hole;
+	bool exit_opened;
+} Passageway;
 
 //Position the player character can reappear at after falling into a deep hole
 typedef struct {
@@ -884,23 +889,25 @@ typedef struct {
 	Player player;
 	Bus bus;
 
+	LevelColumn level_columns[MAX_LEVEL_COLUMNS];
 	Obj objs[MAX_OBJS];
-	CrateBlock crate_blocks[MAX_CRATE_BLOCKS];
 	Gush gushes[MAX_GUSHES];
-	GrabbedRope grabbed_rope;
 	MovingPeel moving_peels[MAX_MOVING_PEELS];
+	Passageway passageways[MAX_PASSAGEWAYS];
 	PushableCrate pushable_crates[MAX_PUSHABLE_CRATES];
-	CutsceneObject cutscene_objects[MAX_CUTSCENE_OBJECTS];
-	Solid solids[MAX_SOLIDS];
-
-	int hit_spring; //Index within objs[] of the last spring hit by the
-	                //player character
-
-	Hole holes[MAX_HOLES];
-	Hole* cur_passageway; //Passageway the player character is in, if any
-
 	RespawnPoint respawn_points[MAX_RESPAWN_POINTS];
+	Solid solids[MAX_SOLIDS];
 	Trigger triggers[MAX_TRIGGERS];
+	CutsceneObject cutscene_objects[MAX_CUTSCENE_OBJECTS];
+
+	GrabbedRope grabbed_rope;
+
+	//Index within objs[] of the last spring hit by the player character
+	int hit_spring;
+
+	//Index within passageways[] of the passageway the player character is in,
+	//if any, or NONE if none
+	int cur_passageway;
 
 	//Objects that appear when triggered
 	Car car;

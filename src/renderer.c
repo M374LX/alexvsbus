@@ -313,6 +313,9 @@ static void draw_play()
 	int vscreen_width  = display_params->vscreen_width;
 	int vscreen_height = display_params->vscreen_height;
 
+	//First level column to draw
+	int first_column;
+
 	int x, y, spr, frame;
 	int camy, topcamy; //Current and topmost camera Y position
 	int i;
@@ -342,38 +345,63 @@ static void draw_play()
 		draw_offset_x += 168;
 	}
 
-	//Deep holes and passageways (background part)
-	for (i = 0; i < MAX_HOLES; i++) {
-		int w = ctx->holes[i].width;
+	first_column = draw_offset_x / LEVEL_BLOCK_SIZE;
 
-		x = ctx->holes[i].x;
+	//Deep holes and passageways from level columns (background part)
+	for (i = 0; i < 21; i++) {
+		int col = first_column + i;
+		int type;
+
+		if (col >= MAX_LEVEL_COLUMNS) break;
+
+		type = ctx->level_columns[col].type;
+
+		if (type == LVLCOL_NORMAL_FLOOR) continue;
+
+		spr = 0;
+		x = col * LEVEL_BLOCK_SIZE;
 		y = BACKGROUND_DRAW_Y + 72;
 
-		if (x != NONE) {
-			int type = ctx->holes[i].type;
-			bool is_deep = (type == HOLE_DEEP);
-			bool exit_opened = (type == HOLE_PASSAGEWAY_EXIT_OPENED);
+		switch (type) {
+			case LVLCOL_DEEP_HOLE_LEFT:
+				spr = SPR_DEEP_HOLE_LEFT;
+				break;
 
-			//Left
-			spr = (is_deep ? SPR_DEEP_HOLE_LEFT : SPR_PASSAGEWAY_LEFT);
-			draw_sprite(spr, x, y, 0);
+			case LVLCOL_DEEP_HOLE_MIDDLE:
+				spr = SPR_DEEP_HOLE_MIDDLE;
+				break;
 
-			//Middle
-			x += LEVEL_BLOCK_SIZE;
-			spr = (is_deep ? SPR_DEEP_HOLE_MIDDLE : SPR_PASSAGEWAY_MIDDLE);
-			draw_sprite_repeat(spr, x, y, w - 2, 1);
+			case LVLCOL_DEEP_HOLE_RIGHT:
+				spr = SPR_DEEP_HOLE_RIGHT;
+				break;
 
-			//Right
-			x = ctx->holes[i].x + ((w - 1) * LEVEL_BLOCK_SIZE);
-			spr = (is_deep ? SPR_DEEP_HOLE_RIGHT : SPR_PASSAGEWAY_RIGHT);
-			draw_sprite(spr, x, y, 0);
+			case LVLCOL_PASSAGEWAY_LEFT:
+				spr = SPR_PASSAGEWAY_LEFT;
+				break;
 
-			//Passageway exit if not opened
-			if (!is_deep && !exit_opened) {
-				spr = SPR_PASSAGEWAY_RIGHT_CLOSED;
-				draw_sprite(spr, x, y, 0);
-			}
+			case LVLCOL_PASSAGEWAY_MIDDLE:
+				spr = SPR_PASSAGEWAY_MIDDLE;
+				break;
+
+			case LVLCOL_PASSAGEWAY_RIGHT:
+				spr = SPR_PASSAGEWAY_RIGHT;
+				break;
 		}
+
+		draw_sprite(spr, x, y, 0);
+	}
+
+	//Unopened passageway exits
+	for (i = 0; i < MAX_PASSAGEWAYS; i++) {
+		int w = ctx->passageways[i].width;
+
+		if (ctx->passageways[i].exit_opened) continue;
+
+		spr = SPR_PASSAGEWAY_RIGHT_CLOSED;
+		x = ctx->passageways[i].x + (w - LEVEL_BLOCK_SIZE);
+		y = BACKGROUND_DRAW_Y + 72;
+
+		draw_sprite(spr, x, y, 0);
 	}
 
 	//Bus body, wheels, and route sign
@@ -485,15 +513,21 @@ static void draw_play()
 	//Bus stop sign
 	draw_sprite(SPR_BUS_STOP_SIGN, ctx->bus_stop_sign_x, BUS_STOP_SIGN_Y, 0);
 
-	//Crate blocks
-	for (i = 0; i < MAX_CRATE_BLOCKS; i++) {
-		CrateBlock* block = &ctx->crate_blocks[i];
-		x = block->x;
-		y = block->y;
+	//Crates from level columns
+	for (i = 0; i < 21; i++) {
+		int col = first_column + i;
+		int h;
 
-		if (x != NONE) {
-			draw_sprite_repeat(SPR_CRATE, x, y, block->width, block->height);
-		}
+		if (col >= MAX_LEVEL_COLUMNS) break;
+
+		h = ctx->level_columns[col].num_crates;
+
+		if (h == 0) continue;
+
+		x = col * LEVEL_BLOCK_SIZE;
+		y = (11 - h) * LEVEL_BLOCK_SIZE;
+
+		draw_sprite_repeat(SPR_CRATE, x, y, 1, h);
 	}
 
 	//Objects that use PlayCtx.objs[] and are drawn behind the player character
@@ -580,23 +614,33 @@ static void draw_play()
 		draw_sprite(SPR_MEDAL3, x, y, 0);
 	}
 
-	//Deep holes and passageways (foreground part)
-	for (i = 0; i < MAX_HOLES; i++) {
-		x = ctx->holes[i].x;
+	//Deep holes and passageways from level columns (foreground part)
+	for (i = 0; i < 21; i++) {
+		int col = first_column + i;
+
+		x = col * LEVEL_BLOCK_SIZE;
 		y = BACKGROUND_DRAW_Y + 88;
 
-		if (x != NONE) {
-			if (ctx->holes[i].type == HOLE_DEEP) {
-				draw_sprite(SPR_DEEP_HOLE_LEFT_FG, x, y, 0);
-			} else {
-				//Left
-				draw_sprite(SPR_PASSAGEWAY_LEFT_FG, x, y, 0);
+		if (col >= MAX_LEVEL_COLUMNS) break;
 
-				//Right
-				x += (ctx->holes[i].width - 1) * LEVEL_BLOCK_SIZE;
-				draw_sprite(SPR_PASSAGEWAY_RIGHT_FG, x, y, 0);
-			}
+		switch (ctx->level_columns[col].type) {
+			case LVLCOL_DEEP_HOLE_LEFT:
+				spr = SPR_DEEP_HOLE_LEFT_FG;
+				break;
+
+			case LVLCOL_PASSAGEWAY_LEFT:
+				spr = SPR_PASSAGEWAY_LEFT_FG;
+				break;
+
+			case LVLCOL_PASSAGEWAY_RIGHT:
+				spr = SPR_PASSAGEWAY_RIGHT_FG;
+				break;
+
+			default:
+				continue;
 		}
+
+		draw_sprite(spr, x, y, 0);
 	}
 
 	//When slipping, the player character is drawn in front of hole foregrounds

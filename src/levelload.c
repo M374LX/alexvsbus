@@ -60,7 +60,7 @@ static int num_objs;
 static int num_crate_blocks;
 static int num_gushes, num_gush_cracks;
 static int num_solids;
-static int num_holes, num_deep_holes, num_passageways;
+static int num_deep_holes, num_passageways;
 static int num_respawn_points;
 static int num_triggers, num_car_triggers;
 
@@ -69,10 +69,13 @@ static int num_triggers, num_car_triggers;
 //Function prototypes
 static void add_obj(int type, int x, int y, bool use_y);
 static void add_crate_block(int x, int w, int h);
-static void add_hole(int type, int x, int w);
+static void add_deep_hole(int x, int w);
+static void add_passageway(int x, int y);
 static void add_respawn_point(int x, int y);
 static void add_trigger(int x, int what);
+static void convert_positions();
 static int add_solid(int type, int x, int y, int width, int height);
+static bool add_solids();
 
 //------------------------------------------------------------------------------
 
@@ -85,8 +88,8 @@ int levelload_load(const char* filename)
 {
 	char tmp[48];
 	bool no_objects = true;
-	int x, y, w, h;
-	int i, j;
+	int x;
+	int i;
 
 	invalid = false;
 
@@ -105,7 +108,6 @@ int levelload_load(const char* filename)
 	num_gushes = 0;
 	num_gush_cracks = 0;
 	num_solids = 0;
-	num_holes = 0;
 	num_deep_holes = 0;
 	num_passageways = 0;
 	num_respawn_points = 0;
@@ -119,6 +121,7 @@ int levelload_load(const char* filename)
 
 	x = VSCREEN_MAX_WIDTH_LEVEL_BLOCKS;
 
+	//Read file
 	while (!lineread_ended()) {
 		int num_tokens;
 		int token1, token2, token3;
@@ -154,7 +157,7 @@ int levelload_load(const char* filename)
 			}
 
 			//Error: size out of the allowed range
-			if (token1 < 8 || token1 > 32) {
+			if (token1 < 8 || token1 > 24) {
 				return LVLERR_INVALID;
 			}
 
@@ -272,21 +275,20 @@ int levelload_load(const char* filename)
 		} else if (str_starts_with(tmp, "respawn-point ")) {
 			add_respawn_point(x, token2);
 		} else if (str_starts_with(tmp, "deep-hole ")) {
-			add_hole(HOLE_DEEP, x, token2);
-		} else if (str_starts_with(tmp, "passageway ") ||
-					str_starts_with(tmp, "passageway-arrow ")) {
-
-			add_hole(HOLE_PASSAGEWAY_EXIT_CLOSED, x, token2);
+			add_deep_hole(x, token2);
+		} else if (str_starts_with(tmp, "passageway ")) {
+			add_passageway(x, token2);
 
 			//Pushable crate over passageway entry
 			add_obj(OBJ_CRATE_PUSHABLE, x, NONE, false);
 			ctx->pushable_crates[num_passageways - 1].obj = num_objs - 1;
+		} else if (str_starts_with(tmp, "passageway-arrow ")) {
+			add_passageway(x, token2);
 
-			//Determine whether or not to show an arrow near the crate
-			ctx->pushable_crates[num_passageways - 1].show_arrow = false;
-			if (str_starts_with(tmp, "passageway-arrow ")) {
-				ctx->pushable_crates[num_passageways - 1].show_arrow = true;
-			}
+			//Pushable crate over passageway entry
+			add_obj(OBJ_CRATE_PUSHABLE, x, NONE, false);
+			ctx->pushable_crates[num_passageways - 1].obj = num_objs - 1;
+			ctx->pushable_crates[num_passageways - 1].show_arrow = true;
 		} else {
 			//Error: invalid object type
 			return LVLERR_INVALID;
@@ -299,6 +301,7 @@ int levelload_load(const char* filename)
 		no_objects = false;
 	}
 
+	//Error: no objects
 	if (no_objects) {
 		return LVLERR_INVALID;
 	}
@@ -322,244 +325,36 @@ int levelload_load(const char* filename)
 
 	//Ensure every respawn point is close enough to the corresponding deep
 	//hole but not placed after it or over another deep hole
-	for (i = 0, j = 0; i < num_holes; i++) {
-		int hx = ctx->holes[i].x;
-		int rx = ctx->respawn_points[j].x;
+	for (i = 0; i < num_respawn_points; i++) {
+		int type;
 
-		//Skip passageways
-		if (ctx->holes[i].type != HOLE_DEEP) {
-			continue;
-		}
+		x = ctx->respawn_points[i].x;
+		type = ctx->level_columns[x].type;
 
-		if (rx >= hx || rx < hx - 4) {
+		if (type != LVLCOL_NORMAL_FLOOR && type != LVLCOL_DEEP_HOLE_RIGHT) {
 			return LVLERR_INVALID;
 		}
 
-		if (i > 1) {
-			int prev_hole = i - 1;
+		if (ctx->level_columns[x + 1].type == LVLCOL_DEEP_HOLE_LEFT) continue;
+		if (ctx->level_columns[x + 2].type == LVLCOL_DEEP_HOLE_LEFT) continue;
 
-			//Find previous deep hole (skip passageways)
-			while (prev_hole >= 0 && ctx->holes[prev_hole].type != HOLE_DEEP) {
-				prev_hole--;
-			}
-
-			if (prev_hole >= 0) {
-				//Right side of previous deep hole
-				hx = ctx->holes[prev_hole].x + ctx->holes[prev_hole].width - 2;
-
-				if (rx <= hx) {
-					return LVLERR_INVALID;
-				}
-			}
-		}
-
-		j++;
+		return LVLERR_INVALID;
 	}
 
-	//First solid for the floor
-	add_solid(SOL_FULL, 0, FLOOR_Y, ctx->level_size, 80);
-
-	//Convert positions from level blocks to pixels for deep holes and
-	//passageways and adjust solids around them
-	for (i = 0; i < num_holes; i++) {
-		int prev_sol_right, sol_left, sol_width;
-		bool is_deep = (ctx->holes[i].type == HOLE_DEEP);
-
-		x = ctx->holes[i].x;
-		w = ctx->holes[i].width;
-
-		prev_sol_right = x * LEVEL_BLOCK_SIZE;
-		sol_left = (x + w) * LEVEL_BLOCK_SIZE;
-		sol_width = ctx->level_size - sol_left;
-
-		if (is_deep) { //Deep hole
-			prev_sol_right += 12;
-			sol_left -= 8;
-		} else { //Passageway
-			prev_sol_right += 6;
-		}
-
-		//Adjust the previous floor solid so that it does not cover the hole
-		ctx->solids[i].right = prev_sol_right;
-
-		//Add solid for the floor after the hole
-		add_solid(SOL_FULL, sol_left, FLOOR_Y, sol_width, 80);
-
-		//Too many solids
-		if (invalid) {
-			return LVLERR_INVALID;
-		}
-
-		//Convert position
-		ctx->holes[i].x *= LEVEL_BLOCK_SIZE;
-	}
-
-	//Convert positions from level blocks to pixels and add solids for
-	//objects in ctx->objs[]
-	for (i = 0; i < num_objs; i++) {
-		x = ctx->objs[i].x * LEVEL_BLOCK_SIZE;
-		y = ctx->objs[i].y;
-		if (y != NONE) {
-			y *= LEVEL_BLOCK_SIZE;
-		}
-
-		switch (ctx->objs[i].type) {
-			case OBJ_BANANA_PEEL:
-				x += 16;
-				y -= 8;
-				break;
-
-			case OBJ_PARKED_CAR_BLUE:
-			case OBJ_PARKED_CAR_SILVER:
-			case OBJ_PARKED_CAR_YELLOW:
-				y = PARKED_CAR_Y;
-				add_solid(SOL_FULL, x + 4, y + 18, 20, 4);
-				add_solid(SOL_SLOPE_UP, x + 27, y + 2, 15, 15);
-				add_solid(SOL_VERTICAL, x + 48, y + 2, 16, 4);
-				add_solid(SOL_SLOPE_DOWN, x + 66, y + 2, 18, 18);
-				add_solid(SOL_KEEP_ON_TOP, x + 88, y + 20, 16, 4);
-				add_solid(SOL_KEEP_ON_TOP, x + 104, y + 22, 16, 4);
-				add_solid(SOL_FULL, x + 120, y + 24, 8, 4);
-				break;
-
-			case OBJ_COIN_SILVER:
-			case OBJ_COIN_GOLD:
-				x += 8;
-				break;
-
-			case OBJ_CRATE_PUSHABLE:
-				y = PUSHABLE_CRATE_Y;
-				break;
-
-			case OBJ_GUSH:
-				y = GUSH_INITIAL_Y;
-				break;
-
-			case OBJ_GUSH_CRACK:
-				y = GUSH_CRACK_Y;
-				break;
-
-			case OBJ_HYDRANT:
-				y = HYDRANT_Y;
-				add_solid(SOL_FULL, x + 4, y + 8, 8, 4);
-				break;
-
-			case OBJ_OVERHEAD_SIGN:
-				y -= 8;
-				add_solid(SOL_FULL, x + 12, y, 4, 32);
-				break;
-
-			case OBJ_ROPE_HORIZONTAL:
-				x += 10;
-				y = ROPE_Y;
-				break;
-
-			case OBJ_ROPE_VERTICAL:
-				x += 32;
-				y = ROPE_Y + 5;
-				break;
-
-			case OBJ_SPRING:
-				x += 8;
-				y += 8;
-				break;
-
-			case OBJ_PARKED_TRUCK:
-				y = PARKED_TRUCK_Y;
-				add_solid(SOL_FULL, x, y + 4, 224, 96);
-				add_solid(SOL_FULL, x + 224, y + 23, 55, 80);
-				break;
-		}
-
-		//Too many solids
-		if (invalid) {
-			return LVLERR_INVALID;
-		}
-
-		//Apply converted position
-		ctx->objs[i].x = x;
-		ctx->objs[i].y = y;
-	}
+	convert_positions();
 
 	//Set properties for ctx->pushable_crates[]
 	for (i = 0; i < num_passageways; i++) {
 		int obj = ctx->pushable_crates[i].obj;
+
 		x = ctx->objs[obj].x;
 		ctx->pushable_crates[i].x = x;
 		ctx->pushable_crates[i].xmax = x + LEVEL_BLOCK_SIZE;
 	}
 
-	//Convert positions from level blocks to pixels and add solids for crate
-	//blocks
-	for (i = 0; i < num_crate_blocks; i++) {
-		x = ctx->crate_blocks[i].x * LEVEL_BLOCK_SIZE;
-		y = ctx->crate_blocks[i].y * LEVEL_BLOCK_SIZE;
-		w = ctx->crate_blocks[i].width * LEVEL_BLOCK_SIZE;
-		h = ctx->crate_blocks[i].height * LEVEL_BLOCK_SIZE;
-		add_solid(SOL_FULL, x, y, w, h);
-
+	if (!add_solids()) {
 		//Too many solids
-		if (invalid) {
-			return LVLERR_INVALID;
-		}
-
-		//Apply converted position
-		ctx->crate_blocks[i].x = x;
-		ctx->crate_blocks[i].y = y;
-	}
-
-	//Convert respawn point positions from level blocks to pixels
-	for (i = 0; i < num_respawn_points; i++) {
-		ctx->respawn_points[i].x *= LEVEL_BLOCK_SIZE;
-		ctx->respawn_points[i].x += 3;
-
-		ctx->respawn_points[i].y *= LEVEL_BLOCK_SIZE;
-		ctx->respawn_points[i].y -= 12;
-	}
-
-	//Convert trigger positions from level blocks to pixels
-	for (i = 0; i < num_triggers; i++) {
-		ctx->triggers[i].x *= LEVEL_BLOCK_SIZE;
-	}
-
-	//Add solids for passageways and pushable crates over passageway entries
-	//
-	//There is exactly one pushable crate for each passageway
-	for (i = 0, j = 0; i < num_holes; i++) {
-		int sol;
-
-		if (ctx->holes[i].type == HOLE_DEEP) {
-			continue;
-		}
-
-		x = ctx->holes[i].x;
-		w = ctx->holes[i].width * LEVEL_BLOCK_SIZE;
-
-		//Bottom solid
-		add_solid(SOL_FULL, x, PASSAGEWAY_BOTTOM_Y, w, 4);
-
-		//Top solid
-		add_solid(SOL_FULL, x + LEVEL_BLOCK_SIZE, FLOOR_Y, w - 46, 13);
-
-		//Entry and exit solids, which prevent the player character from
-		//leaving the passageway through the entry or entering it through
-		//the exit
-		add_solid(SOL_PASSAGEWAY_ENTRY, x + 6, FLOOR_Y, 18, 13);
-		add_solid(SOL_PASSAGEWAY_EXIT, x + w - 22, FLOOR_Y, 22, 13);
-
-		ctx->holes[i].x = x;
-
-		//Pushable crate solid
-		x = (int)ctx->pushable_crates[j].x;
-		y = PUSHABLE_CRATE_Y;
-		sol = add_solid(SOL_FULL, x, y, CRATE_WIDTH, CRATE_HEIGHT);
-		ctx->pushable_crates[j].solid = sol;
-		j++;
-
-		//Too many solids
-		if (invalid) {
-			return LVLERR_INVALID;
-		}
+		return LVLERR_INVALID;
 	}
 
 	return LVLERR_NONE;
@@ -600,6 +395,7 @@ static void add_obj(int type, int x, int y, bool use_y)
 	num_objs++;
 }
 
+//Add a block of unpushable crates
 static void add_crate_block(int x, int w, int h)
 {
 	int i;
@@ -617,90 +413,137 @@ static void add_crate_block(int x, int w, int h)
 	}
 
 	//Check if the crate block's position is within the allowed range
-	if (x > x_max - 2) {
+	if (x > x_max - 4) {
 		invalid = true;
 		return;
 	}
 
-	if (x + w - 1 > x_max - 2) {
+	if (x + w > x_max - 4) {
 		//Error: crate block width extends beyond or too close to level's
 		//right boundary
 		invalid = true;
 		return;
 	}
 
-	//Check crate block repetition or overlap
-	for (i = 0; i < num_crate_blocks; i++) {
-		CrateBlock ct = ctx->crate_blocks[i];
+	if (ctx->level_columns[x - 1].num_crates == h) {
+		//Error: the crate block is adjacent to another crate block with the
+		//same height
+		invalid = true;
+		return;
+	}
 
-		if (x == ct.x || x <= ct.x + ct.width - 1) {
+	for (i = 0; i < w; i++) {
+		//Check repetition or overlap of crates
+		if (ctx->level_columns[x + i].num_crates != 0) {
 			invalid = true;
 			return;
 		}
-	}
 
-	ctx->crate_blocks[num_crate_blocks].x = x;
-	ctx->crate_blocks[num_crate_blocks].y = (11 - h);
-	ctx->crate_blocks[num_crate_blocks].width = w;
-	ctx->crate_blocks[num_crate_blocks].height = h;
+		//Add crates to level column
+		ctx->level_columns[x + i].num_crates = h;
+	}
 
 	num_crate_blocks++;
 }
 
-//Adds a deep hole or a passageway
-static void add_hole(int type, int x, int w)
+static void add_deep_hole(int x, int w)
 {
-	int x2 = x + w - 1;
-	int max_width = (type == HOLE_DEEP) ? 16 : 32;
 	int i;
 
-	//Check if there are too many holes
-	if (num_holes >= MAX_HOLES) {
+	//Check if there are too many deep holes
+	if (num_deep_holes >= MAX_DEEP_HOLES) {
 		invalid = true;
 		return;
 	}
 
 	//Check if the hole's position and size are within the allowed range
-	if (x > x_max - 2 || w < 2 || w > max_width) {
+	if (x > x_max - 4 || w < 2 || w > 16) {
 		invalid = true;
 		return;
 	}
 
-	if (x2 > x_max - 2) {
+	if (x + w > x_max - 2) {
 		//Error: hole width extends beyond or too close to level's right
 		//boundary
 		invalid = true;
 		return;
 	}
 
-	//Check hole repetition or overlap
-	for (i = 0; i < num_holes; i++) {
-		int hx1 = ctx->holes[i].x;
-		int hx2 = hx1 + ctx->holes[i].width - 1;
+	for (i = 0; i < w; i++) {
+		int type;
 
-		if (hx1 == x || x <= hx2) {
+		//Check if the deep hole is being added to a level column that already
+		//has a deep hole or passageway
+		if (ctx->level_columns[x + i].type != LVLCOL_NORMAL_FLOOR) {
 			invalid = true;
 			return;
 		}
+
+		type = LVLCOL_DEEP_HOLE_MIDDLE;
+		if (i == 0) {
+			type = LVLCOL_DEEP_HOLE_LEFT;
+		} else if (i == w - 1) {
+			type = LVLCOL_DEEP_HOLE_RIGHT;
+		}
+
+		//Insert deep hole into level columns
+		ctx->level_columns[x + i].type = type;
 	}
 
-	ctx->holes[num_holes].type = type;
-	ctx->holes[num_holes].x = x;
-	ctx->holes[num_holes].width = w;
+	num_deep_holes++;
+}
 
-	if (type == HOLE_DEEP) {
-		num_deep_holes++;
-	} else {
-		num_passageways++;
+static void add_passageway(int x, int w)
+{
+	int i;
 
-		//Too many passageways
-		if (num_passageways > MAX_PASSAGEWAYS) {
+	//Check if there are too many passageways
+	if (num_passageways >= MAX_PASSAGEWAYS) {
+		invalid = true;
+		return;
+	}
+
+	//Check if the passageway's position and size are within the allowed range
+	if (x > x_max - 4 || w < 2 || w > 32) {
+		invalid = true;
+		return;
+	}
+
+	if (x + w > x_max - 2) {
+		//Error: passageway width extends beyond or too close to level's right
+		//boundary
+		invalid = true;
+		return;
+	}
+
+	//Check if there is already a deep hole or passageway on the occupied level
+	//columns
+	for (i = 0; i < w; i++) {
+		int type;
+
+		//Check if the passageway is being added to a level column that already
+		//has a deep hole or passageway
+		if (ctx->level_columns[x + i].type != LVLCOL_NORMAL_FLOOR) {
 			invalid = true;
 			return;
 		}
+
+		type = LVLCOL_PASSAGEWAY_MIDDLE;
+		if (i == 0) {
+			type = LVLCOL_PASSAGEWAY_LEFT;
+		} else if (i == w - 1) {
+			type = LVLCOL_PASSAGEWAY_RIGHT;
+		}
+
+		//Insert passageway into level columns
+		ctx->level_columns[x + i].type = type;
 	}
 
-	num_holes++;
+	ctx->passageways[num_passageways].x = x;
+	ctx->passageways[num_passageways].width = w;
+	ctx->passageways[num_passageways].exit_opened = false;
+
+	num_passageways++;
 }
 
 static void add_respawn_point(int x, int y)
@@ -771,6 +614,104 @@ static void add_trigger(int x, int what)
 	}
 }
 
+//Convert positions (and also the width in the case of passageways) from level
+//blocks to pixels
+static void convert_positions()
+{
+	int i;
+
+	//Convert positions of objects in ctx->objs[]
+	for (i = 0; i < num_objs; i++) {
+		int x = ctx->objs[i].x * LEVEL_BLOCK_SIZE;
+		int y = ctx->objs[i].y;
+
+		if (y != NONE) {
+			y *= LEVEL_BLOCK_SIZE;
+		}
+
+		switch (ctx->objs[i].type) {
+			case OBJ_BANANA_PEEL:
+				x += 16;
+				y -= 8;
+				break;
+
+			case OBJ_PARKED_CAR_BLUE:
+			case OBJ_PARKED_CAR_SILVER:
+			case OBJ_PARKED_CAR_YELLOW:
+				y = PARKED_CAR_Y;
+				break;
+
+			case OBJ_COIN_SILVER:
+			case OBJ_COIN_GOLD:
+				x += 8;
+				break;
+
+			case OBJ_CRATE_PUSHABLE:
+				y = PUSHABLE_CRATE_Y;
+				break;
+
+			case OBJ_GUSH:
+				y = GUSH_INITIAL_Y;
+				break;
+
+			case OBJ_GUSH_CRACK:
+				y = GUSH_CRACK_Y;
+				break;
+
+			case OBJ_HYDRANT:
+				y = HYDRANT_Y;
+				break;
+
+			case OBJ_OVERHEAD_SIGN:
+				y -= 8;
+				break;
+
+			case OBJ_ROPE_HORIZONTAL:
+				x += 10;
+				y = ROPE_Y;
+				break;
+
+			case OBJ_ROPE_VERTICAL:
+				x += 32;
+				y = ROPE_Y + 5;
+				break;
+
+			case OBJ_SPRING:
+				x += 8;
+				y += 8;
+				break;
+
+			case OBJ_PARKED_TRUCK:
+				y = PARKED_TRUCK_Y;
+				break;
+		}
+
+		//Apply converted position
+		ctx->objs[i].x = x;
+		ctx->objs[i].y = y;
+	}
+
+	//Convert respawn point positions
+	for (i = 0; i < num_respawn_points; i++) {
+		ctx->respawn_points[i].x *= LEVEL_BLOCK_SIZE;
+		ctx->respawn_points[i].x += 3;
+
+		ctx->respawn_points[i].y *= LEVEL_BLOCK_SIZE;
+		ctx->respawn_points[i].y -= 12;
+	}
+
+	//Convert trigger positions
+	for (i = 0; i < num_triggers; i++) {
+		ctx->triggers[i].x *= LEVEL_BLOCK_SIZE;
+	}
+
+	//Convert passageway positions and widths
+	for (i = 0; i < num_passageways; i++) {
+		ctx->passageways[i].x *= LEVEL_BLOCK_SIZE;
+		ctx->passageways[i].width *= LEVEL_BLOCK_SIZE;
+	}
+}
+
 static int add_solid(int type, int x, int y, int width, int height)
 {
 	//Check if there are too many solids
@@ -787,5 +728,156 @@ static int add_solid(int type, int x, int y, int width, int height)
 	num_solids++;
 
 	return num_solids - 1;
+}
+
+static bool add_solids()
+{
+	int num_level_columns = (ctx->level_size / LEVEL_BLOCK_SIZE);
+	int i;
+
+	//Add first floor solid
+	add_solid(SOL_FULL, 0, 264, LEVEL_BLOCK_SIZE, 80);
+
+	//Add other floor solids
+	for (i = 1; i < num_level_columns; i++) {
+		int x;
+
+		switch (ctx->level_columns[i].type) {
+			case LVLCOL_NORMAL_FLOOR:
+				ctx->solids[num_solids - 1].right += LEVEL_BLOCK_SIZE;
+				break;
+
+			case LVLCOL_DEEP_HOLE_LEFT:
+				ctx->solids[num_solids - 1].right += 12;
+				break;
+
+			case LVLCOL_DEEP_HOLE_RIGHT:
+				x = (LEVEL_BLOCK_SIZE * i) + 14;
+				add_solid(SOL_FULL, x, 264, 10, 80);
+				break;
+
+			case LVLCOL_PASSAGEWAY_LEFT:
+				ctx->solids[num_solids - 1].right += 6;
+				break;
+
+			case LVLCOL_PASSAGEWAY_RIGHT:
+				x = (LEVEL_BLOCK_SIZE * (i + 1));
+				add_solid(SOL_FULL, x, 264, 0, 80);
+				break;
+		}
+
+		//Too many solids
+		if (invalid) {
+			return false;
+		}
+	}
+
+	//Add passageway solids
+	for (i = 0; i < num_passageways; i++) {
+		int x = ctx->passageways[i].x;
+		int w = ctx->passageways[i].width;
+
+		//Bottom solid
+		add_solid(SOL_FULL, x + 8, 360, w - 8, 4);
+
+		//Passageway entry solid
+		add_solid(SOL_PASSAGEWAY_ENTRY, x + 6, 264, 18, 13);
+
+		//Top floor solid
+		x += LEVEL_BLOCK_SIZE;
+		w -= (LEVEL_BLOCK_SIZE * 2);
+		add_solid(SOL_FULL, x, 264, w, 13);
+
+		//Passageway exit solid
+		x += w;
+		add_solid(SOL_PASSAGEWAY_EXIT, x, 264, 22, 13);
+	}
+
+	//Add solids for unpushable crates
+	for (i = 1; i < num_level_columns; i++) {
+		int num_crates = ctx->level_columns[i].num_crates;
+		int num_crates_prev = ctx->level_columns[i - 1].num_crates;
+
+		if (num_crates == 0) continue;
+
+		if (num_crates == num_crates_prev) {
+			//If multiple consecutive level columns share the same number of
+			//crates, just extend the previous solid instead of adding a new one
+			ctx->solids[num_solids - 1].right += LEVEL_BLOCK_SIZE;
+		} else {
+			int x = i * LEVEL_BLOCK_SIZE;
+			int y = (11 - num_crates) * LEVEL_BLOCK_SIZE;
+			int w = LEVEL_BLOCK_SIZE;
+			int h = num_crates * LEVEL_BLOCK_SIZE;
+
+			add_solid(SOL_FULL, x, y, w, h);
+
+			//Too many solids
+			if (invalid) {
+				return LVLERR_INVALID;
+			}
+		}
+
+		//Too many solids
+		if (invalid) {
+			return false;
+		}
+	}
+
+	//Add solids for pushable crates (there is exactly one pushable crate for
+	//each passageway)
+	for (i = 0; i < num_passageways; i++) {
+		int x = (int)ctx->pushable_crates[i].x;
+		int y = PUSHABLE_CRATE_Y;
+		int w = CRATE_WIDTH;
+		int h = CRATE_HEIGHT;
+
+		ctx->pushable_crates[i].solid = add_solid(SOL_FULL, x, y, w, h);
+
+		//Too many solids
+		if (invalid) {
+			return LVLERR_INVALID;
+		}
+	}
+
+	//Add solids for objects in ctx->objs[] (except pushable crates)
+	for (i = 0; i < num_objs; i++) {
+		int x = ctx->objs[i].x;
+		int y = ctx->objs[i].y;
+
+		switch (ctx->objs[i].type) {
+			case OBJ_HYDRANT:
+				add_solid(SOL_FULL, x + 4, y + 8, 8, 4);
+				break;
+
+			case OBJ_OVERHEAD_SIGN:
+				add_solid(SOL_FULL, x + 12, y, 4, 32);
+				break;
+
+			case OBJ_PARKED_CAR_BLUE:
+			case OBJ_PARKED_CAR_SILVER:
+			case OBJ_PARKED_CAR_YELLOW:
+				add_solid(SOL_FULL, x + 4, y + 18, 20, 4);
+				add_solid(SOL_SLOPE_UP, x + 27, y + 2, 15, 15);
+				add_solid(SOL_VERTICAL, x + 48, y + 2, 16, 4);
+				add_solid(SOL_SLOPE_DOWN, x + 66, y + 2, 18, 18);
+				add_solid(SOL_KEEP_ON_TOP, x + 88, y + 20, 16, 4);
+				add_solid(SOL_KEEP_ON_TOP, x + 104, y + 22, 16, 4);
+				add_solid(SOL_FULL, x + 120, y + 24, 8, 4);
+				break;
+
+			case OBJ_PARKED_TRUCK:
+				add_solid(SOL_FULL, x, y + 4, 224, 96);
+				add_solid(SOL_FULL, x + 224, y + 23, 55, 80);
+				break;
+		}
+
+		//Too many solids
+		if (invalid) {
+			return LVLERR_INVALID;
+		}
+	}
+
+	return true;
 }
 

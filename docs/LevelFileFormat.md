@@ -23,7 +23,8 @@ The maximum file size is 4 kB.
 The properties are:
 
 * `level-size <size>` - The size of the level, which corresponds to ``<size>``
-  times the maximum screen width (480). The minimum is 8 and the maximum is 32.
+  times the maximum screen width (480 pixels). If the value is 20, for example,
+  the level will be 9600 pixels wide. The allowed values are between 8 and 24.
 
 * `sky-color <color>` - One of three sky color options (1-3).
 
@@ -91,11 +92,13 @@ The object types are:
 * `passageway-arrow <x> <w>`
 
 
-### Changes
+## Changes
 
 Until release 2024.11.21.0, there was no `goal-scene`, as the cutscene to use
 was determined from the level number, and `crates` used four values instead of
 three (`crates <x> <y> <w> <h>`). The use of separate Y and height values turned
 out to be unnecessary because all blocks of crates are on the floor and the
-removal of `<y>` simplifies level file validation.
+removal of `<y>` simplifies level file validation. Additionally, the maximum
+level size was 32, but it has been since reduced to 24, which is enough for all
+levels.
 

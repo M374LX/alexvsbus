@@ -31,7 +31,6 @@
 #include "defs.h"
 
 #include <stdbool.h>
-#include <stddef.h>
 
 //------------------------------------------------------------------------------
 
@@ -152,12 +151,15 @@ void play_clear()
 	ctx.car.x = NONE;
 	ctx.hen.x = NONE;
 
-	for (i = 0; i < MAX_OBJS; i++) {
-		ctx.objs[i].type = NONE;
+	ctx.cur_passageway = NONE;
+
+	for (i = 0; i < MAX_LEVEL_COLUMNS; i++) {
+		ctx.level_columns[i].type = LVLCOL_NORMAL_FLOOR;
+		ctx.level_columns[i].num_crates = 0;
 	}
 
-	for (i = 0; i < MAX_CRATE_BLOCKS; i++) {
-		ctx.crate_blocks[i].x = NONE;
+	for (i = 0; i < MAX_OBJS; i++) {
+		ctx.objs[i].type = NONE;
 	}
 
 	for (i = 0; i < MAX_GUSHES; i++) {
@@ -168,9 +170,27 @@ void play_clear()
 		ctx.moving_peels[i].obj = NONE;
 	}
 
+	for (i = 0; i < MAX_PASSAGEWAYS; i++) {
+		ctx.passageways[i].x = NONE;
+		ctx.passageways[i].exit_opened = false;
+	}
+
 	for (i = 0; i < MAX_PUSHABLE_CRATES; i++) {
 		ctx.pushable_crates[i].obj = NONE;
 		ctx.pushable_crates[i].pushed = false;
+		ctx.pushable_crates[i].show_arrow = false;
+	}
+
+	for (i = 0; i < MAX_RESPAWN_POINTS; i++) {
+		ctx.respawn_points[i].x = NONE;
+	}
+
+	for (i = 0; i < MAX_SOLIDS; i++) {
+		ctx.solids[i].type = NONE;
+	}
+
+	for (i = 0; i < MAX_TRIGGERS; i++) {
+		ctx.triggers[i].x = NONE;
 	}
 
 	for (i = 0; i < MAX_CUTSCENE_OBJECTS; i++) {
@@ -182,24 +202,6 @@ void play_clear()
 		ctx.cutscene_objects[i].acc = 0;
 		ctx.cutscene_objects[i].grav = 0;
 		ctx.cutscene_objects[i].in_bus = false;
-	}
-
-	for (i = 0; i < MAX_SOLIDS; i++) {
-		ctx.solids[i].type = NONE;
-	}
-
-	for (i = 0; i < MAX_HOLES; i++) {
-		ctx.holes[i].x = NONE;
-	}
-
-	ctx.cur_passageway = NULL;
-
-	for (i = 0; i < MAX_RESPAWN_POINTS; i++) {
-		ctx.respawn_points[i].x = NONE;
-	}
-
-	for (i = 0; i < MAX_TRIGGERS; i++) {
-		ctx.triggers[i].x = NONE;
 	}
 
 	for (i = 0; i < MAX_COIN_SPARKS; i++) {
@@ -934,21 +936,19 @@ static void handle_passageways()
 	int pl_bottom = pl_top + pl->height;
 	int i;
 
-	for (i = 0; i < MAX_HOLES; i++) {
-		if (ctx.holes[i].x == NONE) {
-			break; //No more holes
-		} else if (ctx.holes[i].type == HOLE_DEEP) {
-			continue; //Skip holes that are not passageways
-		}
-
-		Hole* pw = &ctx.holes[i];
+	for (i = 0; i < MAX_PASSAGEWAYS; i++) {
+		Passageway* pw = &ctx.passageways[i];
 		int pw_left = pw->x;
 		int pw_entry_right = pw_left + LEVEL_BLOCK_SIZE;
 
-		//Check if the player is entering a passageway
-		if (ctx.cur_passageway == NULL && pl_bottom >= FLOOR_Y + 4) {
+		if (pw_left == NONE) {
+			break; //No more passageways
+		}
+
+		//Check if the player character is entering a passageway
+		if (ctx.cur_passageway == NONE && pl_bottom >= FLOOR_Y + 4) {
 			if (pl_left > pw_left && pl_left < pw_entry_right) {
-				ctx.cur_passageway = pw;
+				ctx.cur_passageway = i;
 
 				//Move camera down
 				if (!ctx.time_up) {
@@ -958,25 +958,25 @@ static void handle_passageways()
 		}
 	}
 
-	//Check if the player is leaving a passageway
-	if (ctx.cur_passageway != NULL) {
-		Hole* pw = ctx.cur_passageway;
-		int pw_right = pw->x + (pw->width * LEVEL_BLOCK_SIZE);
+	//Check if the player character is leaving a passageway
+	if (ctx.cur_passageway != NONE) {
+		Passageway* pw = &ctx.passageways[ctx.cur_passageway];
+		int pw_right = pw->x + pw->width;
 
 		if (pl_left > pw_right - 32) {
-			//Check if the player is opening the passageway exit, but only
-			//if the character is moving upwards at a high enough velocity,
-			//as when hitting a spring
+			//Check if the player character is opening the passageway exit, but
+			//only if moving upwards at a high enough velocity, as is the case 
+			//when hitting a spring
 			if (pl->yvel < -160 && pl_top < FLOOR_Y + 8) {
-				if (pw->type == HOLE_PASSAGEWAY_EXIT_CLOSED) {
+				if (!pw->exit_opened) {
 					audio_play_sfx(SFX_HOLE);
 					add_crack_particles(pw_right - 16, 276);
-					pw->type = HOLE_PASSAGEWAY_EXIT_OPENED;
+					pw->exit_opened = true;
 				}
 			}
 
 			if (pl_top < FLOOR_Y - 54) {
-				ctx.cur_passageway = NULL;
+				ctx.cur_passageway = NONE;
 
 				//Move camera up
 				if (!ctx.time_up) {
@@ -1357,7 +1357,7 @@ static void handle_fall_sound()
 {
 	Player* pl = &ctx.player;
 	int pl_bottom = (int)pl->y + pl->height;
-	bool in_passageway = (ctx.cur_passageway != NULL);
+	bool in_passageway = (ctx.cur_passageway != NONE);
 
 	if (!ctx.time_up && !pl->fell && !in_passageway) {
 		if (pl_bottom > FLOOR_Y + 8 && pl->yvel > 0) {

@@ -65,6 +65,7 @@ int menu_item_y(MenuItem* item);
 extern const int data_sprites[];
 extern const int data_player_anim_sprites[];
 extern const int data_obj_sprites[];
+extern const int data_level_column_blocks[];
 
 //------------------------------------------------------------------------------
 
@@ -100,7 +101,6 @@ static void draw_gfx(Rectangle src, Rectangle dst, bool vflip, bool hflip, int a
 static void draw_sprite_part(int spr, int dx, int dy, int sx, int sy, int sw, int sh);
 static void draw_sprite_flip(int spr, int dx, int dy, int frame, bool hflip, bool vflip);
 static void draw_sprite(int spr, int dx, int dy, int frame);
-static void draw_sprite_repeat(int spr, int dx, int dy, int xrep, int yrep);
 static void draw_sprite_stretch(int spr, int dx, int dy, int w, int h);
 static void draw_digits(int value, int width, int x, int y);
 static void draw_text(const char* text, int color, int x, int y);
@@ -318,7 +318,7 @@ static void draw_play()
 
 	int x, y, spr, frame;
 	int camy, topcamy; //Current and topmost camera Y position
-	int i;
+	int i, j;
 
 	//Background color
 	draw_sprite_stretch(ctx->bg_color, 0, 0, vscreen_width, vscreen_height);
@@ -335,60 +335,49 @@ static void draw_play()
 		camy = topcamy;
 	}
 
+	draw_offset_x = (int)ctx->cam.x;
 	draw_offset_y = camy - (vscreen_height - VSCREEN_MAX_HEIGHT);
 
-	//Background image
-	draw_sprite_repeat(SPR_BACKGROUND, -ctx->bg_offset_x, BACKGROUND_DRAW_Y, 6, 1);
-
-	draw_offset_x = (int)ctx->cam.x;
 	if (vscreen_width <= 320 && ctx->level_num == LVLNUM_ENDING) {
 		draw_offset_x += 168;
 	}
 
 	first_column = draw_offset_x / LEVEL_BLOCK_SIZE;
 
-	//Deep holes and passageways from level columns (background part)
-	for (i = 0; i < 21; i++) {
-		int col = first_column + i;
-		int type;
+	//Background image, which is drawn using level blocks
+	for (i = 0; i < 3; i++) {
+		for (j = 0; j <= 21; j++) {
+			x = (first_column + j) * LEVEL_BLOCK_SIZE;
+			y = BACKGROUND_DRAW_Y + (LEVEL_BLOCK_SIZE * i);
+			spr = SPR_LEVEL_BLOCK_0 + (i + 1);
 
-		if (col >= MAX_LEVEL_COLUMNS) break;
-
-		type = ctx->level_columns[col].type;
-
-		if (type == LVLCOL_NORMAL_FLOOR) continue;
-
-		spr = 0;
-		x = col * LEVEL_BLOCK_SIZE;
-		y = BACKGROUND_DRAW_Y + 72;
-
-		switch (type) {
-			case LVLCOL_DEEP_HOLE_LEFT:
-				spr = SPR_DEEP_HOLE_LEFT;
-				break;
-
-			case LVLCOL_DEEP_HOLE_MIDDLE:
-				spr = SPR_DEEP_HOLE_MIDDLE;
-				break;
-
-			case LVLCOL_DEEP_HOLE_RIGHT:
-				spr = SPR_DEEP_HOLE_RIGHT;
-				break;
-
-			case LVLCOL_PASSAGEWAY_LEFT:
-				spr = SPR_PASSAGEWAY_LEFT;
-				break;
-
-			case LVLCOL_PASSAGEWAY_MIDDLE:
-				spr = SPR_PASSAGEWAY_MIDDLE;
-				break;
-
-			case LVLCOL_PASSAGEWAY_RIGHT:
-				spr = SPR_PASSAGEWAY_RIGHT;
-				break;
+			draw_sprite(spr, x, y, 0);
 		}
+	}
 
-		draw_sprite(spr, x, y, 0);
+	//Floor, deep holes, and passageways (from level columns), which are drawn
+	//using level blocks
+	for (i = 0; i < 6; i++) {
+		for (j = 0; j < 21; j++) {
+			int block_num;
+			int col;
+			int type;
+
+			col = first_column + j;
+
+			type = LVLCOL_NORMAL_FLOOR;
+			if (col < MAX_LEVEL_COLUMNS) {
+				type = ctx->level_columns[col].type;
+			}
+
+			block_num = data_level_column_blocks[(type * 8) + i];
+
+			x = col * LEVEL_BLOCK_SIZE;
+			y = BACKGROUND_DRAW_Y + (LEVEL_BLOCK_SIZE * (3 + i));
+			spr = SPR_LEVEL_BLOCK_0 + block_num;
+
+			draw_sprite(spr, x, y, 0);
+		}
 	}
 
 	//Unopened passageway exits
@@ -399,7 +388,7 @@ static void draw_play()
 
 		spr = SPR_PASSAGEWAY_RIGHT_CLOSED;
 		x = ctx->passageways[i].x + (w - LEVEL_BLOCK_SIZE);
-		y = BACKGROUND_DRAW_Y + 72;
+		y = BACKGROUND_DRAW_Y + 80;
 
 		draw_sprite(spr, x, y, 0);
 	}
@@ -513,7 +502,7 @@ static void draw_play()
 	//Bus stop sign
 	draw_sprite(SPR_BUS_STOP_SIGN, ctx->bus_stop_sign_x, BUS_STOP_SIGN_Y, 0);
 
-	//Crates from level columns
+	//Unpushable crates (from level columns)
 	for (i = 0; i < 21; i++) {
 		int col = first_column + i;
 		int h;
@@ -522,12 +511,14 @@ static void draw_play()
 
 		h = ctx->level_columns[col].num_crates;
 
-		if (h == 0) continue;
+		if (h != 0) {
+			for (j = 0; j < h; j++) {
+				x = col * LEVEL_BLOCK_SIZE;
+				y = (11 - h + j) * LEVEL_BLOCK_SIZE;
 
-		x = col * LEVEL_BLOCK_SIZE;
-		y = (11 - h) * LEVEL_BLOCK_SIZE;
-
-		draw_sprite_repeat(SPR_CRATE, x, y, 1, h);
+				draw_sprite(SPR_CRATE, x, y, 0);
+			}
+		}
 	}
 
 	//Objects that use PlayCtx.objs[] and are drawn behind the player character
@@ -614,12 +605,12 @@ static void draw_play()
 		draw_sprite(SPR_MEDAL3, x, y, 0);
 	}
 
-	//Deep holes and passageways from level columns (foreground part)
+	//Deep hole and passageway foreground sprites (from level columns)
 	for (i = 0; i < 21; i++) {
 		int col = first_column + i;
 
 		x = col * LEVEL_BLOCK_SIZE;
-		y = BACKGROUND_DRAW_Y + 88;
+		y = BACKGROUND_DRAW_Y + 96;
 
 		if (col >= MAX_LEVEL_COLUMNS) break;
 
@@ -1159,18 +1150,6 @@ static void draw_sprite_flip(int spr, int dx, int dy, int frame, bool hflip, boo
 static void draw_sprite(int spr, int dx, int dy, int frame)
 {
 	draw_sprite_flip(spr, dx, dy, frame, false, false);
-}
-
-static void draw_sprite_repeat(int spr, int dx, int dy, int xrep, int yrep)
-{
-	int w = data_sprites[spr * 4 + 2];
-	int h = data_sprites[spr * 4 + 3];
-
-	for (int i = 0; i < xrep; i++) {
-		for (int j = 0; j < yrep; j++) {
-			draw_sprite(spr, dx + (i * w), dy + (j * h), 0);
-		}
-	}
 }
 
 static void draw_sprite_stretch(int spr, int dx, int dy, int w, int h)

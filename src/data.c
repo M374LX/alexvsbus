@@ -56,14 +56,38 @@ const int data_cheat_sequence[] = {
 	3, 0, 2, 1, 3, 0, 1, 2, 1, 3, 0, 2, -1
 };
 
-//Sprites within the gfx.bmp file
+//Level block numbers for each level column type
+const int data_level_column_blocks[] = {
+	//LVLCOL_NORMAL_FLOOR
+	0x04, 0x05, 0x06, 0x06, 0x06, 0x06, 0x00, 0x00,
+
+	//LVLCOL_DEEP_HOLE_LEFT
+	0x07, 0x08, 0x09, 0x09, 0x09, 0x09, 0x00, 0x00,
+
+	//LVLCOL_DEEP_HOLE_MIDDLE
+	0x0A, 0x0B, 0x0C, 0x0C, 0x0C, 0x0C, 0x00, 0x00,
+
+	//LVLCOL_DEEP_HOLE_RIGHT
+	0x0D, 0x0E, 0x0F, 0x0F, 0x0F, 0x0F, 0x00, 0x00,
+
+	//LVLCOL_PASSAGEWAY_LEFT
+	0x10, 0x11, 0x12, 0x12, 0x12, 0x06, 0x00, 0x00,
+
+	//LVLCOL_PASSAGEWAY_MIDDLE
+	0x04, 0x13, 0x0C, 0x0C, 0x0C, 0x06, 0x00, 0x00,
+
+	//LVLCOL_PASSAGEWAY_RIGHT
+	0x14, 0x15, 0x16, 0x16, 0x16, 0x06, 0x00, 0x00,
+};
+
+//Sprites within the gfx.png file
 //
 //For each sprite: x, y, width, height
 //
 //For sprites with more than one animation frame, the width refers to a single
 //frame
 const int data_sprites[] = {
-	0,    296,  96,  192, //SPR_BACKGROUND
+	0,    0,    0,   0,   //SPR_NULL
 	928,  144,  8,   8,   //SPR_BANANA_PEEL
 	104,  272,  32,  64,  //SPR_BEARDED_MAN_STAND
 	136,  272,  32,  64,  //SPR_BEARDED_MAN_WALK
@@ -94,10 +118,7 @@ const int data_sprites[] = {
 	976,  128,  8,   8,   //SPR_COIN_SPARK_GOLD
 	872,  64,   8,   8,   //SPR_CRACK_PARTICLE
 	872,  0,    24,  24,  //SPR_CRATE
-	104,  368,  24,  120, //SPR_DEEP_HOLE_LEFT
 	104,  344,  24,  16,  //SPR_DEEP_HOLE_LEFT_FG
-	128,  368,  24,  120, //SPR_DEEP_HOLE_MIDDLE
-	152,  368,  24,  120, //SPR_DEEP_HOLE_RIGHT
 	856,  72,   8,   8,   //SPR_DUNG
 	152,  696,  40,  8,   //SPR_ERROR
 	0,    176,  64,  88,  //SPR_FLAGMAN
@@ -114,10 +135,7 @@ const int data_sprites[] = {
 	816,  0,    16,  32,  //SPR_OVERHEAD_SIGN
 	1008, 184,  8,   320, //SPR_OVERHEAD_SIGN_BASE
 	840,  8,    16,  24,  //SPR_OVERHEAD_SIGN_BASE_TOP
-	176,  368,  24,  120, //SPR_PASSAGEWAY_LEFT
 	136,  344,  32,  16,  //SPR_PASSAGEWAY_LEFT_FG
-	200,  368,  24,  120, //SPR_PASSAGEWAY_MIDDLE
-	224,  368,  24,  120, //SPR_PASSAGEWAY_RIGHT
 	176,  344,  24,  16,  //SPR_PASSAGEWAY_RIGHT_FG
 	208,  344,  24,  24,  //SPR_PASSAGEWAY_RIGHT_CLOSED
 	688,  512,  32,  32,  //SPR_PAUSE
@@ -134,13 +152,31 @@ const int data_sprites[] = {
 	616,  168,  400, 16,  //SPR_ROPE_HORIZONTAL
 	936,  56,   8,   48,  //SPR_ROPE_VERTICAL
 	760,  120,  24,  16,  //SPR_SPRING
-	824,  520,  64,  64,  //SPR_TOUCH_LEFT
-	824,  584,  64,  64,  //SPR_TOUCH_LEFT_HELD
-	888,  520,  64,  64,  //SPR_TOUCH_RIGHT
-	888,  584,  64,  64,  //SPR_TOUCH_RIGHT_HELD
-	952,  520,  64,  64,  //SPR_TOUCH_JUMP
-	952,  584,  64,  64,  //SPR_TOUCH_JUMP_HELD
 	720,  184,  280, 128, //SPR_TRUCK
+	0,    384,  24,  24,  //SPR_LEVEL_BLOCK_0
+	32,   384,  24,  24,  //SPR_LEVEL_BLOCK_1
+	64,   384,  24,  24,  //SPR_LEVEL_BLOCK_2
+	96,   384,  24,  24,  //SPR_LEVEL_BLOCK_3
+	128,  384,  24,  24,  //SPR_LEVEL_BLOCK_4
+	160,  384,  24,  24,  //SPR_LEVEL_BLOCK_5
+	192,  384,  24,  24,  //SPR_LEVEL_BLOCK_6
+	224,  384,  24,  24,  //SPR_LEVEL_BLOCK_7
+	0,    416,  24,  24,  //SPR_LEVEL_BLOCK_8
+	32,   416,  24,  24,  //SPR_LEVEL_BLOCK_9
+	64,   416,  24,  24,  //SPR_LEVEL_BLOCK_10
+	96,   416,  24,  24,  //SPR_LEVEL_BLOCK_11
+	128,  416,  24,  24,  //SPR_LEVEL_BLOCK_12
+	160,  416,  24,  24,  //SPR_LEVEL_BLOCK_13
+	192,  416,  24,  24,  //SPR_LEVEL_BLOCK_14
+	224,  416,  24,  24,  //SPR_LEVEL_BLOCK_15
+	0,    448,  24,  24,  //SPR_LEVEL_BLOCK_16
+	32,   448,  24,  24,  //SPR_LEVEL_BLOCK_17
+	64,   448,  24,  24,  //SPR_LEVEL_BLOCK_18
+	96,   448,  24,  24,  //SPR_LEVEL_BLOCK_19
+	128,  448,  24,  24,  //SPR_LEVEL_BLOCK_20
+	160,  448,  24,  24,  //SPR_LEVEL_BLOCK_21
+	192,  448,  24,  24,  //SPR_LEVEL_BLOCK_22
+	224,  448,  24,  24,  //SPR_LEVEL_BLOCK_23
 	8,    512,  80,  24,  //SPR_MENU_PLAY
 	296,  512,  80,  24,  //SPR_MENU_PLAY_SELECTED
 	104,  512,  24,  24,  //SPR_MENU_TRYAGAIN
@@ -186,6 +222,12 @@ const int data_sprites[] = {
 	88,   696,  8,   8,   //SPR_MENU_BORDER_LEFT_SELECTED
 	136,  696,  8,   8,   //SPR_MENU_BORDER_LEFT_DISABLED
 	672,  512,  0,   0,   //SPR_SCANLINE
+	824,  520,  64,  64,  //SPR_TOUCH_LEFT
+	824,  584,  64,  64,  //SPR_TOUCH_LEFT_HELD
+	888,  520,  64,  64,  //SPR_TOUCH_RIGHT
+	888,  584,  64,  64,  //SPR_TOUCH_RIGHT_HELD
+	952,  520,  64,  64,  //SPR_TOUCH_JUMP
+	952,  584,  64,  64,  //SPR_TOUCH_JUMP_HELD
 };
 
 //Sprite corresponding to each player character animation type

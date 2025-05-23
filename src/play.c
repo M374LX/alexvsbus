@@ -87,7 +87,6 @@ static void update_animations();
 static void move_push_arrow();
 static void position_bus_stop_sign();
 static void position_light_pole();
-static void apply_background_offset();
 static void update_sequence();
 
 //------------------------------------------------------------------------------
@@ -287,7 +286,6 @@ void play_update(float dt)
 	move_push_arrow();
 	position_bus_stop_sign();
 	position_light_pole();
-	apply_background_offset();
 	update_sequence();
 }
 
@@ -312,7 +310,6 @@ void play_adapt_to_screen_size()
 	}
 
 	position_camera();
-	apply_background_offset();
 }
 
 //------------------------------------------------------------------------------
@@ -1648,12 +1645,6 @@ static void position_light_pole()
 {
 	int camx = (int)ctx.cam.x + (VSCREEN_MAX_WIDTH / 2);
 	ctx.pole_x = camx - (camx % POLE_DISTANCE) + 16;
-}
-
-//Sets the offset of the background image based on the position of the camera
-static void apply_background_offset()
-{
-	ctx.bg_offset_x = (int)ctx.cam.x % 96;
 }
 
 //Updates the sequences, like the player character entering the bus when the

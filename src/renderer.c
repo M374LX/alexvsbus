@@ -344,37 +344,30 @@ static void draw_play()
 
 	first_column = draw_offset_x / LEVEL_BLOCK_SIZE;
 
-	//Background image, which is drawn using level blocks
-	for (i = 0; i < 3; i++) {
-		for (j = 0; j <= 21; j++) {
-			x = LEVEL_BLOCK_SIZE * (first_column + j);
-			y = LEVEL_BLOCK_SIZE * (i + 7);
-			spr = SPR_LEVEL_BLOCK_0 + (i + 1);
-
-			draw_sprite(spr, x, y, 0);
-		}
-	}
-
-	//Floor, deep holes, and passageways (from level columns), which are drawn
-	//using level blocks
-	for (i = 0; i < 6; i++) {
+	//Level blocks from level columns, including the background image, floor,
+	//deep holes, and passageways, but not yet the crates
+	for (i = 0; i < 9; i++) {
 		for (j = 0; j < 21; j++) {
-			int block_num;
-			int col;
-			int type;
+			int col = first_column + j;
 
-			col = first_column + j;
+			if (i < 3) { //Background image (common for all level column types)
+				spr = SPR_LEVEL_BLOCK_0 + (i + 1);
+			} else { //Floor, deep hole, or passageway
+				int block_num;
+				int type;
 
-			type = LVLCOL_NORMAL_FLOOR;
-			if (col < MAX_LEVEL_COLUMNS) {
-				type = ctx->level_columns[col].type;
+				type = LVLCOL_NORMAL_FLOOR;
+				if (col < MAX_LEVEL_COLUMNS) {
+					type = ctx->level_columns[col].type;
+				}
+
+				block_num = data_level_column_blocks[(type * 8) + (i - 3)];
+
+				spr = SPR_LEVEL_BLOCK_0 + block_num;
 			}
 
-			block_num = data_level_column_blocks[(type * 8) + i];
-
 			x = LEVEL_BLOCK_SIZE * col;
-			y = LEVEL_BLOCK_SIZE * (i + 10);
-			spr = SPR_LEVEL_BLOCK_0 + block_num;
+			y = LEVEL_BLOCK_SIZE * (i + 7);
 
 			draw_sprite(spr, x, y, 0);
 		}

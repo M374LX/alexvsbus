@@ -829,8 +829,8 @@ static bool add_solids()
 	for (i = 0; i < num_passageways; i++) {
 		int x = (int)ctx->pushable_crates[i].x;
 		int y = PUSHABLE_CRATE_Y;
-		int w = CRATE_WIDTH;
-		int h = CRATE_HEIGHT;
+		int w = LEVEL_BLOCK_SIZE;
+		int h = LEVEL_BLOCK_SIZE;
 
 		ctx->pushable_crates[i].solid = add_solid(SOL_FULL, x, y, w, h);
 

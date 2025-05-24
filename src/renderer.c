@@ -347,8 +347,8 @@ static void draw_play()
 	//Background image, which is drawn using level blocks
 	for (i = 0; i < 3; i++) {
 		for (j = 0; j <= 21; j++) {
-			x = (first_column + j) * LEVEL_BLOCK_SIZE;
-			y = BACKGROUND_DRAW_Y + (LEVEL_BLOCK_SIZE * i);
+			x = LEVEL_BLOCK_SIZE * (first_column + j);
+			y = LEVEL_BLOCK_SIZE * (i + 7);
 			spr = SPR_LEVEL_BLOCK_0 + (i + 1);
 
 			draw_sprite(spr, x, y, 0);
@@ -372,8 +372,8 @@ static void draw_play()
 
 			block_num = data_level_column_blocks[(type * 8) + i];
 
-			x = col * LEVEL_BLOCK_SIZE;
-			y = BACKGROUND_DRAW_Y + (LEVEL_BLOCK_SIZE * (3 + i));
+			x = LEVEL_BLOCK_SIZE * col;
+			y = LEVEL_BLOCK_SIZE * (i + 10);
 			spr = SPR_LEVEL_BLOCK_0 + block_num;
 
 			draw_sprite(spr, x, y, 0);
@@ -388,7 +388,7 @@ static void draw_play()
 
 		spr = SPR_PASSAGEWAY_RIGHT_CLOSED;
 		x = ctx->passageways[i].x + (w - LEVEL_BLOCK_SIZE);
-		y = BACKGROUND_DRAW_Y + 80;
+		y = FLOOR_Y - 16;
 
 		draw_sprite(spr, x, y, 0);
 	}
@@ -610,7 +610,7 @@ static void draw_play()
 		int col = first_column + i;
 
 		x = col * LEVEL_BLOCK_SIZE;
-		y = BACKGROUND_DRAW_Y + 96;
+		y = FLOOR_Y;
 
 		if (col >= MAX_LEVEL_COLUMNS) break;
 

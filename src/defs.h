@@ -424,25 +424,23 @@ enum {
 #define MAX_COIN_SPARKS 12
 #define MAX_CRACK_PARTICLES 12
 
-//A level block is the basic unit for positioning objects in the level, as
-//well as for the width of deep holes and passageways
+//A level block is the basic unit for positioning objects in the level
 #define LEVEL_BLOCK_SIZE (TILE_SIZE * 3)
 #define VSCREEN_MAX_WIDTH_LEVEL_BLOCKS (VSCREEN_MAX_WIDTH / LEVEL_BLOCK_SIZE)
 
-//Floor, holes, light poles, and background
-#define BACKGROUND_DRAW_Y 168
-#define POLE_DISTANCE 384 //Distance between light poles
+//Y position of the floor
 #define FLOOR_Y 264
+
+//Y position of a passageway bottom
 #define PASSAGEWAY_BOTTOM_Y 360
+
+//Distance between light poles
+#define POLE_DISTANCE 384
 
 //There are at most two moving banana peels at a time, one because the player
 //character has slipped on it and another because it has been thrown
 #define MOVING_PEEL_SLIPPED 0
 #define MOVING_PEEL_THROWN 1
-
-//Crate size
-#define CRATE_WIDTH  LEVEL_BLOCK_SIZE
-#define CRATE_HEIGHT LEVEL_BLOCK_SIZE
 
 //Level column types
 enum {

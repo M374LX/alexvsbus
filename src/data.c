@@ -77,7 +77,7 @@ const int data_level_column_blocks[] = {
 	0x04, 0x13, 0x0C, 0x0C, 0x0C, 0x06, 0x00, 0x00,
 
 	//LVLCOL_PASSAGEWAY_RIGHT
-	0x14, 0x15, 0x16, 0x16, 0x16, 0x06, 0x00, 0x00,
+	0x14, 0x15, 0x0F, 0x0F, 0x0F, 0x06, 0x00, 0x00,
 };
 
 //Sprites within the gfx.png file
@@ -175,8 +175,6 @@ const int data_sprites[] = {
 	96,   448,  24,  24,  //SPR_LEVEL_BLOCK_19
 	128,  448,  24,  24,  //SPR_LEVEL_BLOCK_20
 	160,  448,  24,  24,  //SPR_LEVEL_BLOCK_21
-	192,  448,  24,  24,  //SPR_LEVEL_BLOCK_22
-	224,  448,  24,  24,  //SPR_LEVEL_BLOCK_23
 	8,    512,  80,  24,  //SPR_MENU_PLAY
 	296,  512,  80,  24,  //SPR_MENU_PLAY_SELECTED
 	104,  512,  24,  24,  //SPR_MENU_TRYAGAIN

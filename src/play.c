@@ -240,6 +240,8 @@ void play_clear()
 	ctx.hen_reached_flagman = false;
 	ctx.bus_reached_flagman = false;
 
+	ctx.sequence_step = 0;
+	ctx.sequence_delay = 0;
 	ctx.wipe_in = false;
 	ctx.wipe_out = false;
 }
@@ -1674,6 +1676,9 @@ static void update_sequence()
 	Anim* bird_anim = &ctx.anims[ANIM_CUTSCENE_OBJECTS + 1];
 	Anim* flagman_anim = &ctx.anims[ANIM_CUTSCENE_OBJECTS + 1];
 
+	ctx.wipe_in = false;
+	ctx.wipe_out = false;
+
 	ctx.sequence_delay -= delta_time;
 	if (ctx.sequence_delay > 0) return;
 
@@ -1776,9 +1781,6 @@ static void update_sequence()
 		//----------------------------------------------------------------------
 		case 30: //SEQ_TIMEUP_BUS_NEAR
 			//Camera moves towards the bus
-			if (ctx.hen.x != NONE && ctx.hen.x - cam->x < -32) {
-				ctx.hen.x = NONE;
-			}
 			if (ctx.car.x != NONE) break; //Wait until the car and hen are
 			if (ctx.hen.x != NONE) break; //not visible anymore
 			cam->follow_player = false;
@@ -1804,8 +1806,6 @@ static void update_sequence()
 			cam->follow_player = false;
 			cam->xvel = 0;
 			cam->yvel = 0;
-			ctx.car.x = NONE;
-			ctx.hen.x = NONE;
 			ctx.wipe_out = true;
 			ctx.sequence_delay = 0.6f;
 			ctx.sequence_step++;
@@ -1818,6 +1818,8 @@ static void update_sequence()
 			cam->x = cam->xmax;
 			cam->y = 0;
 			cam->fixed_at_rightmost = true;
+			ctx.car.x = NONE;
+			ctx.hen.x = NONE;
 			ctx.wipe_in = true;
 			ctx.sequence_delay = 0.6f;
 			ctx.sequence_step++;

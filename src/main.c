@@ -804,11 +804,9 @@ static void update_screen_wipe()
 {
 	if (play_ctx->wipe_in) {
 		wipe_cmd = WIPECMD_IN;
-		play_ctx->wipe_in = false;
 	}
 	if (play_ctx->wipe_out) {
 		wipe_cmd = WIPECMD_OUT;
-		play_ctx->wipe_out = false;
 	}
 
 	switch (wipe_cmd) {

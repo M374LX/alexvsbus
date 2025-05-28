@@ -775,8 +775,8 @@ static void handle_solids()
 		for (i = 0; i < MAX_SOLIDS; i++) {
 			Solid* sol = &ctx.solids[i];
 
-			//Ignore inexistent solids
-			if (sol->type == NONE) continue;
+			//No more solids
+			if (sol->type == NONE) break;
 
 			//Only solids of type SOL_FULL are taken into account
 			if (sol->type != SOL_FULL) continue;
@@ -820,7 +820,7 @@ static void handle_solids()
 	if (pl->y != pl->oldy) {
 		bool moved_down = (pl->y > pl->oldy);
 		int limit = moved_down ? 30000 : 0;
-		int ledge_solid = NONE;
+		int ledge_right = 0;
 		int i;
 
 		//Detect if the player character's bounding box is on a ledge while
@@ -828,12 +828,13 @@ static void handle_solids()
 		//this weird visual effect
 		for (i = 0; i < MAX_SOLIDS; i++) {
 			Solid* sol = &ctx.solids[i];
+			int type = sol->type;
 
-			//Ignore inexistent solids
-			if (sol->type == NONE) continue;
+			//No more solids
+			if (type == NONE) break;
 
-			//Only solids of type SOL_FULL are taken into account
-			if (sol->type != SOL_FULL) continue;
+			//Only solids of these two types are taken into account
+			if (type != SOL_FULL && type != SOL_PASSAGEWAY_EXIT) continue;
 
 			//Ignore solids that are out of the reach of the player character's
 			//bounding box in the opposite axis (X)
@@ -841,13 +842,16 @@ static void handle_solids()
 
 			if (pl->xvel != 0 || sol->top != pl_bottom) continue;
 
-			if (sol->right <= pl_left + 4) {
-				ledge_solid = i;
-			} else if (ledge_solid != i && sol->left <= pl_right) {
-				//If the bottom-right point of the player character's
-				//bounding box is on a different solid, then the player
-				//character is not really on a ledge
-				ledge_solid = NONE;
+			if (ledge_right == 0) {
+				if (type == SOL_FULL && sol->right <= pl_left + 4) {
+					ledge_right = sol->right;
+				}
+			} else {
+				//Prevent an undesirable ledge detection when the right side of
+				//the player character's bounding box is on a passageway exit
+				if (type == SOL_PASSAGEWAY_EXIT && sol->left <= pl_right) {
+					ledge_right = 0;
+				}
 			}
 		}
 
@@ -855,8 +859,8 @@ static void handle_solids()
 		for (i = 0; i < MAX_SOLIDS; i++) {
 			Solid* sol = &ctx.solids[i];
 
-			//Ignore inexistent solids
-			if (sol->type == NONE) continue;
+			//No more solids
+			if (sol->type == NONE) break;
 
 			//Ignore solids that are out of the reach of the player character's
 			//bounding box in the opposite axis (X)
@@ -916,8 +920,9 @@ static void handle_solids()
 
 		if (moved_down) {
 			if (pl->y + pl->height >= limit) {
-				if (ledge_solid != NONE) {
-					pl->x = ctx.solids[ledge_solid].right - PLAYER_BOX_OFFSET_X;
+				//Move the player character if on a ledge
+				if (ledge_right != 0) {
+					pl->x = ledge_right - PLAYER_BOX_OFFSET_X;
 				}
 
 				pl->y = limit - pl->height;

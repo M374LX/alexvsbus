@@ -338,7 +338,7 @@ static void draw_play()
 	draw_offset_x = (int)ctx->cam.x;
 	draw_offset_y = camy - (vscreen_height - VSCREEN_MAX_HEIGHT);
 
-	if (vscreen_width <= 320 && ctx->level_num == LVLNUM_ENDING) {
+	if (vscreen_width <= 320 && ctx->ending) {
 		draw_offset_x += 168;
 	}
 
@@ -441,7 +441,7 @@ static void draw_play()
 	draw_sprite(SPR_BUS_DOOR, x + 344, y + 16, frame);
 
 	//Ending sequence traffic jam cars
-	if (ctx->level_num == LVLNUM_ENDING) {
+	if (ctx->ending) {
 		x = (int)ctx->bus.x + 400;
 		y = PASSING_CAR_Y;
 		frame = ctx->anims[ANIM_CAR_WHEELS].frame;
@@ -741,7 +741,7 @@ static void draw_hud()
 	x = (display_params->vscreen_width / 2) - (2 * TILE_SIZE);
 
 	draw_text("TIME", TXTCOL_WHITE, x, 0);
-	if (play_ctx->level_num == LVLNUM_ENDING) {
+	if (play_ctx->ending) {
 		draw_text("--", TXTCOL_WHITE, x + TILE_SIZE, 8);
 	} else {
 		draw_digits(play_ctx->time, 2, x + TILE_SIZE, 8);

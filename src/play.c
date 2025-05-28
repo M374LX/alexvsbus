@@ -110,12 +110,21 @@ void play_clear()
 	input_jump = false;
 	jump_timeout = 0;
 
-	ctx.can_pause = false;
+	ctx.difficulty = 0;
+	ctx.level_num = 0;
+	ctx.last_level = false;
+	ctx.ending = false;
+	ctx.level_size = 0;
+	ctx.bg_color = 0;
+	ctx.bgm = 0;
+	ctx.goal_scene = 0;
+
 	ctx.time = 90;
 	ctx.time_running = false;
 	ctx.time_up = false;
 	ctx.goal_reached = false;
 	ctx.counting_score = false;
+	ctx.can_pause = false;
 
 	ctx.crate_push_remaining = 0.75f;
 

@@ -403,9 +403,6 @@ enum {
 // Constants: gameplay
 //
 
-//Internal level number of ending sequence
-#define LVLNUM_ENDING 8
-
 //Maximum numbers
 #define MAX_LEVEL_COLUMNS 480
 #define MAX_OBJS 160
@@ -876,17 +873,14 @@ typedef struct {
 
 //Gameplay context
 typedef struct {
-	bool can_pause;
 	int difficulty;
 	int level_num;
 	bool last_level; //Last level of current difficulty
+	bool ending; //True if it is the ending sequence
 	int level_size;
 	int bg_color;
 	int bgm;
 	int goal_scene; //Which of the five cutscenes to use when reaching the goal (1-5)
-
-	int bus_stop_sign_x;
-	int pole_x;
 
 	int score;
 	int time;
@@ -895,6 +889,10 @@ typedef struct {
 	bool time_up;
 	bool goal_reached;
 	bool counting_score;
+	bool can_pause;
+
+	int bus_stop_sign_x;
+	int pole_x;
 
 	float crate_push_remaining;
 

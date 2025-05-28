@@ -649,7 +649,7 @@ static void handle_input()
 		if (screen_type != SCR_PLAY) {
 			config.show_touch_controls = false;
 		}
-		if (play_ctx->level_num == LVLNUM_ENDING) {
+		if (play_ctx->ending) {
 			config.show_touch_controls = false;
 		}
 
@@ -757,7 +757,7 @@ static void handle_level_end()
 {
 	if (play_ctx->sequence_step != SEQ_FINISHED) return;
 
-	if (play_ctx->level_num == LVLNUM_ENDING) {
+	if (play_ctx->ending) {
 		show_final_score();
 	} else if (play_ctx->time_up) {
 		screen_type = SCR_BLANK;
@@ -977,8 +977,7 @@ static void start_ending_sequence()
 	progress_checked = false;
 	screen_type = SCR_PLAY;
 
-	play_ctx->level_num = LVLNUM_ENDING;
-	play_ctx->last_level = false;
+	play_ctx->ending = true;
 
 	play_ctx->level_size = 8 * VSCREEN_MAX_WIDTH;
 	play_ctx->bg_color = SPR_BG_SKY3;

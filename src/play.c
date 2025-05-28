@@ -1505,8 +1505,8 @@ static void move_camera()
 //Prevents the player character from moving off the level's boundaries
 static void keep_player_within_limits()
 {
-	if (ctx.player.x < 32) {
-		ctx.player.x = 32;
+	if (ctx.player.x < 48) {
+		ctx.player.x = 48;
 		ctx.player.xvel = 0;
 
 		if (ctx.player.on_floor) {

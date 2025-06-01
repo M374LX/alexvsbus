@@ -73,9 +73,10 @@ static void add_deep_hole(int x, int w);
 static void add_passageway(int x, int y);
 static void add_respawn_point(int x, int y);
 static void add_trigger(int x, int what);
+static void validate_positions();
 static void convert_positions();
 static int add_solid(int type, int x, int y, int width, int height);
-static bool add_solids();
+static void add_solids();
 
 //------------------------------------------------------------------------------
 
@@ -332,27 +333,27 @@ int levelload_load(const char* filename)
 		return LVLERR_INVALID;
 	}
 
-	//Ensure every respawn point is close enough to the corresponding deep
-	//hole but not placed after it or over another deep hole
-	for (i = 0; i < num_respawn_points; i++) {
-		int type;
+	//Ensure there are no unpushable crates on deep holes or passageway edges
+	for (i = 0; i < MAX_LEVEL_COLUMNS; i++) {
+		int type = ctx->level_columns[i].type;
+		int num_crates = ctx->level_columns[i].num_crates;
 
-		x = ctx->respawn_points[i].x;
-		type = ctx->level_columns[x].type;
-
-		if (type != LVLCOL_NORMAL_FLOOR && type != LVLCOL_DEEP_HOLE_RIGHT) {
-			return LVLERR_INVALID;
+		if (type != LVLCOL_NORMAL_FLOOR && type != LVLCOL_PASSAGEWAY_MIDDLE) {
+			if (num_crates > 0) {
+				return LVLERR_INVALID;
+			}
 		}
+	}
 
-		if (ctx->level_columns[x + 1].type == LVLCOL_DEEP_HOLE_LEFT) continue;
-		if (ctx->level_columns[x + 2].type == LVLCOL_DEEP_HOLE_LEFT) continue;
+	validate_positions();
+	convert_positions();
 
+	if (invalid) {
 		return LVLERR_INVALID;
 	}
 
-	convert_positions();
-
-	//Set properties for ctx->pushable_crates[]
+	//Set properties for ctx->pushable_crates[] (there is exactly one pushable
+	//crate for each passageway)
 	for (i = 0; i < num_passageways; i++) {
 		int obj = ctx->pushable_crates[i].obj;
 
@@ -361,8 +362,9 @@ int levelload_load(const char* filename)
 		ctx->pushable_crates[i].xmax = x + LEVEL_BLOCK_SIZE;
 	}
 
-	if (!add_solids()) {
-		//Too many solids
+	add_solids();
+
+	if (invalid) {
 		return LVLERR_INVALID;
 	}
 
@@ -374,6 +376,10 @@ int levelload_load(const char* filename)
 static void add_obj(int type, int x, int y, bool use_y)
 {
 	int i;
+
+	if (invalid) {
+		return;
+	}
 
 	//Check if there are too many objects
 	if (num_objs >= MAX_OBJS) {
@@ -408,6 +414,10 @@ static void add_obj(int type, int x, int y, bool use_y)
 static void add_crate_block(int x, int w, int h)
 {
 	int i;
+
+	if (invalid) {
+		return;
+	}
 
 	//Check if there are too many crate blocks
 	if (num_crate_blocks >= MAX_CRATE_BLOCKS) {
@@ -459,6 +469,10 @@ static void add_deep_hole(int x, int w)
 {
 	int i;
 
+	if (invalid) {
+		return;
+	}
+
 	//Check if there are too many deep holes
 	if (num_deep_holes >= MAX_DEEP_HOLES) {
 		invalid = true;
@@ -505,6 +519,10 @@ static void add_deep_hole(int x, int w)
 static void add_passageway(int x, int w)
 {
 	int i;
+
+	if (invalid) {
+		return;
+	}
 
 	//Check if there are too many passageways
 	if (num_passageways >= MAX_PASSAGEWAYS) {
@@ -559,6 +577,10 @@ static void add_respawn_point(int x, int y)
 {
 	int i;
 
+	if (invalid) {
+		return;
+	}
+
 	//Check if there are too many respawn points
 	if (num_respawn_points >= MAX_RESPAWN_POINTS) {
 		invalid = true;
@@ -590,6 +612,10 @@ static void add_respawn_point(int x, int y)
 static void add_trigger(int x, int what)
 {
 	int i;
+
+	if (invalid) {
+		return;
+	}
 
 	//Check if there are too many triggers
 	if (num_triggers >= MAX_TRIGGERS) {
@@ -623,11 +649,197 @@ static void add_trigger(int x, int what)
 	}
 }
 
+static void validate_positions()
+{
+	int i;
+
+	if (invalid) {
+		return;
+	}
+
+	//Ensure every respawn point is at a valid Y position and close enough
+	//to the corresponding deep hole but not placed after it or over another
+	//deep hole
+	for (i = 0; i < num_respawn_points; i++) {
+		int x = ctx->respawn_points[i].x;
+		int y = ctx->respawn_points[i].y;
+		int type = ctx->level_columns[x].type;
+
+		if (y != 9 - ctx->level_columns[x].num_crates) {
+			invalid = true;
+			return;
+		}
+
+		if (type != LVLCOL_NORMAL_FLOOR && type != LVLCOL_DEEP_HOLE_RIGHT) {
+			invalid = true;
+			return;
+		}
+
+		if (ctx->level_columns[x + 1].type == LVLCOL_DEEP_HOLE_LEFT) continue;
+		if (ctx->level_columns[x + 2].type == LVLCOL_DEEP_HOLE_LEFT) continue;
+
+		invalid = true;
+		return;
+	}
+
+	//Validate object positions
+	for (i = 0; i < num_objs; i++) {
+		int x = ctx->objs[i].x;
+		int y = ctx->objs[i].y;
+		int j;
+
+		int col_type = ctx->level_columns[x].type;
+		int col_num_crates = ctx->level_columns[x].num_crates;
+
+		if (y == 11) {
+			//Middle of the floor
+			invalid = true;
+			return;
+		}
+
+		if (y > 11) {
+			//An object's Y position can be greater than 11 only if it is in a
+			//passageway
+			if (col_type != LVLCOL_PASSAGEWAY_LEFT
+					&& col_type != LVLCOL_PASSAGEWAY_MIDDLE
+					&& col_type != LVLCOL_PASSAGEWAY_RIGHT) {
+
+				invalid = true;
+				return;
+			}
+		}
+
+		switch (ctx->objs[i].type) {
+			case OBJ_BANANA_PEEL:
+				if (y != 14 && y != 10 - col_num_crates) {
+					invalid = true;
+					return;
+				}
+
+				break;
+
+			case OBJ_COIN_SILVER:
+			case OBJ_COIN_GOLD:
+				if (y < 3) {
+					invalid = true;
+					return;
+				}
+
+				if (y < 11 && y > 10 - col_num_crates) {
+					invalid = true;
+					return;
+				}
+
+				break;
+
+			case OBJ_GUSH:
+			case OBJ_GUSH_CRACK:
+			case OBJ_HYDRANT:
+				if (col_num_crates != 0) {
+					invalid = true;
+					return;
+				}
+
+				if (col_type != LVLCOL_NORMAL_FLOOR) {
+					invalid = true;
+					return;
+				}
+
+				break;
+
+			case OBJ_OVERHEAD_SIGN:
+				if (y > 4) {
+					invalid = true;
+					return;
+				}
+
+				break;
+
+			case OBJ_PARKED_CAR_BLUE:
+			case OBJ_PARKED_CAR_SILVER:
+			case OBJ_PARKED_CAR_YELLOW:
+				for (j = 0; j < 6; j++) {
+					col_type = ctx->level_columns[x + j].type;
+					col_num_crates = ctx->level_columns[x + j].num_crates;
+
+					if (col_num_crates > 0) {
+						invalid = true;
+						return;
+					}
+
+					if (col_type != LVLCOL_NORMAL_FLOOR
+							&& col_type != LVLCOL_PASSAGEWAY_MIDDLE) {
+
+						invalid = true;
+						return;
+					}
+				}
+
+				break;
+
+			case OBJ_PARKED_TRUCK:
+				for (j = 0; j < 12; j++) {
+					col_type = ctx->level_columns[x + j].type;
+					col_num_crates = ctx->level_columns[x + j].num_crates;
+
+					if (col_num_crates > 0) {
+						invalid = true;
+						return;
+					}
+
+					if (col_type != LVLCOL_NORMAL_FLOOR
+							&& col_type != LVLCOL_PASSAGEWAY_MIDDLE) {
+
+						invalid = true;
+						return;
+					}
+				}
+
+				break;
+
+			case OBJ_ROPE_HORIZONTAL:
+				//Check if the X position corresponds to a light pole
+				if (x % 16 != 0) {
+					invalid = true;
+					return;
+				}
+
+				break;
+
+			case OBJ_SPRING:
+				if (y == 10) {
+					if (col_num_crates != 0) {
+						invalid = true;
+						return;
+					}
+
+					if (col_type != LVLCOL_NORMAL_FLOOR
+							&& col_type != LVLCOL_PASSAGEWAY_MIDDLE) {
+
+						invalid = true;
+						return;
+					}
+				} else if (y == 14) {
+					if (col_type != LVLCOL_PASSAGEWAY_RIGHT) {
+						invalid = true;
+						return;
+					}
+				}
+
+				break;
+		}
+	}
+}
+
 //Convert positions (and also the width in the case of passageways) from level
 //blocks to pixels
 static void convert_positions()
 {
 	int i;
+
+	if (invalid) {
+		return;
+	}
 
 	//Convert positions of objects in ctx->objs[]
 	for (i = 0; i < num_objs; i++) {
@@ -723,6 +935,10 @@ static void convert_positions()
 
 static int add_solid(int type, int x, int y, int width, int height)
 {
+	if (invalid) {
+		return -1;
+	}
+
 	//Check if there are too many solids
 	if (num_solids >= MAX_SOLIDS) {
 		invalid = true;
@@ -739,10 +955,14 @@ static int add_solid(int type, int x, int y, int width, int height)
 	return num_solids - 1;
 }
 
-static bool add_solids()
+static void add_solids()
 {
 	int num_level_columns = (ctx->level_size / LEVEL_BLOCK_SIZE);
 	int i;
+
+	if (invalid) {
+		return;
+	}
 
 	//Add first floor solid
 	add_solid(SOL_FULL, 0, 264, LEVEL_BLOCK_SIZE, 80);
@@ -777,7 +997,7 @@ static bool add_solids()
 
 		//Too many solids
 		if (invalid) {
-			return false;
+			return;
 		}
 	}
 
@@ -823,13 +1043,8 @@ static bool add_solids()
 
 			//Too many solids
 			if (invalid) {
-				return LVLERR_INVALID;
+				return;
 			}
-		}
-
-		//Too many solids
-		if (invalid) {
-			return false;
 		}
 	}
 
@@ -845,7 +1060,7 @@ static bool add_solids()
 
 		//Too many solids
 		if (invalid) {
-			return LVLERR_INVALID;
+			return;
 		}
 	}
 
@@ -883,10 +1098,8 @@ static bool add_solids()
 
 		//Too many solids
 		if (invalid) {
-			return LVLERR_INVALID;
+			return;
 		}
 	}
-
-	return true;
 }
 

@@ -164,7 +164,7 @@ bool renderer_load_gfx()
 	int comp;
 	int format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
 
-	snprintf(filename, sizeof(filename), "%sgfx.png", config->assets_dir);
+	snprintf(filename, ARRAY_LENGTH(filename), "%sgfx.png", config->assets_dir);
 
 	file_data = LoadFileData(filename, &file_size);
 	if (file_data == NULL) {

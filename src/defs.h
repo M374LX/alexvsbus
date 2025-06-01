@@ -947,5 +947,13 @@ typedef struct {
 	bool wipe_out;
 } PlayCtx;
 
+
+
+//==========================================================================
+// Macros
+//
+
+#define ARRAY_LENGTH(arr) (sizeof(arr) / sizeof(arr[0]))
+
 #endif //ALEXVSBUS_DEFS_H
 

@@ -906,7 +906,7 @@ static void start_level(int level_num, int difficulty, bool skip_initial_sequenc
 		case DIFFICULTY_SUPER:  diffch = 's'; break;
 	}
 
-	snprintf(filename, sizeof(filename), "%slevel%d%c", config.assets_dir, level_num, diffch);
+	snprintf(filename, ARRAY_LENGTH(filename), "%slevel%d%c", config.assets_dir, level_num, diffch);
 
 	renderer_show_save_error(false);
 	play_clear();
@@ -1001,7 +1001,7 @@ static bool find_assets_dir()
 	if (cli.assets_dir != NULL) { //Directory set from CLI
 		int len;
 
-		process_path(cli.assets_dir, config.assets_dir, sizeof(config.assets_dir));
+		process_path(cli.assets_dir, config.assets_dir, ARRAY_LENGTH(config.assets_dir));
 		len = strlen(cli.assets_dir);
 
 		if (len <= 510) {
@@ -1017,19 +1017,19 @@ static bool find_assets_dir()
 		char base_path[480];
 		char path[512];
 
-		process_path(GetApplicationDirectory(), base_path, sizeof(base_path));
+		process_path(GetApplicationDirectory(), base_path, ARRAY_LENGTH(base_path));
 
-		snprintf(path, sizeof(path), "%s/%s", base_path, "assets/");
+		snprintf(path, ARRAY_LENGTH(path), "%s/%s", base_path, "assets/");
 		if (readable_dir(path)) {
-			snprintf(config.assets_dir, sizeof(config.assets_dir), "%s", path);
+			snprintf(config.assets_dir, ARRAY_LENGTH(config.assets_dir), "%s", path);
 
 			return true;
 		}
 
 #ifndef _WIN32
-		snprintf(path, sizeof(path), "%s/%s", base_path, "../share/games/alexvsbus/");
+		snprintf(path, ARRAY_LENGTH(path), "%s/%s", base_path, "../share/games/alexvsbus/");
 		if (readable_dir(path)) {
-			snprintf(config.assets_dir, sizeof(config.assets_dir), "%s", path);
+			snprintf(config.assets_dir, ARRAY_LENGTH(config.assets_dir), "%s", path);
 
 			return true;
 		}
@@ -1048,25 +1048,25 @@ static void find_config_path()
 	char tmp[512];
 
 	if (cli.config != NULL) {
-		snprintf(tmp, sizeof(tmp), "%s", cli.config);
+		snprintf(tmp, ARRAY_LENGTH(tmp), "%s", cli.config);
 	} else {
 #if defined(_WIN32)
-		snprintf(tmp, sizeof(tmp), "%s/alexvsbus/alexvsbus.cfg", getenv("APPDATA"));
+		snprintf(tmp, ARRAY_LENGTH(tmp), "%s/alexvsbus/alexvsbus.cfg", getenv("APPDATA"));
 #elif defined(__APPLE__)
-		snprintf(tmp, sizeof(tmp),
+		snprintf(tmp, ARRAY_LENGTH(tmp),
 			"%s/Library/Preferences/alexvsbus/alexvsbus.cfg", getenv("HOME"));
 #else
 		const char* xdg_config = getenv("XDG_CONFIG_HOME");
 
 		if (xdg_config == NULL) {
-			snprintf(tmp, sizeof(tmp), "%s/.config/alexvsbus/alexvsbus.cfg", getenv("HOME"));
+			snprintf(tmp, ARRAY_LENGTH(tmp), "%s/.config/alexvsbus/alexvsbus.cfg", getenv("HOME"));
 		} else {
-			snprintf(tmp, sizeof(tmp), "%s/alexvsbus/alexvsbus.cfg", xdg_config);
+			snprintf(tmp, ARRAY_LENGTH(tmp), "%s/alexvsbus/alexvsbus.cfg", xdg_config);
 		}
 #endif
 	}
 
-	process_path(tmp, config_path, sizeof(config_path));
+	process_path(tmp, config_path, ARRAY_LENGTH(config_path));
 #endif //__ANDROID__
 }
 

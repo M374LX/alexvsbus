@@ -79,7 +79,7 @@ void audio_load_sfx()
 	if (init_failed) return;
 
 	for (i = 0; i < NUM_SFX; i++) {
-		snprintf(path, sizeof(path), "%s%s.wav", config->assets_dir, data_sfx_files[i]);
+		snprintf(path, ARRAY_LENGTH(path), "%s%s.wav", config->assets_dir, data_sfx_files[i]);
 		sfx[i] = LoadSound(path);
 	}
 }
@@ -100,12 +100,12 @@ void audio_play_bgm(int id)
 	unload_bgm();
 
 	//Try to load the BGM track in OGG format
-	snprintf(path, sizeof(path), "%s%s.ogg", config->assets_dir, data_bgm_files[id]);
+	snprintf(path, ARRAY_LENGTH(path), "%s%s.ogg", config->assets_dir, data_bgm_files[id]);
 	bgm = LoadMusicStream(path);
 
 	if (!IsMusicReady(bgm)) {
 		//Try to load the BGM track in XM format
-		snprintf(path, sizeof(path), "%s%s.xm", config->assets_dir, data_bgm_files[id]);
+		snprintf(path, ARRAY_LENGTH(path), "%s%s.xm", config->assets_dir, data_bgm_files[id]);
 		bgm = LoadMusicStream(path);
 	}
 

@@ -10,11 +10,11 @@ crates 1 2 3
 respawn-point 1 6
 deep-hole 1 3
 coin-silver 0 6
-overhead-sign 1 4
+overhead-sign 1 3
 coin-silver 2 7
 hydrant 0
 coin-silver 2 7
-banana-peel 0 11
+banana-peel 0 10
 respawn-point 1 9
 deep-hole 1 4
 coin-silver 4 7
@@ -33,16 +33,16 @@ respawn-point 1 5
 crates 0 1 4
 deep-hole 1 3
 coin-silver 0 5
-overhead-sign 1 4
+overhead-sign 1 3
 car-silver 4
 coin-silver 2 7
 respawn-point 4 9
 deep-hole 1 6
 coin-silver 1 5
 coin-silver 3 5
-banana-peel 2 11
+banana-peel 2 10
 gush-crack 2
-banana-peel 2 11
+banana-peel 2 10
 coin-silver 2 8
 crates 0 1 1
 gush 3
@@ -65,14 +65,14 @@ deep-hole 1 7
 coin-silver 3 7
 coin-silver 3 7
 gush-crack 2
-banana-peel 1 11
+banana-peel 1 10
 coin-silver 1 10
-banana-peel 1 11
+banana-peel 1 10
 respawn-point 1 9
 deep-hole 1 4
 gush 4
-banana-peel 1 11
-banana-peel 2 11
+banana-peel 1 10
+banana-peel 2 10
 coin-silver 2 8
 rope 1
 respawn-point 0 9
@@ -103,43 +103,43 @@ crates 1 1 1
 coin-silver 3 7
 gush 0
 passageway 3 20
-banana-peel 2 11
-banana-peel 0 15
+banana-peel 2 10
+banana-peel 0 14
 coin-gold 1 13
 coin-silver 1 7
 crates 0 1 2
 coin-gold 1 14
-banana-peel 1 11
+banana-peel 1 10
 coin-gold 0 12
-banana-peel 1 15
+banana-peel 1 14
 crates 1 1 1
 coin-gold 1 13
-banana-peel 2 11
+banana-peel 2 10
 coin-gold 0 14
 crates 2 1 2
 coin-gold 0 13
-banana-peel 0 15
+banana-peel 0 14
 coin-gold 1 6
 coin-gold 1 14
-banana-peel 1 11
+banana-peel 1 10
 coin-gold 1 13
 spring 2 14
 hydrant 2
-banana-peel 2 11
+banana-peel 2 10
 coin-silver 1 7
 crates 2 1 1
-banana-peel 3 11
+banana-peel 3 10
 gush-crack 2
 respawn-point 1 9
 deep-hole 1 7
 coin-silver 6 9
 gush 2
-banana-peel 3 11
+banana-peel 3 10
 coin-silver 3 8
 crates 0 1 1
 coin-silver 1 6
 crates 0 2 3
-banana-peel 1 8
+banana-peel 1 7
 respawn-point 1 9
 deep-hole 1 6
 coin-silver 3 5
@@ -166,13 +166,13 @@ crates 0 1 5
 deep-hole 1 6
 coin-gold 6 4
 gush 0
-banana-peel 1 11
+banana-peel 1 10
 trigger-hen 0
 coin-silver 2 10
-banana-peel 1 11
+banana-peel 1 10
 gush-crack 3
-banana-peel 1 11
-banana-peel 2 11
+banana-peel 1 10
+banana-peel 2 10
 coin-silver 2 8
 hydrant 0
 respawn-point 1 9
@@ -189,10 +189,10 @@ coin-silver 7 3
 coin-silver 1 3
 coin-gold 5 10
 gush 1
-banana-peel 2 11
-banana-peel 2 11
+banana-peel 2 10
+banana-peel 2 10
 coin-silver 1 9
-banana-peel 2 11
+banana-peel 2 10
 coin-silver 2 7
 crates 0 1 1
 crates 1 2 3

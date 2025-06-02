@@ -28,13 +28,13 @@ deep-hole 1 4
 coin-silver 4 7
 hydrant 0
 coin-silver 3 9
-banana-peel 3 11
+banana-peel 3 10
 gush 2
 crates 2 2 2
 coin-silver 1 7
 respawn-point 1 9
 deep-hole 1 5
-banana-peel 5 11
+banana-peel 5 10
 respawn-point 1 9
 deep-hole 1 5
 coin-gold 0 5
@@ -57,7 +57,7 @@ crates 1 2 3
 coin-gold 2 4
 respawn-point 0 9
 deep-hole 1 6
-overhead-sign 0 4
+overhead-sign 0 3
 hydrant 6
 respawn-point 1 9
 deep-hole 1 6
@@ -77,18 +77,18 @@ coin-silver 1 4
 coin-silver 0 5
 coin-silver 0 6
 gush-crack 0
-overhead-sign 0 3
+overhead-sign 0 2
 passageway 5 19
 coin-gold 2 13
 coin-silver 2 6
 coin-gold 0 13
 coin-silver 1 6
-banana-peel 0 11
+banana-peel 0 10
 coin-gold 0 12
 coin-silver 1 6
 coin-gold 1 13
-banana-peel 1 15
-banana-peel 1 11
+banana-peel 1 14
+banana-peel 1 10
 coin-gold 0 12
 coin-silver 1 4
 coin-silver 0 5
@@ -99,7 +99,7 @@ coin-gold 0 12
 coin-silver 1 5
 coin-gold 1 13
 coin-gold 1 12
-banana-peel 0 15
+banana-peel 0 14
 coin-gold 1 13
 crates 1 1 1
 coin-gold 0 12
@@ -123,7 +123,7 @@ crates 1 2 5
 respawn-point 2 9
 deep-hole 1 4
 coin-gold 1 3
-overhead-sign 1 3
+overhead-sign 1 2
 coin-silver 3 8
 crates 0 1 1
 gush 5
@@ -138,7 +138,7 @@ respawn-point 1 9
 deep-hole 1 5
 trigger-car-yellow 4
 coin-gold 1 6
-banana-peel 0 11
+banana-peel 0 10
 respawn-point 3 9
 deep-hole 1 4
 coin-silver 7 3
@@ -166,17 +166,17 @@ respawn-point 6 9
 deep-hole 1 6
 coin-gold 2 4
 coin-gold 2 5
-banana-peel 2 11
+banana-peel 2 10
 coin-silver 1 9
 gush-crack 3
-banana-peel 3 11
-banana-peel 3 11
+banana-peel 3 10
+banana-peel 3 10
 coin-silver 3 7
-banana-peel 3 11
+banana-peel 3 10
 respawn-point 4 9
 deep-hole 1 11
 coin-gold 9 7
-banana-peel 2 11
+banana-peel 2 10
 gush 5
 coin-silver 1 7
 crates 0 2 2
@@ -206,4 +206,4 @@ respawn-point 2 9
 deep-hole 1 4
 trigger-car-silver 0
 gush 14
-banana-peel 4 11
+banana-peel 4 10

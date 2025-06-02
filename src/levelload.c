@@ -373,7 +373,7 @@ static void add_obj(int type, int x, int y, bool use_y)
 	}
 
 	//Check if the object's position is within the allowed range
-	if (y > 15 || (y != NONE && y < 3) || (use_y && y == NONE) || x > x_max) {
+	if (y > 14 || (y != NONE && y < 2) || (use_y && y == NONE) || x > x_max) {
 		invalid = true;
 		return;
 	}
@@ -632,7 +632,7 @@ static void convert_positions()
 		switch (ctx->objs[i].type) {
 			case OBJ_BANANA_PEEL:
 				x += 16;
-				y -= 8;
+				y += 16;
 				break;
 
 			case OBJ_PARKED_CAR_BLUE:
@@ -663,7 +663,7 @@ static void convert_positions()
 				break;
 
 			case OBJ_OVERHEAD_SIGN:
-				y -= 8;
+				y += 16;
 				break;
 
 			case OBJ_ROPE_HORIZONTAL:

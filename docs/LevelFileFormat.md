@@ -94,11 +94,20 @@ The object types are:
 
 ## Changes
 
-Until release 2024.11.21.0, there was no `goal-scene`, as the cutscene to use
-was determined from the level number, and `crates` used four values instead of
-three (`crates <x> <y> <w> <h>`). The use of separate Y and height values turned
-out to be unnecessary because all blocks of crates are on the floor and the
-removal of `<y>` simplifies level file validation. Additionally, the maximum
-level size was 32, but it has been since reduced to 24, which is enough for all
-levels.
+Until release 2024.11.21.0:
+
+* There was no `goal-scene`, as the cutscene to use was determined from the
+  level number and difficulty.
+
+* `crates` used four values instead of three (`crates <x> <y> <w> <h>`). The use
+  of separate Y and height values turned out to be unnecessary because all
+  blocks of crates are on the floor and the removal of `<y>` simplifies level
+  file validation.
+
+* The maximum level size was 32, but it has been since reduced to 24, which
+  is enough for all levels.
+
+* For `banana-peel` and `overhead-sign`, the value was one more than it is now
+  for the same Y position. For example, the Y position for a banana peel on the
+  floor was 11, but it is now 10.
 

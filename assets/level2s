@@ -27,12 +27,12 @@ gush 2
 coin-silver 2 9
 banana-peel 0 10
 coin-gold 2 4
-spring 0 10
+spring 0
 respawn-point 1 9
 deep-hole 1 9
 coin-silver 4 7
 coin-silver 2 7
-spring 3 10
+spring 3
 respawn-point 1 9
 deep-hole 1 5
 coin-silver 2 7
@@ -51,7 +51,7 @@ deep-hole 1 6
 coin-silver 2 8
 banana-peel 4 10
 gush 2
-spring 2 10
+spring 2
 respawn-point 1 9
 deep-hole 1 13
 coin-silver 5 5
@@ -107,7 +107,7 @@ coin-silver 4 9
 gush 2
 coin-silver 3 6
 coin-silver 0 8
-spring 0 10
+spring 0
 coin-silver 1 5
 crates 0 1 5
 coin-silver 1 7
@@ -131,16 +131,15 @@ coin-gold 0 10
 banana-peel 0 14
 coin-silver 2 10
 coin-silver 0 13
-spring 0 14
 gush 3
 gush-crack 4
 coin-silver 2 9
-spring 2 10
+spring 2
 respawn-point 1 9
 deep-hole 1 10
 overhead-sign 2 3
 coin-silver 6 8
-spring 3 10
+spring 3
 respawn-point 1 9
 deep-hole 1 14
 coin-silver 0 5

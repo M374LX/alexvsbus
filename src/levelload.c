@@ -261,7 +261,8 @@ int levelload_load(const char* filename)
 			add_obj(OBJ_ROPE_HORIZONTAL, x, NONE, false);
 			add_obj(OBJ_ROPE_VERTICAL, x, NONE, false);
 		} else if (str_starts_with(tmp, "spring ")) {
-			add_obj(OBJ_SPRING, x, token2, true);
+			//10 is the Y position corresponding to the floor
+			add_obj(OBJ_SPRING, x, 10, true);
 		} else if (str_starts_with(tmp, "truck ")) {
 			add_obj(OBJ_PARKED_TRUCK, x, NONE, false);
 		} else if (str_starts_with(tmp, "trigger-car-blue ")) {
@@ -279,11 +280,19 @@ int levelload_load(const char* filename)
 		} else if (str_starts_with(tmp, "passageway ")) {
 			add_passageway(x, token2);
 
+			//Spring under passageway exit (14 is the Y position corresponding
+			//to a passageway bottom)
+			add_obj(OBJ_SPRING, x + token2 - 1, 14, true);
+
 			//Pushable crate over passageway entry
 			add_obj(OBJ_CRATE_PUSHABLE, x, NONE, false);
 			ctx->pushable_crates[num_passageways - 1].obj = num_objs - 1;
 		} else if (str_starts_with(tmp, "passageway-arrow ")) {
 			add_passageway(x, token2);
+
+			//Spring under passageway exit (14 is the Y position corresponding
+			//to a passageway bottom)
+			add_obj(OBJ_SPRING, x + token2 - 1, 14, true);
 
 			//Pushable crate over passageway entry
 			add_obj(OBJ_CRATE_PUSHABLE, x, NONE, false);

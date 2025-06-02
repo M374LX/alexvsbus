@@ -11,7 +11,7 @@ gush 3
 banana-peel 1 10
 coin-silver 2 7
 coin-silver 0 9
-spring 0 10
+spring 0
 respawn-point 1 4
 crates 0 1 5
 deep-hole 1 6
@@ -27,7 +27,7 @@ deep-hole 1 8
 coin-silver 3 8
 coin-silver 5 5
 coin-silver 0 8
-spring 0 10
+spring 0
 truck 1
 coin-silver 7 5
 coin-gold 5 8
@@ -42,7 +42,7 @@ banana-peel 6 10
 coin-gold 4 10
 gush 1
 coin-silver 3 9
-spring 0 10
+spring 0
 respawn-point 1 9
 deep-hole 1 13
 coin-silver 2 6
@@ -50,7 +50,7 @@ coin-silver 5 4
 coin-silver 5 5
 gush 1
 coin-silver 1 9
-spring 0 10
+spring 0
 respawn-point 1 9
 deep-hole 1 11
 coin-silver 3 5
@@ -58,11 +58,11 @@ overhead-sign 3 2
 coin-gold 1 5
 coin-gold 3 10
 banana-peel 1 10
-spring 2 10
+spring 2
 respawn-point 1 9
 deep-hole 1 6
 coin-silver 4 7
-spring 2 10
+spring 2
 respawn-point 1 9
 deep-hole 1 13
 coin-silver 3 4
@@ -91,7 +91,6 @@ banana-peel 2 14
 banana-peel 2 14
 coin-silver 2 9
 coin-silver 0 12
-spring 0 14
 gush 2
 gush-crack 2
 coin-gold 1 10
@@ -103,7 +102,7 @@ coin-silver 1 9
 gush-crack 2
 coin-silver 2 6
 coin-silver 0 8
-spring 0 10
+spring 0
 respawn-point 1 4
 crates 0 1 5
 deep-hole 1 8
@@ -113,7 +112,7 @@ coin-silver 2 9
 gush-crack 2
 gush 2
 coin-silver 3 9
-spring 0 10
+spring 0
 respawn-point 1 9
 deep-hole 1 12
 coin-silver 2 4
@@ -154,9 +153,8 @@ banana-peel 2 14
 coin-gold 1 9
 coin-silver 2 9
 coin-silver 0 13
-spring 0 14
 coin-silver 2 7
-spring 0 10
+spring 0
 coin-silver 1 5
 crates 0 1 5
 coin-silver 1 7

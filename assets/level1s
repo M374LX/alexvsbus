@@ -5,17 +5,17 @@ goal-scene 1
 coin-silver 0 5
 coin-silver 0 7
 coin-silver 0 9
-spring 0 10
+spring 0
 respawn-point 1 4
 crates 0 1 5
-spring 1 10
+spring 1
 deep-hole 1 8
 coin-silver 8 9
-spring 0 10
+spring 0
 respawn-point 1 9
 deep-hole 1 8
 coin-gold 4 8
-spring 4 10
+spring 4
 respawn-point 1 9
 deep-hole 1 9
 overhead-sign 3 3
@@ -32,10 +32,10 @@ respawn-point 1 9
 deep-hole 1 10
 coin-gold 3 8
 coin-silver 5 8
-spring 2 10
+spring 2
 respawn-point 1 9
 deep-hole 1 6
-spring 6 10
+spring 6
 respawn-point 1 9
 deep-hole 1 12
 coin-gold 7 5
@@ -52,7 +52,7 @@ gush 4
 gush-crack 3
 coin-silver 4 10
 coin-silver 3 10
-spring 2 10
+spring 2
 respawn-point 1 9
 deep-hole 1 12
 overhead-sign 7 2
@@ -69,10 +69,10 @@ coin-silver 1 10
 banana-peel 1 10
 gush 2
 coin-gold 2 5
-spring 0 10
+spring 0
 respawn-point 1 9
 deep-hole 1 6
-spring 6 10
+spring 6
 coin-silver 1 5
 crates 0 1 5
 coin-gold 1 7
@@ -97,7 +97,6 @@ coin-silver 2 8
 crates 0 1 1
 coin-gold 0 13
 coin-silver 2 8
-spring 0 14
 crates 3 1 1
 rope 2
 respawn-point 0 9
@@ -107,7 +106,7 @@ respawn-point 1 9
 deep-hole 1 8
 coin-silver 4 8
 coin-silver 2 8
-spring 2 10
+spring 2
 respawn-point 1 9
 deep-hole 1 10
 overhead-sign 8 3
@@ -142,10 +141,9 @@ banana-peel 1 10
 banana-peel 0 14
 coin-gold 1 7
 coin-gold 0 9
-spring 1 14
-gush 2
+gush 3
 respawn-point 2 9
-spring 1 10
+spring 1
 deep-hole 1 14
 coin-silver 1 8
 coin-silver 6 5

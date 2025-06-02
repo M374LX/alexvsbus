@@ -8,7 +8,7 @@ crates 4 1 1
 crates 1 1 2
 coin-silver 1 7
 crates 0 1 3
-spring 9 10
+spring 9
 coin-silver 1 5
 crates 0 2 5
 hydrant 5
@@ -23,7 +23,7 @@ crates 1 1 3
 coin-silver 1 6
 crates 0 2 4
 coin-gold 4 4
-spring 0 10
+spring 0
 crates 1 2 5
 respawn-point 4 9
 deep-hole 1 5
@@ -78,7 +78,7 @@ coin-gold 0 13
 coin-gold 1 14
 coin-gold 1 13
 coin-silver 2 7
-spring 0 10
+spring 0
 coin-gold 0 13
 crates 1 3 5
 coin-gold 0 14
@@ -88,14 +88,13 @@ coin-gold 1 14
 coin-gold 1 13
 coin-gold 2 13
 coin-gold 1 3
-spring 0 10
+spring 0
 coin-gold 0 14
 crates 1 2 5
 coin-gold 0 13
 coin-gold 3 7
 coin-silver 0 9
 coin-silver 0 10
-spring 0 14
 coin-silver 3 10
 coin-silver 2 10
 coin-gold 4 8
@@ -104,7 +103,7 @@ hydrant 3
 coin-silver 5 9
 crates 4 2 2
 coin-silver 1 7
-spring 4 10
+spring 4
 crates 1 2 3
 coin-silver 3 5
 respawn-point 1 9

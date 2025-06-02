@@ -71,7 +71,7 @@ The object types are:
 
 * `rope <x>`
 
-* `spring <x> <y>`
+* `spring <x>`
 
 * `truck <x>`
 
@@ -110,4 +110,14 @@ Until release 2024.11.21.0:
 * For `banana-peel` and `overhead-sign`, the value was one more than it is now
   for the same Y position. For example, the Y position for a banana peel on the
   floor was 11, but it is now 10.
+
+* With `passageway`, a spring is now automatically added under the passageway
+  exit and a separate `spring` is no longer used in this case.
+
+* `spring` used two values instead of one (`spring <x> <y>`), but only two
+  different values were used for `<y>`: 10 (for the floor) and 14 (for a
+  passageway bottom). As `spring` is no longer used for springs under a
+  passageway exit, it is now used only for springs on the floor, which are
+  always at the same Y position. Thus, a value for the Y position is no longer
+  necessary.
 

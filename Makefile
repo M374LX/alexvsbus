@@ -48,7 +48,7 @@ ifeq ($(WINDOWS),1) #Building for Windows
 	EXEC_PREREQS := $(CFILES) $(HEADERS) $(RES)
 	INSTALL_PREREQ := install_windows
 	CLEAN_FILES := $(EXECNAME) $(RES)
-	CFLAGS += -Wl,-subsystem,windows
+	CFLAGS += -Wl,-subsystem,windows -Wl,--no-insert-timestamp
 else
 	EXECNAME := $(PROGNAME)
 	LIBS := -lm -lpthread -ldl -lrt

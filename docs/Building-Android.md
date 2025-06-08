@@ -71,7 +71,7 @@ The steps to sign an app are:
 
 1. If you don't have a key already, generate one with ``keytool``:
 
-   ``keytool -genkey -v -keystore my-release-key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias my-alias``
+   ```keytool -genkey -v -keystore my-release-key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias my-alias```
 
    The command above prompts for a password and distinguished name fields
    (first and last name, organizational unit, organization, city or locality,
@@ -79,15 +79,15 @@ The steps to sign an app are:
 
 2. Align the APK with ``zipalign``:
 
-   ``zipalign -v -p 4 app-release-unsigned.apk app-release-unsigned-aligned.apk``
+   ```zipalign -v -p 4 app-release-unsigned.apk app-release-unsigned-aligned.apk```
 
 3. Finally, sign the aligned APK with ``apksigner``:
 
-   ``apksigner sign --ks my-release-key.jks --out app-release.apk app-release-unsigned-aligned.apk``
+   ```apksigner sign --ks my-release-key.jks --out app-release.apk app-release-unsigned-aligned.apk```
 
 You can verify the signature by running:
 
-``apksigner verify app-release.apk``
+```apksigner verify app-release.apk```
 
 It might show some warnings about files in the ``META-INF`` directory being
 unprotected. These files are unimportant and the warnings can be ignored.

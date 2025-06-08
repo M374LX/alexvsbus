@@ -34,6 +34,24 @@ Objects that do not use ``objs[]`` include the player character, the bus, and
 crate blocks, among others.
 
 
+## Level columns
+
+Levels are divided into columns, each 24 pixels wide. Each column has a type
+(normal floor, deep hole left, deep hole middle, deep hole right, passageway
+left, passageway middle, or passageway right) and a number of stacked unpushable
+crates (pushable crates are handled separately). The ``LevelColumn`` struct can
+be found in ``defs.h``.
+
+
+## Level blocks
+
+A level block can refer to either the basic positioning unit for game objects or
+one of the small images used to draw the level. In either case, a level block is
+24x24 pixels.
+
+Each level column type has a fixed stack of blocks.
+
+
 ## Solids
 
 The solids are what prevent the player character from moving through the floor

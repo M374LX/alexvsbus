@@ -5,8 +5,8 @@ source code.
 ## Screen types and menus
 
 In ``main.c``, the variable ``screen_type`` keeps track of the current screen
-type (blank, logo, play, or final score). The different screen types are
-identified by constants defined in ``defs.h``: ``SCR_BLANK``, ``SCR_PLAY``,
+type (blank, play, or final score). The different screen types are identified by
+constants defined in ``defs.h``: ``SCR_BLANK``, ``SCR_PLAY``,
 ``SCR_PLAY_FREEZE``, and ``SCR_FINALSCORE``.
 
 The menus, which enable the player to select the difficulty, the level to
@@ -31,7 +31,7 @@ in ``defs.h``. Each type of object that uses ``objs[]`` is identified by one of
 the ``OBJ_*`` constants defined also in ``defs.h``.
 
 Objects that do not use ``objs[]`` include the player character, the bus, and
-crate blocks, among others.
+unpushable crates, among others.
 
 
 ## Level columns
@@ -39,8 +39,8 @@ crate blocks, among others.
 Levels are divided into columns, each 24 pixels wide. Each column has a type
 (normal floor, deep hole left, deep hole middle, deep hole right, passageway
 left, passageway middle, or passageway right) and a number of stacked unpushable
-crates (pushable crates are handled separately). The ``LevelColumn`` struct can
-be found in ``defs.h``.
+crates (pushable crates are handled separately). The ``LevelColumn`` struct is
+defined in ``defs.h``.
 
 
 ## Level blocks
@@ -55,9 +55,9 @@ Each level column type has a fixed stack of blocks.
 ## Solids
 
 The solids are what prevent the player character from moving through the floor
-or objects like crate blocks and parked cars and trucks. These are handled
-separately from the objects themselves. The struct that stores information
-about solids is ``Solid``, which is defined in ``defs.h``.
+or objects like crates and parked cars and trucks. These are handled separately
+from the objects themselves. The struct that stores information about solids is
+``Solid``, which is defined in ``defs.h``.
 
 
 ## Triggers
@@ -90,5 +90,5 @@ A sprite can have more than one animation frame.
 
 The list of sprites with the respective boundaries within the gfx.png file is
 in the ``data_sprite[]`` array, found in the ``data.c`` file, and each sprite
-has an ``SPR_*`` constant defined in ``data.h``.
+has an ``SPR_*`` constant defined in ``defs.h``.
 

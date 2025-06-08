@@ -438,7 +438,7 @@ void menu_adapt_to_screen_size()
 			ctx.text[0] = '\0';
 			strcat(ctx.text,
 				"\x1B" "M374LX" "\x1B" " (");
-			strcat(ctx.text, url("http://m374lx.users.sourceforge.net"));
+			strcat(ctx.text, url("https://m374lx.users.sourceforge.net"));
 			strcat(ctx.text,
 				")\n"
 				" Game design, programming,\n"

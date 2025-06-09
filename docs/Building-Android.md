@@ -54,8 +54,9 @@ Gradle version will be downloaded automatically, which means that an Internet
 connection is required.
 
 The built .apk file will be at
-``android/build/outputs/apk/debug/app-debug.apk`` (debug build) or
-``android/build/outputs/apk/release/app-release-unsigned.apk`` (release build).
+``android/app/build/outputs/apk/debug/app-debug.apk`` (debug build) or
+``android/app/build/outputs/apk/release/app-release-unsigned.apk`` (release
+build).
 
 A debug build is automatically signed with a debug key and is ready to run on
 an Android device. A release build, however, can run only after you sign it.

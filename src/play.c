@@ -636,7 +636,7 @@ static void move_objects()
 		}
 	}
 
-	//Passing car and ending sequence traffic jam
+	//Passing car
 	if (ctx.car.x != NONE) {
 		ctx.car.x += ctx.car.xvel * delta_time;
 

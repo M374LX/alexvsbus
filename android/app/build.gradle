@@ -52,9 +52,5 @@ android {
             path 'src/main/Android.mk'
         }
     }
-
-    buildFeatures {
-        viewBinding true
-    }
 }
 

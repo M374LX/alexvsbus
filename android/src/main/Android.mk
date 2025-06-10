@@ -2,7 +2,7 @@ LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
 
-PROJECT_ROOT := $(LOCAL_PATH)/../../../..
+PROJECT_ROOT := $(LOCAL_PATH)/../../..
 
 LOCAL_MODULE := main
 

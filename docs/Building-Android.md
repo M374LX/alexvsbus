@@ -13,7 +13,7 @@ The required SDK packages, which can be installed by running
 ``sdkmanager --install <package>``, are listed below. The versions here are the
 ones that have been tested, but later versions might also work. The versions
 of some of the packages can be changed by editing the file
-``android/app/build.gradle``.
+``android/build.gradle``.
 
 The packages are:
 ```
@@ -54,8 +54,8 @@ Gradle version will be downloaded automatically, which means that an Internet
 connection is required.
 
 The built .apk file will be at
-``android/app/build/outputs/apk/debug/app-debug.apk`` (debug build) or
-``android/app/build/outputs/apk/release/app-release-unsigned.apk`` (release
+``android/build/outputs/apk/debug/android-debug.apk`` (debug build) or
+``android/build/outputs/apk/release/android-release-unsigned.apk`` (release
 build).
 
 A debug build is automatically signed with a debug key and is ready to run on
@@ -80,15 +80,15 @@ The steps to sign an app are:
 
 2. Align the APK with ``zipalign``:
 
-   ```zipalign -v -p 4 app-release-unsigned.apk app-release-unsigned-aligned.apk```
+   ```zipalign -v -p 4 android-release-unsigned.apk android-release-unsigned-aligned.apk```
 
 3. Finally, sign the aligned APK with ``apksigner``:
 
-   ```apksigner sign --ks my-release-key.jks --out app-release.apk app-release-unsigned-aligned.apk```
+   ```apksigner sign --ks my-release-key.jks --out android-release.apk android-release-unsigned-aligned.apk```
 
 You can verify the signature by running:
 
-```apksigner verify app-release.apk```
+```apksigner verify android-release.apk```
 
 It might show some warnings about files in the ``META-INF`` directory being
 unprotected. These files are unimportant and the warnings can be ignored.
@@ -107,6 +107,6 @@ be used on Unix systems (including Linux):
 
 On Windows, replace ``./gradlew`` with ``gradlew.bat``.
 
-In case you experience problems, try manually deleting the ``android/app/build``
+In case you experience problems, try manually deleting the ``android/build``
 directory.
 

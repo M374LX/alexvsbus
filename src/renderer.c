@@ -134,16 +134,10 @@ bool renderer_init(DisplayParams* dp, Config* cfg, PlayCtx* pctx, MenuCtx* mctx)
 	vscreen.texture.format  = format;
 	vscreen.texture.mipmaps = 1;
 
-	//Create depth renderbuffer/texture
-	vscreen.depth.id        = rlLoadTextureDepth(width, height, true);
-	vscreen.depth.width     = width;
-	vscreen.depth.height    = height;
-	vscreen.depth.format    = 19; //DEPTH_COMPONENT_24BIT?
-	vscreen.depth.mipmaps   = 1;
+	vscreen.depth.id = 0;
 
 	//Attach color texture and depth renderbuffer/texture to FBO
 	rlFramebufferAttach(vscreen.id, vscreen.texture.id, RL_ATTACHMENT_COLOR_CHANNEL0, RL_ATTACHMENT_TEXTURE2D, 0);
-	rlFramebufferAttach(vscreen.id, vscreen.depth.id, RL_ATTACHMENT_DEPTH, RL_ATTACHMENT_RENDERBUFFER, 0);
 
 	rlDisableFramebuffer();
 
@@ -1326,6 +1320,4 @@ static void draw_scanlines()
 		draw_gfx(src, dst, false, false, 127);
 	}
 }
-
-
 

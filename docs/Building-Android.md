@@ -19,7 +19,6 @@ The packages are:
 ```
 build-tools;33.0.2
 ndk;25.1.8937393
-patcher;v4
 platform-tools
 platforms;android-34
 ```

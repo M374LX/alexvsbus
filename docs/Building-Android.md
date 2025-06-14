@@ -17,8 +17,8 @@ of some of the packages can be changed by editing the file
 
 The packages are:
 ```
-build-tools;33.0.2
-ndk;25.1.8937393
+build-tools;36.0.0
+ndk;26.3.11579264
 platform-tools
 platforms;android-34
 ```

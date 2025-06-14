@@ -536,8 +536,8 @@ enum {
 #define HEN_Y 224
 
 //Camera velocity
-#define CAMERA_XVEL 700
-#define CAMERA_YVEL 400
+#define CAMERA_XVEL 720
+#define CAMERA_YVEL 408
 
 //Animations
 enum {

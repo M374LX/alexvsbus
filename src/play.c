@@ -390,15 +390,15 @@ static void add_crack_particles(int x, int y)
 	ctx.crack_particles[ctx.next_crack_particle].y = y;
 	ctx.crack_particles[ctx.next_crack_particle].xvel = -15;
 	ctx.crack_particles[ctx.next_crack_particle].yvel = -120;
-	ctx.crack_particles[ctx.next_crack_particle].grav =  200;
+	ctx.crack_particles[ctx.next_crack_particle].grav =  198;
 	ctx.next_crack_particle++;
 	ctx.next_crack_particle %= MAX_CRACK_PARTICLES;
 
 	ctx.crack_particles[ctx.next_crack_particle].x = x;
 	ctx.crack_particles[ctx.next_crack_particle].y = y;
-	ctx.crack_particles[ctx.next_crack_particle].xvel = -5;
-	ctx.crack_particles[ctx.next_crack_particle].yvel = -190;
-	ctx.crack_particles[ctx.next_crack_particle].grav =  200;
+	ctx.crack_particles[ctx.next_crack_particle].xvel = -6;
+	ctx.crack_particles[ctx.next_crack_particle].yvel = -192;
+	ctx.crack_particles[ctx.next_crack_particle].grav =  198;
 	ctx.next_crack_particle++;
 	ctx.next_crack_particle %= MAX_CRACK_PARTICLES;
 
@@ -406,15 +406,15 @@ static void add_crack_particles(int x, int y)
 	ctx.crack_particles[ctx.next_crack_particle].y = y;
 	ctx.crack_particles[ctx.next_crack_particle].xvel =  15;
 	ctx.crack_particles[ctx.next_crack_particle].yvel = -120;
-	ctx.crack_particles[ctx.next_crack_particle].grav =  200;
+	ctx.crack_particles[ctx.next_crack_particle].grav =  198;
 	ctx.next_crack_particle++;
 	ctx.next_crack_particle %= MAX_CRACK_PARTICLES;
 
 	ctx.crack_particles[ctx.next_crack_particle].x = x;
 	ctx.crack_particles[ctx.next_crack_particle].y = y;
-	ctx.crack_particles[ctx.next_crack_particle].xvel =  5;
-	ctx.crack_particles[ctx.next_crack_particle].yvel = -190;
-	ctx.crack_particles[ctx.next_crack_particle].grav =  200;
+	ctx.crack_particles[ctx.next_crack_particle].xvel =  6;
+	ctx.crack_particles[ctx.next_crack_particle].yvel = -192;
+	ctx.crack_particles[ctx.next_crack_particle].grav =  198;
 	ctx.next_crack_particle++;
 	ctx.next_crack_particle %= MAX_CRACK_PARTICLES;
 }
@@ -699,9 +699,9 @@ static void handle_car_thrown_peel()
 			peel->obj = i;
 			peel->x = ctx.car.peel_throw_x + 90;
 			peel->y = 200;
-			peel->xvel = 140;
-			peel->yvel = -10;
-			peel->grav = 500;
+			peel->xvel = 144;
+			peel->yvel = -12;
+			peel->grav = 504;
 			peel->xdest = peel->x + 70;
 			peel->ydest = 256;
 
@@ -980,7 +980,7 @@ static void handle_passageways()
 			//Check if the player character is opening the passageway exit, but
 			//only if moving upwards at a high enough velocity, as is the case 
 			//when hitting a spring
-			if (pl->yvel < -160 && pl_top < FLOOR_Y + 8) {
+			if (pl->yvel < -162 && pl_top < FLOOR_Y + 8) {
 				if (!pw->exit_opened) {
 					audio_play_sfx(SFX_HOLE);
 					add_crack_particles(pw_right - 16, 276);
@@ -1142,7 +1142,7 @@ static void handle_player_interactions()
 						ctx.gushes[j].y = 266;
 						ctx.gushes[j].move_pattern = data_gush_move_pattern_2;
 						ctx.gushes[j].move_pattern_pos = 0;
-						ctx.gushes[j].yvel = -140;
+						ctx.gushes[j].yvel = -144;
 						ctx.gushes[j].ydest = data_gush_move_pattern_2[1];
 
 						add_crack_particles(obj->x + 6, 276);
@@ -1177,14 +1177,14 @@ static void handle_player_interactions()
 				pl->state = PLAYER_STATE_GRABROPE;
 				ctx.grabbed_rope.obj = i;
 				ctx.grabbed_rope.x = obj->x;
-				ctx.grabbed_rope.xvel = 256;
+				ctx.grabbed_rope.xvel = 258;
 
 				break;
 
 			case OBJ_SPRING:
 				if (pl->yvel >= 0) {
 					audio_play_sfx(SFX_SPRING);
-					pl->yvel = -244;
+					pl->yvel = -246;
 					ctx.hit_spring = i;
 					start_animation(ANIM_HIT_SPRING);
 				}
@@ -1205,8 +1205,8 @@ static void handle_player_interactions()
 		pl->state = PLAYER_STATE_SLIP;
 
 		peel->xvel = 150;
-		peel->yvel = -200;
-		peel->grav = 500;
+		peel->yvel = -204;
+		peel->grav = 504;
 
 		//For the destination Y position, use a value below the limit,
 		//which is 400
@@ -1269,7 +1269,7 @@ static void handle_triggers()
 
 		if (tr->what == TRIGGER_HEN) {
 			ctx.hen.x = tr->x - (VSCREEN_MAX_WIDTH / 2) - 32;
-			ctx.hen.xvel = 350;
+			ctx.hen.xvel = 360;
 			ctx.hen.acc = 0;
 			start_animation(ANIM_HEN);
 		} else { //If not a hen, then trigger a passing car
@@ -1301,7 +1301,7 @@ static void do_player_state_specifics()
 
 		//Jump
 		if (pl->on_floor && jump_timeout > 0) {
-			pl->yvel = -154;
+			pl->yvel = -156;
 			jump_timeout = 0;
 		}
 
@@ -1434,13 +1434,13 @@ static void handle_player_state_change()
 
 	switch (pl->state) {
 		case PLAYER_STATE_NORMAL:
-			pl->dec = 256;
-			pl->grav = 230;
+			pl->dec = 252;
+			pl->grav = 234;
 			break;
 
 		case PLAYER_STATE_SLIP:
-			pl->xvel = -10;
-			pl->yvel = -20;
+			pl->xvel = -12;
+			pl->yvel = -24;
 			pl->height = PLAYER_HEIGHT_SLIP;
 			pl->anim_type = PLAYER_ANIM_SLIP;
 			break;
@@ -1453,15 +1453,15 @@ static void handle_player_state_change()
 			break;
 
 		case PLAYER_STATE_THROWBACK:
-			pl->xvel = -100;
-			pl->yvel = -140;
+			pl->xvel = -102;
+			pl->yvel = -144;
 			pl->anim_type = PLAYER_ANIM_THROWBACK;
 			break;
 
 		case PLAYER_STATE_GRABROPE:
 			pl->grav = 0;
 			pl->xvel = 0;
-			pl->yvel = 110;
+			pl->yvel = 120;
 			pl->anim_type = PLAYER_ANIM_GRABROPE;
 			break;
 
@@ -1625,7 +1625,7 @@ static void move_push_arrow()
 	ctx.push_arrow.xoffs += ctx.push_arrow.xvel * delta_time;
 	if (ctx.push_arrow.xoffs >= 8) {
 		ctx.push_arrow.xoffs = 8;
-		ctx.push_arrow.xvel = -32;
+		ctx.push_arrow.xvel = -30;
 	}
 	if (ctx.push_arrow.xvel < 0 && ctx.push_arrow.xoffs <= 0) {
 		ctx.push_arrow.xoffs = 0;
@@ -1637,7 +1637,7 @@ static void move_push_arrow()
 		ctx.push_arrow.delay = 0;
 
 		if (ctx.push_arrow.xoffs == 0) {
-			ctx.push_arrow.xvel = 32;
+			ctx.push_arrow.xvel = 30;
 			ctx.push_arrow.delay = 1;
 		}
 	}
@@ -1763,8 +1763,8 @@ static void update_sequence()
 
 		case 11:
 			start_animation(ANIM_BUS_DOOR_REAR);
-			bus->acc = 256;
-			bus->xvel = 4;
+			bus->acc = 252;
+			bus->xvel = 6;
 			ctx.sequence_delay = 2;
 			ctx.sequence_step = SEQ_NORMAL_PLAY_START;
 			break;
@@ -1774,8 +1774,8 @@ static void update_sequence()
 		case 20: //SEQ_BUS_LEAVING
 			//Bus leaves while closing the front door
 			start_animation(ANIM_BUS_DOOR_FRONT);
-			bus->acc = 256;
-			bus->xvel = 4;
+			bus->acc = 252;
+			bus->xvel = 6;
 			ctx.sequence_delay = 2;
 			ctx.sequence_step++;
 			break;
@@ -1855,9 +1855,9 @@ static void update_sequence()
 					thrown_peel->obj = 0;
 					thrown_peel->x = ctx.objs[0].x;
 					thrown_peel->y = ctx.objs[0].y;
-					thrown_peel->xvel = -512;
-					thrown_peel->yvel = 200;
-					thrown_peel->grav = 500;
+					thrown_peel->xvel = -510;
+					thrown_peel->yvel = 204;
+					thrown_peel->grav = 504;
 					thrown_peel->xdest = (int)bus->x + 345;
 					thrown_peel->ydest = 256;
 					ctx.sequence_step++;
@@ -1868,7 +1868,7 @@ static void update_sequence()
 					bird->sprite = SPR_BIRD;
 					bird->x = cam->x - 16;
 					bird->y = 120;
-					bird->xvel = 304;
+					bird->xvel = 300;
 					bird_anim->running = true;
 					bird_anim->frame = 0;
 					bird_anim->num_frames = 4;
@@ -1987,7 +1987,7 @@ static void update_sequence()
 			if (bearded_man->x <= bus->x + 380) {
 				//Bearded man decelerates
 				bearded_man->x = bus->x + 380;
-				bearded_man->acc = 256;
+				bearded_man->acc = 252;
 				ctx.sequence_step++;
 			}
 			break;
@@ -2011,8 +2011,8 @@ static void update_sequence()
 		case 76:
 			//Bearded man jumps into the bus
 			bearded_man->sprite = SPR_BEARDED_MAN_JUMP;
-			bearded_man->yvel = -154;
-			bearded_man->grav = 230;
+			bearded_man->yvel = -156;
+			bearded_man->grav = 234;
 			ctx.sequence_step++;
 			break;
 
@@ -2097,12 +2097,12 @@ static void update_sequence()
 				pl->x = bus->x + 342;
 				pl->xvel = 0;
 			}
-			if (bird->x >= bus->x + 353) {
+			if (bird->x >= bus->x + 354) {
 				//Bird dung appears
 				dung->sprite = SPR_DUNG;
-				dung->x = bus->x + 353;
+				dung->x = bus->x + 354;
 				dung->y = bird->y;
-				dung->yvel = 256;
+				dung->yvel = 252;
 				ctx.sequence_step++;
 			}
 			break;
@@ -2173,8 +2173,8 @@ static void update_sequence()
 		case 100: //SEQ_GOAL_REACHED_SCENE5
 			//Bus leaves before the player character can enter it
 			start_animation(ANIM_BUS_DOOR_FRONT);
-			bus->acc = 256;
-			bus->xvel = 4;
+			bus->acc = 252;
+			bus->xvel = 6;
 			ctx.sequence_step++;
 			break;
 
@@ -2187,8 +2187,8 @@ static void update_sequence()
 				cutscene_player->sprite = SPR_PLAYER_RUN;
 				cutscene_player->x = pl->x;
 				cutscene_player->y = pl->y;
-				cutscene_player->xvel = 128;
-				cutscene_player->acc = 512;
+				cutscene_player->xvel = 126;
+				cutscene_player->acc = 504;
 				cutscene_player_anim->running = true;
 				cutscene_player_anim->num_frames = 4;
 				cutscene_player_anim->loop = true;
@@ -2264,7 +2264,7 @@ static void update_sequence()
 
 		case 112:
 			//Traffic jam starts moving
-			bus->xvel = 64;
+			bus->xvel = 60;
 			ctx.anims[ANIM_CAR_WHEELS].delay = 0.1f;
 			ctx.anims[ANIM_CAR_WHEELS].max_delay = 0.1f;
 			start_animation(ANIM_CAR_WHEELS);
@@ -2308,7 +2308,7 @@ static void update_sequence()
 			if (cutscene_player->x >= cam->x + 304) {
 				//Player character decelerates
 				cutscene_player->x = cam->x + 304;
-				cutscene_player->acc = -256;
+				cutscene_player->acc = -252;
 				ctx.sequence_step++;
 			}
 			break;
@@ -2335,7 +2335,7 @@ static void update_sequence()
 
 		case 117:
 			//Traffic jam starts moving
-			bus->xvel = 64;
+			bus->xvel = 60;
 			start_animation(ANIM_CAR_WHEELS);
 			ctx.sequence_step++;
 			break;
@@ -2355,7 +2355,7 @@ static void update_sequence()
 		case 119:
 			//Hen appears from the left side of the screen
 			ctx.hen.x = cam->x - 64;
-			ctx.hen.xvel = 350;
+			ctx.hen.xvel = 360;
 			start_animation(ANIM_HEN);
 			ctx.sequence_step++;
 			break;
@@ -2364,7 +2364,7 @@ static void update_sequence()
 			if (ctx.hen.x >= cam->x + 120) {
 				//Hen decelerates
 				ctx.hen.x = cam->x + 120;
-				ctx.hen.acc = -256;
+				ctx.hen.acc = -252;
 				ctx.sequence_step++;
 			}
 			break;
@@ -2390,7 +2390,7 @@ static void update_sequence()
 
 		case 122:
 			//Traffic jam starts moving
-			bus->xvel = 64;
+			bus->xvel = 60;
 			start_animation(ANIM_CAR_WHEELS);
 			ctx.sequence_step++;
 			break;

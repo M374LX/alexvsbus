@@ -267,17 +267,17 @@ const int data_obj_sprites[] = {
 //
 //The value zero indicates the end of the pattern
 const int data_gush_move_pattern_1[] = {
-	-64, 224, 64, 232,
-	-64, 224, 64, 232,
-	-64, 224, 64, 232,
-	-64, 224, 64, 232,
-	-64, 224, 64, 232,
+	-60, 224, 60, 232,
+	-60, 224, 60, 232,
+	-60, 224, 60, 232,
+	-60, 224, 60, 232,
+	-60, 224, 60, 232,
 	-144, 200, 144, 232,
 	0,
 };
 
 const int data_gush_move_pattern_2[] = {
-	-64, 216, 64, 224,
+	-60, 216, 60, 224,
 	0,
 };
 

@@ -1,0 +1,7 @@
+- Android TV support improvements.
+
+- Some tweaks in the graphics, including the addition of the word "push" to
+  arrows indicating that a crate is pushable.
+
+- Code refactoring.
+

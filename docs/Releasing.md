@@ -4,7 +4,7 @@ We use the YYYY.0M.0D.MINOR calendar versioning (CalVer) scheme.
 
 1. Update the release (or version) number in the following files:
 
-   * ``android/app/build.gradle``
+   * ``android/build.gradle``
    * ``src/defs.h``
 
 2. Add a description about the new release to ``docs/News.md``.

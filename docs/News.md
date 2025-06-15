@@ -1,3 +1,13 @@
+## 2025.06.15.0
+
+- Android TV support improvements.
+
+- Some tweaks in the graphics, including the addition of the word "push" to
+  arrows indicating that a crate is pushable.
+
+- Code refactoring.
+
+
 ## 2024.11.21.0
 
 - Fix Android build and make it reproducible.

@@ -1,6 +1,6 @@
 /*
  * Alex vs Bus
- * Copyright (C) 2021-2024 M374LX
+ * Copyright (C) 2021-2025 M374LX
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -385,7 +385,7 @@ void menu_adapt_to_screen_size()
 			ctx.text[0] = '\0';
 			strcat(ctx.text,
 				"\x1B" "Alex vs Bus: The Race\n"
-				"\x7F" " 2021-2024 M374LX\n" //0x7F = copyright symbol
+				"\x7F" " 2021-2025 M374LX\n" //0x7F = copyright symbol
 				"\n"
 				"\x1B" "Release\n"
 				" " RELEASE "\n"
@@ -418,7 +418,7 @@ void menu_adapt_to_screen_size()
 			ctx.text[0] = '\0';
 			strcat(ctx.text,
 				"\x1B" "Alex vs Bus: The Race\n"
-				"\x7F" " 2021-2024 M374LX\n" //0x7F = copyright symbol
+				"\x7F" " 2021-2025 M374LX\n" //0x7F = copyright symbol
 				"\n"
 				"\x1B" "Release\n"
 				" " RELEASE "\n"

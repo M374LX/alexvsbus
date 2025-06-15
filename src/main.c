@@ -1,6 +1,6 @@
 /*
  * Alex vs Bus
- * Copyright (C) 2021-2024 M374LX
+ * Copyright (C) 2021-2025 M374LX
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -485,7 +485,7 @@ static void show_version()
 		"Alex vs Bus: The Race\n"
 		"Release " RELEASE "\n"
 		"\n"
-		"Copyright (C) 2021-2024 M374LX\n"
+		"Copyright (C) 2021-2025 M374LX\n"
 		"\n"
 		"This program is free software: you can redistribute it and/or modify\n"
 		"it under the terms of the GNU General Public License as published by\n"

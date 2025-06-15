@@ -1294,9 +1294,9 @@ static void do_player_state_specifics()
 	if (pl->state == PLAYER_STATE_NORMAL) {
 		pl->acc = 0;
 		if (input_right) {
-			pl->acc = 210;
+			pl->acc = 216;
 		} else if (input_left) {
-			pl->acc = -210;
+			pl->acc = -216;
 		}
 
 		//Jump
@@ -1581,8 +1581,8 @@ static void update_animations()
 	ctx.anims[ANIM_BUS_WHEELS].running = false;
 	if (ctx.bus.xvel > 0) {
 		float max_delay = 0.1f;
-		if (ctx.bus.xvel > 64)  max_delay = 0.05f;
-		if (ctx.bus.xvel > 128) max_delay = 0.025f;
+		if (ctx.bus.xvel > 84)  max_delay = 0.05f;
+		if (ctx.bus.xvel > 132) max_delay = 0.025f;
 
 		ctx.anims[ANIM_BUS_WHEELS].running = true;
 		ctx.anims[ANIM_BUS_WHEELS].max_delay = max_delay;
@@ -2264,7 +2264,7 @@ static void update_sequence()
 
 		case 112:
 			//Traffic jam starts moving
-			bus->xvel = 60;
+			bus->xvel = 72;
 			ctx.anims[ANIM_CAR_WHEELS].delay = 0.1f;
 			ctx.anims[ANIM_CAR_WHEELS].max_delay = 0.1f;
 			start_animation(ANIM_CAR_WHEELS);
@@ -2335,7 +2335,7 @@ static void update_sequence()
 
 		case 117:
 			//Traffic jam starts moving
-			bus->xvel = 60;
+			bus->xvel = 72;
 			start_animation(ANIM_CAR_WHEELS);
 			ctx.sequence_step++;
 			break;
@@ -2390,7 +2390,7 @@ static void update_sequence()
 
 		case 122:
 			//Traffic jam starts moving
-			bus->xvel = 60;
+			bus->xvel = 72;
 			start_animation(ANIM_CAR_WHEELS);
 			ctx.sequence_step++;
 			break;

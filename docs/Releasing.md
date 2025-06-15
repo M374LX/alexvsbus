@@ -20,8 +20,8 @@ We use the YYYY.0M.0D.MINOR calendar versioning (CalVer) scheme.
 5. Build the Windows executables (x86 and x64) using raylib's default GLFW
    backend and bundle each of them in a ZIP file along with the ``assets``
    directory, the file ``LICENSE.txt``, and a directory named ``docs``
-   containing the PDF manual and, in a subdirectory named ``licenses``, the
-   text text files for the GPLv3 and CC BY-SA 4.0 licenses.
+   containing the PDF manual and, in a subdirectory named ``licenses``, the text
+   files for the GPLv3 and CC BY-SA 4.0 licenses.
 
 6. Build and sign a release APK for Android.
 

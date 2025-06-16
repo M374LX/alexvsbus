@@ -7,6 +7,9 @@ We use the YYYY.0M.0D.MINOR calendar versioning (CalVer) scheme.
    * ``android/build.gradle``
    * ``src/defs.h``
 
+   In the case of ``android/build.gradle``, the version code needs to be
+   increased.
+
 2. Add a description about the new release to ``docs/News.md``.
 
 3. Create a changelog with the same description in ``metadata/en-US/changelogs``.

@@ -205,7 +205,7 @@ static void adapt_to_screen_size();
 static void show_title();
 static void show_final_score();
 static void start_level(int level_num, int difficulty, bool skip_initial_sequence);
-static void start_ending_sequence();
+static void start_ending_sequence(int difficulty);
 static bool find_assets_dir();
 static void find_config_path();
 static void load_config();
@@ -770,7 +770,7 @@ static void handle_level_end()
 		} else if (play_ctx->difficulty == DIFFICULTY_MAX) {
 			show_final_score();
 		} else {
-			start_ending_sequence();
+			start_ending_sequence(play_ctx->difficulty);
 		}
 	}
 }
@@ -969,7 +969,9 @@ static void start_level(int level_num, int difficulty, bool skip_initial_sequenc
 	play_adapt_to_screen_size();
 }
 
-static void start_ending_sequence()
+//Note: the parameter refers to the difficulty the player has just finished, not
+//the one to move to after the ending sequence
+static void start_ending_sequence(int difficulty)
 {
 	renderer_show_save_error(false);
 	play_clear();
@@ -977,8 +979,8 @@ static void start_ending_sequence()
 	progress_checked = false;
 	screen_type = SCR_PLAY;
 
+	play_ctx->difficulty = difficulty;
 	play_ctx->ending = true;
-
 	play_ctx->level_size = 8 * VSCREEN_MAX_WIDTH;
 	play_ctx->bg_color = SPR_BG_SKY3;
 	play_ctx->bgm = BGM3;

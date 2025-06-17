@@ -33,6 +33,6 @@ We use the YYYY.0M.0D.MINOR calendar versioning (CalVer) scheme.
    ``git push --tags origin main``
 
 8. Finally, create the release on GitHub with the same description added to
-   News.md and include the ZIP files with the Windows builds and the Android
-   APK as release assets.
+   News.md and include the ZIP files with the Windows builds, the Android APK,
+   and the PDF manual as release assets.
 

@@ -1,3 +1,8 @@
+## 2025.06.16.0
+
+- Bugfix: finishing the "hard" difficulty would cause a repetition of the same
+  difficulty instead of advancing to "super".
+
 ## 2025.06.15.0
 
 - Android TV support improvements.

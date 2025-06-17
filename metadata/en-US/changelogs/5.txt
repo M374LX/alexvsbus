@@ -1,0 +1,3 @@
+- Bugfix: finishing the "hard" difficulty would cause a repetition of the same
+  difficulty instead of advancing to "super".
+

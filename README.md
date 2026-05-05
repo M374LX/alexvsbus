@@ -104,3 +104,11 @@ in the manual or by launching the game with the ``--help`` (or ``-h``) option.
 
 See ``docs/Building-Desktop.md`` or ``docs/Building-Android.md``.
 
+
+## Sega Genesis/Mega Drive port
+
+The game has been ported to the Sega Genesis/Mega Drive. While the original game
+is written in C, the port is written in Assembly.
+
+The port can be found at https://github.com/M374LX/alexvsbus-md.
+

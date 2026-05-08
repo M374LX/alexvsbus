@@ -2123,11 +2123,6 @@ static void update_sequence()
 
 		//----------------------------------------------------------------------
 		case 90: //SEQ_GOAL_REACHED_SCENE4
-			if (pl->x >= bus->x + 342) {
-				//Player character stops at bus front door
-				pl->x = bus->x + 342;
-				pl->xvel = 0;
-			}
 			if (bird->x >= bus->x + 354) {
 				//Bird dung appears
 				dung->sprite = SPR_DUNG;
@@ -2139,6 +2134,11 @@ static void update_sequence()
 			break;
 
 		case 91:
+			if (pl->x >= bus->x + 342) {
+				//Player character stops at bus front door
+				pl->x = bus->x + 342;
+				pl->xvel = 0;
+			}
 			if (dung->y >= pl->y + 12) {
 				//Bird dung hits the player character
 				dung->sprite = NONE;

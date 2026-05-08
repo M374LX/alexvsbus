@@ -2111,7 +2111,7 @@ static void update_sequence()
 		case 84:
 			if (!ctx.counting_score) {
 				//Score count finished
-				ctx.sequence_delay = 0.2f;
+				ctx.sequence_delay = 0.5f;
 				ctx.sequence_step++;
 			}
 			break;

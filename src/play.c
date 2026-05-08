@@ -126,7 +126,7 @@ void play_clear()
 	ctx.counting_score = false;
 	ctx.can_pause = false;
 
-	ctx.crate_push_remaining = 0.75f;
+	ctx.crate_push_remaining = 0.7f;
 
 	ctx.cam.x = 0;
 	ctx.cam.y = 0;
@@ -905,7 +905,7 @@ static void handle_solids()
 					limit = top;
 				}
 			} else {
-				if (sol->type == SOL_PASSAGEWAY_EXIT && pl->yvel < -160) {
+				if (sol->type == SOL_PASSAGEWAY_EXIT && pl->yvel < -162) {
 					//Ignore passageway exit solids if the player character is
 					//moving upwards at a high enough velocity, as when hitting
 					//a spring
@@ -1222,7 +1222,7 @@ static void handle_player_interactions()
 	}
 
 	//Handle pushable crates
-	if (!input_right) ctx.crate_push_remaining = 0.75f;
+	if (!input_right) ctx.crate_push_remaining = 0.7f;
 	for (i = 0; i < MAX_PUSHABLE_CRATES; i++) {
 		PushableCrate* crate = &ctx.pushable_crates[i];
 		Solid* sol;
@@ -1245,7 +1245,7 @@ static void handle_player_interactions()
 		ctx.crate_push_remaining -= delta_time;
 		if (ctx.crate_push_remaining <= 0) {
 			//Finished pushing
-			ctx.crate_push_remaining = 0.75f;
+			ctx.crate_push_remaining = 0.7f;
 			crate->show_arrow = false;
 			crate->pushed = true;
 			audio_play_sfx(SFX_CRATE);
@@ -1567,7 +1567,7 @@ static void handle_player_animation_change()
 			break;
 
 		case PLAYER_ANIM_GRABROPE:
-			set_animation(ANIM_PLAYER, true, false, false, 1, 0.05f);
+			set_animation(ANIM_PLAYER, true, false, false, 1, 0.0f);
 			break;
 	}
 }
@@ -1582,7 +1582,7 @@ static void update_animations()
 	if (ctx.bus.xvel > 0) {
 		float max_delay = 0.1f;
 		if (ctx.bus.xvel > 84)  max_delay = 0.05f;
-		if (ctx.bus.xvel > 132) max_delay = 0.025f;
+		if (ctx.bus.xvel > 132) max_delay = 0.02f;
 
 		ctx.anims[ANIM_BUS_WHEELS].running = true;
 		ctx.anims[ANIM_BUS_WHEELS].max_delay = max_delay;
@@ -1821,7 +1821,7 @@ static void update_sequence()
 			cam->xvel = 0;
 			cam->yvel = 0;
 			ctx.wipe_out = true;
-			ctx.sequence_delay = 0.6f;
+			ctx.sequence_delay = 0.5f;
 			ctx.sequence_step++;
 			break;
 
@@ -1835,7 +1835,7 @@ static void update_sequence()
 			ctx.car.x = NONE;
 			ctx.hen.x = NONE;
 			ctx.wipe_in = true;
-			ctx.sequence_delay = 0.6f;
+			ctx.sequence_delay = 0.5f;
 			ctx.sequence_step++;
 			break;
 
@@ -2025,7 +2025,7 @@ static void update_sequence()
 				bearded_man->x -= bus->x; //Make position relative to the bus
 				bearded_man->y = BUS_Y + 35;
 				bearded_man->in_bus = true;
-				ctx.sequence_delay = 0.25f;
+				ctx.sequence_delay = 0.2f;
 				ctx.sequence_step++;
 			}
 			break;
@@ -2040,7 +2040,7 @@ static void update_sequence()
 		case 80: //SEQ_GOAL_REACHED_SCENE3
 			//Player character slips on a banana peel and hits the floor
 			if (pl->on_floor) {
-				ctx.sequence_delay = 0.25f;
+				ctx.sequence_delay = 0.2f;
 				ctx.sequence_step++;
 			}
 			break;
@@ -2080,7 +2080,7 @@ static void update_sequence()
 		case 84:
 			if (!ctx.counting_score) {
 				//Score count finished
-				ctx.sequence_delay = 0.25f;
+				ctx.sequence_delay = 0.2f;
 				ctx.sequence_step++;
 			}
 			break;
@@ -2116,7 +2116,7 @@ static void update_sequence()
 				cutscene_player->sprite = SPR_PLAYER_CLEAN_DUNG;
 				cutscene_player->x = pl->x;
 				cutscene_player->y = pl->y;
-				ctx.sequence_delay = 0.25f;
+				ctx.sequence_delay = 0.2f;
 				ctx.sequence_step++;
 			}
 			break;
@@ -2137,7 +2137,7 @@ static void update_sequence()
 			//Player character finishes cleaning the dung
 			pl->visible = true;
 			cutscene_player->sprite = NONE;
-			ctx.sequence_delay = 0.25f;
+			ctx.sequence_delay = 0.2f;
 			ctx.sequence_step++;
 			break;
 
@@ -2314,7 +2314,7 @@ static void update_sequence()
 			break;
 
 		case 116:
-			if (cutscene_player->xvel <= 128) {
+			if (cutscene_player->xvel <= 180) {
 				if (cutscene_player->sprite == SPR_PLAYER_RUN) {
 					cutscene_player->sprite = SPR_PLAYER_WALK;
 					cutscene_player->x += 8;

@@ -101,7 +101,7 @@ enum {
 //Other screen wiping constants
 #define WIPE_MAX_VALUE VSCREEN_MAX_WIDTH
 #define WIPE_DELTA 16
-#define WIPE_MAX_DELAY 0.0005f
+#define WIPE_MAX_DELAY 0.01f
 
 //Text colors
 enum {

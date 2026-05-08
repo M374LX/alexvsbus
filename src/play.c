@@ -1534,42 +1534,73 @@ static void handle_player_animation_change()
 {
 	int anim_type = ctx.player.anim_type;
 
+	bool loop = false;
+	bool reverse = false;
+	int num_frames = 0;
+	float delay = 0.0f;
+
 	//Nothing to do if the animation has not changed
 	if (anim_type == ctx.player.old_anim_type) return;
 
 	switch (anim_type) {
 		case PLAYER_ANIM_STAND:
-			set_animation(ANIM_PLAYER, true, false, false, 1, 0.0f);
+			loop = false;
+			reverse = false;
+			num_frames = 1;
+			delay = 0.0f;
 			break;
 
 		case PLAYER_ANIM_WALK:
-			set_animation(ANIM_PLAYER, true, true,  false, 6, 0.1f);
+			loop = true;
+			reverse = false;
+			num_frames = 6;
+			delay = 0.1f;
 			break;
 
 		case PLAYER_ANIM_WALKBACK:
-			set_animation(ANIM_PLAYER, true, true,  true,  6, 0.1f);
+			loop = true;
+			reverse = true;
+			num_frames = 6;
+			delay = 0.1f;
 			break;
 
 		case PLAYER_ANIM_JUMP:
-			set_animation(ANIM_PLAYER, true, true,  false, 1, 0.0f);
+			loop = false;
+			reverse = false;
+			num_frames = 1;
+			delay = 0.0f;
 			break;
 
 		case PLAYER_ANIM_SLIP:
-			set_animation(ANIM_PLAYER, true, false, false, 4, 0.05f);
+			loop = false;
+			reverse = false;
+			num_frames = 4;
+			delay = 0.05f;
 			break;
 
 		case PLAYER_ANIM_SLIPREV:
-			set_animation(ANIM_PLAYER, true, false, true,  4, 0.05f);
+			loop = false;
+			reverse = true;
+			num_frames = 4;
+			delay = 0.05f;
 			break;
 
 		case PLAYER_ANIM_THROWBACK:
-			set_animation(ANIM_PLAYER, true, false, false, 3, 0.05f);
+			loop = false;
+			reverse = false;
+			num_frames = 3;
+			delay = 0.05f;
 			break;
 
 		case PLAYER_ANIM_GRABROPE:
-			set_animation(ANIM_PLAYER, true, false, false, 1, 0.0f);
+			loop = false;
+			reverse = false;
+			num_frames = 1;
+			delay = 0.0f;
 			break;
 	}
+
+	set_animation(ANIM_PLAYER, true, loop, reverse, num_frames, delay);
 }
 
 //Updates all animations

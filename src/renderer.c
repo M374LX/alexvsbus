@@ -120,7 +120,7 @@ bool renderer_init(DisplayParams* dp, Config* cfg, PlayCtx* pctx, MenuCtx* mctx)
 	play_ctx = pctx;
 	menu_ctx = mctx;
 
-	vscreen.id = rlLoadFramebuffer(width, height);
+	vscreen.id = rlLoadFramebuffer();
 	if (vscreen.id <= 0) {
 		return false;
 	}

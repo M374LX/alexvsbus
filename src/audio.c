@@ -103,13 +103,13 @@ void audio_play_bgm(int id)
 	snprintf(path, ARRAY_LENGTH(path), "%s%s.ogg", config->assets_dir, data_bgm_files[id]);
 	bgm = LoadMusicStream(path);
 
-	if (!IsMusicReady(bgm)) {
+	if (!IsMusicValid(bgm)) {
 		//Try to load the BGM track in XM format
 		snprintf(path, ARRAY_LENGTH(path), "%s%s.xm", config->assets_dir, data_bgm_files[id]);
 		bgm = LoadMusicStream(path);
 	}
 
-	if (IsMusicReady(bgm)) {
+	if (IsMusicValid(bgm)) {
 		bgm_loaded = true;
 	}
 
@@ -122,7 +122,7 @@ void audio_stop_sfx(int id)
 {
 	if (init_failed) return;
 
-	if (IsSoundReady(sfx[id])) {
+	if (IsSoundValid(sfx[id])) {
 		StopSound(sfx[id]);
 	}
 }
@@ -134,7 +134,7 @@ void audio_stop_all_sfx()
 	if (init_failed) return;
 
 	for (i = 0; i < NUM_SFX; i++) {
-		if (IsSoundReady(sfx[i])) {
+		if (IsSoundValid(sfx[i])) {
 			StopSound(sfx[i]);
 		}
 	}
@@ -144,7 +144,7 @@ void audio_play_sfx(int id)
 {
 	if (init_failed) return;
 
-	if (audio_enabled && sfx_enabled && IsSoundReady(sfx[id])) {
+	if (audio_enabled && sfx_enabled && IsSoundValid(sfx[id])) {
 		audio_stop_sfx(id);
 		PlaySound(sfx[id]);
 	}
@@ -199,7 +199,7 @@ void audio_cleanup()
 	unload_bgm();
 
 	for (i = 0; i < NUM_SFX; i++) {
-		if (IsSoundReady(sfx[i])) {
+		if (IsSoundValid(sfx[i])) {
 			StopSound(sfx[i]);
 			UnloadSound(sfx[i]);
 		}

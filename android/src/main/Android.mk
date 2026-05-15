@@ -7,7 +7,7 @@ PROJECT_ROOT := $(LOCAL_PATH)/../../..
 LOCAL_MODULE := main
 
 LOCAL_SRC_FILES := $(wildcard $(PROJECT_ROOT)/src/*.c)
-LOCAL_SRC_FILES += $(addprefix $(PROJECT_ROOT)/raylib/,raudio.c rcore.c utils.c)
+LOCAL_SRC_FILES += $(addprefix $(PROJECT_ROOT)/raylib/,raudio.c rcore.c)
 
 LOCAL_C_INCLUDES := $(PROJECT_ROOT)/src $(PROJECT_ROOT)/raylib
 
@@ -26,6 +26,10 @@ LOCAL_LDLIBS := -llog -landroid -lEGL -lGLESv2 -lOpenSLES -dl -lm -lc
 
 # Ensure Android builds are reproducible by disabling NDK build-id
 LOCAL_LDFLAGS := -Wl,--build-id=none
+
+# Ensure the linker renames fopen() to __real_fopen(), as required by raylib's
+# rcore_android.c
+LOCAL_LDFLAGS += -Wl,--wrap=fopen
 
 LOCAL_STATIC_LIBRARIES := android_native_app_glue
 

@@ -5,22 +5,29 @@ The game uses the raylib library with some modifications, which is included in
 the source tree along with its own dependencies. The library's upstream
 repository is https://github.com/raysan5/raylib.
 
-The default backend used by raylib is GLFW, but it is also possible to use SDL
-instead. For more details, see the section "Using SDL".
+The default backend used by raylib is GLFW, but it is also possible to use SDL3,
+SDL2, or RGFW (not tested) instead. For more details, see the section
+"Using other backends" in this document.
 
 
 ## Building for Linux from Linux ##
 
-The required libraries can be installed on Debian by running:
+The libraries required by the default GLFW backend can be installed on Debian by
+running:
 
 ```apt install libasound2-dev libx11-dev libxrandr-dev libxi-dev libgl1-mesa-dev libglu1-mesa-dev libxcursor-dev libxinerama-dev```
 
-Instructions about installing the libraries on other distros can be found in:
+Instructions about installing the libraries on other distros can be found at:
 https://github.com/raysan5/raylib/wiki/Working-on-GNU-Linux.
 
 By just running ``make``, raylib's default GLFW backend will be used. If using
-SDL (as described in "Using SDL"), however, SDL2 with the development files
-are also required and can be installed on Debian by running:
+SDL3 or SDL2 (as described in "Using other backends"), however, the
+corresponding SDL version with the development files is also required and can be
+installed on Debian by running:
+
+```apt install libsdl3-dev```
+
+or:
 
 ```apt install libsdl2-dev```
 
@@ -60,18 +67,27 @@ To build the game for Windows from a Windows host system, assuming MinGW-W64's
 The resulting executable will be named ``alexvsbus.exe``.
 
 
-## Using SDL ##
+## Using other backends ##
 
-To use raylib's SDL backend instead of the default GLFW one, set the variable
-``SDL`` to 1:
+By default, raylib's GLFW backend is used. The available alternatives are SDL3,
+SDL2, and RGFW. The RGFW backend has been not tested.
 
-```make SDL=1```
+The backend can be selected by running ``make`` with the ``RAYLIB_BACKEND``
+variable set to the desired backend:
+
+```
+make RAYLIB_BACKEND=GLFW
+make RAYLIB_BACKEND=SDL3
+make RAYLIB_BACKEND=SDL2
+make RAYLIB_BACKEND=RGFW
+```
 
 By default, the directory containing the SDL headers is assumed to be
-``/usr/include/SDL2``. If this is not the case on your system, the directory
-can be changed by setting the ``SDL_INCLUDE_PATH`` variable. For example:
+``/usr/include/SDL3`` or ``/usr/include/SDL2``. If this is not the case on your
+system, the directory can be changed by setting the ``SDL_INCLUDE_PATH``
+variable. For example:
 
-```make SDL=1 SDL_INCLUDE_PATH=/usr/local/include/SDL2```
+```make RAYLIB_BACKEND=SDL3 SDL_INCLUDE_PATH=/usr/local/include/SDL3```
 
 As said in "Building from Linux for Linux", SDL with the development files needs
 to be installed on the system.

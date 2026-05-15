@@ -525,7 +525,7 @@ static bool init()
 #endif
 
 	SetTraceLogLevel(LOG_NONE);
-	InitWindow(0, 0, GAME_TITLE);
+	InitWindow(VSCREEN_MAX_WIDTH, VSCREEN_MAX_HEIGHT, GAME_TITLE);
 	SetExitKey(KEY_NULL);
 
 	if (!IsWindowReady()) {

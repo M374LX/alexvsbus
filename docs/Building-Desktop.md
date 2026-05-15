@@ -116,8 +116,8 @@ placed in ``PREFIX/share/applications``.
 The ``install`` target is not supported on Windows, but you can place the
 executable (``alexvsbus.exe``) and the ``assets`` folder anywhere you want
 (like a subfolder in ``Program Files``) and create a desktop shortcut if you
-wish. If using SDL, we recommend also placing a copy of ``SDL2.dll`` in the
-same folder as the executable.
+wish. If using SDL, we recommend also placing a copy of the SDL DLL file
+(``SDL3.dll`` or ``SDL2.dll``) in the same folder as the executable.
 
 
 ## Cleaning ##

@@ -10,7 +10,7 @@ constants defined in ``defs.h``: ``SCR_BLANK``, ``SCR_PLAY``,
 ``SCR_PLAY_FREEZE``, and ``SCR_FINALSCORE``.
 
 The menus, which enable the player to select the difficulty, the level to
-play and so on, are handled by the file ``menu.c`` independently of the screen
+play, and so on, are handled by the file ``menu.c`` independently of the screen
 type. This enables the main menu to be show over a blank screen and the pause
 menu to be shown over the play screen, for instance.
 
@@ -18,20 +18,29 @@ menu to be shown over the play screen, for instance.
 ## Game objects
 
 Objects that appear during the game include the player character, the bus,
-banana peels, crates, and so on.
+banana peels, coin, crates, springs, and so on.
 
 The file that handles the play session, including the game objects, is
 ``play.c``.
 
 The ``PlayCtx`` struct, defined in ``defs.h``, keeps track of the current play
-session. Its member ``objs[]`` stores the type and position of most but not all
-objects. Certain object types require additional data and reference an index
-within ``objs[]``. This is why structs like ``Gush`` and ``MovingPeel`` exist
-in ``defs.h``. Each type of object that uses ``objs[]`` is identified by one of
-the ``OBJ_*`` constants defined also in ``defs.h``.
+session. Its member ``objs[]`` stores the type and position of the objects the
+player character interacts with other than coins: banana peels, gushes, gush
+cracks, pushable crates, ropes, and springs. Certain object types require
+additional data and reference an index within ``objs[]``. This is why structs
+like ``Gush`` and ``PushableCrate`` exist in ``defs.h``. Each type of object
+that uses ``objs[]`` is identified by one of the ``OBJ_*`` constants defined
+also in ``defs.h``.
 
-Objects that do not use ``objs[]`` include the player character, the bus, and
-unpushable crates, among others.
+Objects that do not use ``objs[]`` include the player character, coins, and the
+bus, among others. For these, there are separate structs, like ``Player``,
+``Coin``, and ``Bus``.
+
+There are also structs for static objects, like ``OverheadSign`` and
+``ParkedVehicle``.
+
+Data about unpushable crates, hydrants, and horizontal ropes is kept in the
+level columns.
 
 
 ## Level columns
@@ -39,8 +48,9 @@ unpushable crates, among others.
 Levels are divided into columns, each 24 pixels wide. Each column has a type
 (normal floor, deep hole left, deep hole middle, deep hole right, passageway
 left, passageway middle, or passageway right) and a number of stacked unpushable
-crates (pushable crates are handled separately). The ``LevelColumn`` struct is
-defined in ``defs.h``.
+crates (pushable crates are handled separately), as well as boolean variables
+determining if a hydrant or horizontal rope is present. The ``LevelColumn``
+struct is defined in ``defs.h``.
 
 
 ## Level blocks
@@ -55,8 +65,8 @@ Each level column type has a fixed stack of blocks.
 ## Solids
 
 The solids are what prevent the player character from moving through the floor
-or objects like crates and parked cars and trucks. These are handled separately
-from the objects themselves. The struct that stores information about solids is
+or objects like crates and parked vehicles. These are handled separately from
+the objects themselves. The struct that stores information about solids is
 ``Solid``, which is defined in ``defs.h``.
 
 

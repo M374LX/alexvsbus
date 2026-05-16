@@ -65,6 +65,7 @@ int menu_item_y(MenuItem* item);
 extern const int data_sprites[];
 extern const int data_player_anim_sprites[];
 extern const int data_obj_sprites[];
+extern const int data_parked_vehicle_sprites[];
 extern const int data_level_column_blocks[];
 
 //------------------------------------------------------------------------------
@@ -508,19 +509,78 @@ static void draw_play()
 		}
 	}
 
-	//Objects that use PlayCtx.objs[] and are drawn behind the player character
+	//Hydrants and horizontal ropes (from level columns)
+	for (i = 0; i < 21; i++) {
+		int col = first_column + i;
+		bool has_rope = false;
+		bool next_has_rope = false;
+
+		if (col >= MAX_LEVEL_COLUMNS) break;
+
+		//Hydrant
+		if (ctx->level_columns[col].has_hydrant) {
+			x = col * LEVEL_BLOCK_SIZE;
+			y = HYDRANT_Y;
+
+			draw_sprite(SPR_HYDRANT, x, y, 0);
+		}
+
+		has_rope = ctx->level_columns[col].has_rope;
+		if (col + 1 < MAX_LEVEL_COLUMNS) {
+			next_has_rope = ctx->level_columns[col + 1].has_rope;
+		}
+
+		x = col * LEVEL_BLOCK_SIZE;
+		y = ROPE_Y;
+
+		//Rope middle
+		if (has_rope) {
+			draw_sprite(SPR_ROPE_HORIZONTAL_MIDDLE, x, y, 0);
+		}
+
+		//Rope left edge
+		if (!has_rope && next_has_rope) {
+			draw_sprite(SPR_ROPE_HORIZONTAL_LEFT, x + 10, y, 0);
+		}
+
+		//Rope right edge
+		if (has_rope && !next_has_rope) {
+			draw_sprite(SPR_ROPE_HORIZONTAL_RIGHT, x + 10, y, 0);
+		}
+	}
+
+	//Overhead signs
+	for (i = 0; i < MAX_PARKED_VEHICLES; i++) {
+		spr = SPR_OVERHEAD_SIGN;
+		x = ctx->overhead_signs[i].x;
+		y = ctx->overhead_signs[i].y;
+
+		//No more overhead signs to draw
+		if (x == NONE) break;
+
+		draw_sprite(spr, x, y, 0);
+	}
+
+	//Parked vehicles
+	for (i = 0; i < MAX_PARKED_VEHICLES; i++) {
+		int type = ctx->parked_vehicles[i].type;
+
+		//No more vehicles to draw
+		if (type == NONE) break;
+
+		spr = data_parked_vehicle_sprites[type];
+		x = ctx->parked_vehicles[i].x;
+		y = (type == PARKED_TRUCK) ? PARKED_TRUCK_Y : PARKED_CAR_Y;
+
+		draw_sprite(spr, x, y, 0);
+	}
+
+	//Objects using PlayCtx.objs[]
 	for (i = 0; i < MAX_OBJS; i++) {
 		Obj* obj = &ctx->objs[i];
 
 		//Ignore inexistent objects
 		if (obj->type == NONE) continue;
-
-		//Skip objects that are drawn in front of the player character, as
-		//those will be drawn later
-		if (obj->type == OBJ_COIN_SILVER) continue;
-		if (obj->type == OBJ_COIN_GOLD) continue;
-		if (obj->type == OBJ_BANANA_PEEL) continue;
-		if (obj->type == OBJ_BANANA_PEEL_MOVING) continue;
 
 		if (obj->type == OBJ_GUSH) {
 			int w = data_sprites[SPR_GUSH * 4 + 2];
@@ -634,24 +694,26 @@ static void draw_play()
 		}
 	}
 
-	//Objects that use PlayCtx.objs[] and are drawn in front of the player
-	//character
-	for (i = 0; i < MAX_OBJS; i++) {
-		Obj* obj = &ctx->objs[i];
+	//Moving banana peels
+	for (i = 0; i < MAX_MOVING_PEELS; i++) {
+		x = ctx->moving_peels[i].x;
+		y = ctx->moving_peels[i].y;
 
-		if (obj->type == OBJ_BANANA_PEEL) {
-			frame = 0;
-		} else if (obj->type == OBJ_BANANA_PEEL_MOVING) {
-			frame = 0;
-		} else if (obj->type == OBJ_COIN_SILVER) {
-			frame = ctx->anims[ANIM_COINS].frame;
-		} else if (obj->type == OBJ_COIN_GOLD) {
-			frame = ctx->anims[ANIM_COINS].frame;
-		} else {
-			continue;
+		if (ctx->moving_peels[i].obj != NONE) {
+			draw_sprite(SPR_BANANA_PEEL, x, y, 0);
 		}
+	}
 
-		draw_sprite(data_obj_sprites[obj->type], obj->x, obj->y, frame);
+	//Coins
+	for (i = 0; i < MAX_COINS; i++) {
+		spr = ctx->coins[i].gold ? SPR_COIN_GOLD : SPR_COIN_SILVER;
+		x = ctx->coins[i].x;
+		y = ctx->coins[i].y;
+		frame = ctx->anims[ANIM_COINS].frame;
+
+		if (x != NONE) {
+			draw_sprite(spr, x, y, frame);
+		}
 	}
 
 	//Pushable crate arrows
@@ -667,19 +729,19 @@ static void draw_play()
 	}
 
 	//Overhead sign bases
-	for (i = 0; i < MAX_OBJS; i++) {
-		Obj* obj = &ctx->objs[i];
+	for (i = 0; i < MAX_OVERHEAD_SIGNS; i++) {
+		OverheadSign* sign = &ctx->overhead_signs[i];
 		int h;
 
-		if (obj->type == OBJ_OVERHEAD_SIGN) {
+		if (sign->x != NONE) {
 			spr = SPR_OVERHEAD_SIGN_BASE_TOP;
-			x = obj->x + 16;
-			y = obj->y + 8;
+			x = sign->x + 16;
+			y = sign->y + 8;
 			draw_sprite(spr, x, y, 0);
 
 			spr = SPR_OVERHEAD_SIGN_BASE;
-			x = obj->x + 24;
-			y = obj->y + 32;
+			x = sign->x + 24;
+			y = sign->y + 32;
 			h = 272 - y;
 			draw_sprite_part(spr, x, y, 0, 320 - h, 8, h);
 		}

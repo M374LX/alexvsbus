@@ -164,6 +164,12 @@ void play_clear()
 	for (i = 0; i < MAX_LEVEL_COLUMNS; i++) {
 		ctx.level_columns[i].type = LVLCOL_NORMAL_FLOOR;
 		ctx.level_columns[i].num_crates = 0;
+		ctx.level_columns[i].has_hydrant = false;
+		ctx.level_columns[i].has_rope = false;
+	}
+
+	for (i = 0; i < MAX_COINS; i++) {
+		ctx.coins[i].x = NONE;
 	}
 
 	for (i = 0; i < MAX_OBJS; i++) {
@@ -176,6 +182,14 @@ void play_clear()
 
 	for (i = 0; i < MAX_MOVING_PEELS; i++) {
 		ctx.moving_peels[i].obj = NONE;
+	}
+
+	for (i = 0; i < MAX_OVERHEAD_SIGNS; i++) {
+		ctx.overhead_signs[i].x = NONE;
+	}
+
+	for (i = 0; i < MAX_PARKED_VEHICLES; i++) {
+		ctx.parked_vehicles[i].type = NONE;
 	}
 
 	for (i = 0; i < MAX_PASSAGEWAYS; i++) {
@@ -223,7 +237,7 @@ void play_clear()
 	set_animation(ANIM_PLAYER, true, true, false, 1, 0.1f);
 	set_animation(ANIM_COINS, true, true, false, 3, 0.1f);
 	set_animation(ANIM_GUSHES, true, true, false, 3, 0.05f);
-	set_animation(ANIM_HIT_SPRING, false, false, false, 6, 0.02f);
+	set_animation(ANIM_HIT_SPRING, false, false, false, 6, 0.05f);
 	set_animation(ANIM_CRACK_PARTICLES, true, true, false, 2, 0.1f);
 	set_animation(ANIM_BUS_WHEELS, false, true, false, 3, 0.1f);
 	set_animation(ANIM_BUS_DOOR_REAR, false, false, false, 4, 0.1f);
@@ -705,7 +719,6 @@ static void handle_car_thrown_peel()
 			peel->xdest = peel->x + 70;
 			peel->ydest = 256;
 
-			ctx.objs[i].type = OBJ_BANANA_PEEL_MOVING;
 			ctx.car.threw_peel = true;
 
 			break;
@@ -1013,31 +1026,57 @@ static void handle_player_interactions()
 	bool thrown_back = false;
 	int i, j;
 
-	for (i = 0; i < MAX_OBJS; i++) {
+	for (i = 0; i < MAX_COINS; i++) {
+		Coin* coin = &ctx.coins[i];
 		CoinSpark* spk;
+		int coin_left;
+		int coin_right;
+		int coin_top;
+		int coin_bottom;
+
+		//Ignore inexistent or collected coins
+		if (coin->x == NONE) continue;
+
+		coin_left = coin->x + 2;
+		coin_right = coin_left + 4;
+		coin_top = coin->y + 2;
+		coin_bottom = coin_top + 4;
+
+		//Skip if the player character is not touching the coin
+		if (pl_right  < coin_left || pl_left > coin_right)  continue;
+		if (pl_bottom < coin_top  || pl_top  > coin_bottom) continue;
+
+		//The coin has been collected
+		collected_coin = true;
+		ctx.score += coin->gold ? 100 : 50;
+
+		//Add spark
+		spk = &ctx.coin_sparks[ctx.next_coin_spark];
+		spk->x = coin->x;
+		spk->y = coin->y;
+		spk->gold = coin->gold;
+
+		start_animation(ANIM_COIN_SPARKS + ctx.next_coin_spark);
+
+		ctx.next_coin_spark++;
+		ctx.next_coin_spark %= MAX_COIN_SPARKS;
+
+		//Remove the coin
+		coin->x = NONE;
+	}
+
+	for (i = 0; i < MAX_OBJS; i++) {
 		Obj* obj = &ctx.objs[i];
 		int obj_left, obj_right, obj_top, obj_bottom;
 
+		//The player character interacts with objects within PlayCtx.objs[] only
+		//in the normal state
+		if (pl->state != PLAYER_STATE_NORMAL) {
+			break;
+		}
+
 		//Ignore inexistent objects
 		if (obj->type == NONE) continue;
-
-		//Ignore objects the player character does not interact with
-		if (obj->type == OBJ_BANANA_PEEL_MOVING) continue;
-		if (obj->type == OBJ_HYDRANT) continue;
-		if (obj->type == OBJ_OVERHEAD_SIGN) continue;
-		if (obj->type == OBJ_PARKED_CAR_BLUE) continue;
-		if (obj->type == OBJ_PARKED_CAR_SILVER) continue;
-		if (obj->type == OBJ_PARKED_CAR_YELLOW) continue;
-		if (obj->type == OBJ_PARKED_TRUCK) continue;
-		if (obj->type == OBJ_ROPE_HORIZONTAL) continue;
-
-		//Except for coins, the player character only interacts with other
-		//objects when in the normal state
-		if (obj->type != OBJ_COIN_SILVER && obj->type != OBJ_COIN_GOLD) {
-			if (pl->state != PLAYER_STATE_NORMAL) {
-				continue;
-			}
-		}
 
 		obj_left = obj->x;
 		obj_top = obj->y;
@@ -1053,14 +1092,6 @@ static void handle_player_interactions()
 				obj_bottom = obj_top;
 				break;
 
-			case OBJ_COIN_SILVER:
-			case OBJ_COIN_GOLD:
-				obj_left += 2;
-				obj_right = obj_left + 4;
-				obj_top += 2;
-				obj_bottom = obj_top + 4;
-				break;
-
 			case OBJ_GUSH:
 				obj_left += 3;
 				obj_right = obj_left + 9;
@@ -1072,7 +1103,7 @@ static void handle_player_interactions()
 				obj_right = obj_left + 10;
 				break;
 
-			case OBJ_ROPE_VERTICAL:
+			case OBJ_ROPE:
 				obj_right += 4;
 				obj_bottom += 64;
 				break;
@@ -1084,9 +1115,9 @@ static void handle_player_interactions()
 				break;
 		}
 
-		if (obj->type == OBJ_ROPE_VERTICAL) {
-			//For vertical ropes, check interaction using a point close to
-			//the player character
+		if (obj->type == OBJ_ROPE) {
+			//For ropes, check interaction using a point close to the player
+			//character
 			int px = (int)pl->x + 21;
 			int py = (int)pl->y + 28;
 
@@ -1104,29 +1135,8 @@ static void handle_player_interactions()
 				ctx.moving_peels[MOVING_PEEL_SLIPPED].obj = i;
 				ctx.moving_peels[MOVING_PEEL_SLIPPED].x = obj->x;
 				ctx.moving_peels[MOVING_PEEL_SLIPPED].y = obj->y;
-				obj->type = OBJ_BANANA_PEEL_MOVING;
-				slipped = true;
-				break;
-
-			case OBJ_COIN_SILVER:
-			case OBJ_COIN_GOLD:
-				collected_coin = true;
-				ctx.score += (obj->type == OBJ_COIN_GOLD) ? 100 : 50;
-
-				//Add spark
-				spk = &ctx.coin_sparks[ctx.next_coin_spark];
-				spk->x = obj->x;
-				spk->y = obj->y;
-				spk->gold = (obj->type == OBJ_COIN_GOLD);
-
-				start_animation(ANIM_COIN_SPARKS + ctx.next_coin_spark);
-
-				ctx.next_coin_spark++;
-				ctx.next_coin_spark %= MAX_COIN_SPARKS;
-
-				//Remove the coin
 				obj->type = NONE;
-
+				slipped = true;
 				break;
 
 			case OBJ_GUSH:
@@ -1137,7 +1147,10 @@ static void handle_player_interactions()
 				obj->type = OBJ_GUSH;
 
 				for (j = 0; j < MAX_GUSHES; j++) {
+
 					if (ctx.gushes[j].obj == NONE) {
+						thrown_back = true;
+
 						ctx.gushes[j].obj = i;
 						ctx.gushes[j].y = 266;
 						ctx.gushes[j].move_pattern = data_gush_move_pattern_2;
@@ -1147,17 +1160,13 @@ static void handle_player_interactions()
 
 						add_crack_particles(obj->x + 6, 276);
 
-						if (pl->state == PLAYER_STATE_NORMAL) {
-							thrown_back = true;
-						}
-
 						break;
 					}
 				}
 
 				break;
 
-			case OBJ_ROPE_VERTICAL:
+			case OBJ_ROPE:
 				if (ctx.grabbed_rope.obj == i) {
 					//Cannot grab the same rope again right after releasing it
 					if (ctx.grabbed_rope.x > ctx.grabbed_rope.xmax - 64) {
@@ -1880,7 +1889,7 @@ static void update_sequence()
 			if (ctx.goal_scene == 3) {
 				if (pl->x > bus->x + 192) {
 					//A banana peel is thrown from the right side of the screen
-					ctx.objs[0].type = OBJ_BANANA_PEEL_MOVING;
+					ctx.objs[0].type = NONE;
 					ctx.objs[0].x = level_size;
 					ctx.objs[0].y = BUS_Y + 72;
 					thrown_peel->obj = 0;

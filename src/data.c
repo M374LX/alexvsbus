@@ -149,8 +149,10 @@ const int data_sprites[] = {
 	0,    72,   24,  64,  //SPR_PLAYER_CLEAN_DUNG
 	904,  24,   24,  136, //SPR_POLE
 	712,  120,  40,  24,  //SPR_PUSH_ARROW
-	616,  168,  400, 16,  //SPR_ROPE_HORIZONTAL
 	936,  56,   8,   48,  //SPR_ROPE_VERTICAL
+	768,  32,   24,  24,  //SPR_ROPE_HORIZONTAL_LEFT
+	800,  32,   24,  24,  //SPR_ROPE_HORIZONTAL_MIDDLE
+	832,  32,   24,  24,  //SPR_ROPE_HORIZONTAL_RIGHT
 	760,  120,  24,  16,  //SPR_SPRING
 	720,  184,  280, 128, //SPR_TRUCK
 	0,    384,  24,  24,  //SPR_LEVEL_BLOCK_0
@@ -242,22 +244,20 @@ const int data_player_anim_sprites[] = {
 
 //Sprite corresponding to each object type (OBJ_* constants)
 const int data_obj_sprites[] = {
-	[OBJ_COIN_SILVER]        = SPR_COIN_SILVER,
-	[OBJ_COIN_GOLD]          = SPR_COIN_GOLD,
-	[OBJ_CRATE_PUSHABLE]     = SPR_CRATE,
-	[OBJ_BANANA_PEEL]        = SPR_BANANA_PEEL,
-	[OBJ_BANANA_PEEL_MOVING] = SPR_BANANA_PEEL,
-	[OBJ_GUSH]               = SPR_GUSH,
-	[OBJ_GUSH_CRACK]         = SPR_GUSH_CRACK,
-	[OBJ_ROPE_HORIZONTAL]    = SPR_ROPE_HORIZONTAL,
-	[OBJ_ROPE_VERTICAL]      = SPR_ROPE_VERTICAL,
-	[OBJ_SPRING]             = SPR_SPRING,
-	[OBJ_HYDRANT]            = SPR_HYDRANT,
-	[OBJ_OVERHEAD_SIGN]      = SPR_OVERHEAD_SIGN,
-	[OBJ_PARKED_CAR_BLUE]    = SPR_CAR_BLUE,
-	[OBJ_PARKED_CAR_SILVER]  = SPR_CAR_SILVER,
-	[OBJ_PARKED_CAR_YELLOW]  = SPR_CAR_YELLOW,
-	[OBJ_PARKED_TRUCK]       = SPR_TRUCK,
+	[OBJ_BANANA_PEEL] = SPR_BANANA_PEEL,
+	[OBJ_GUSH]        = SPR_GUSH,
+	[OBJ_GUSH_CRACK]  = SPR_GUSH_CRACK,
+	[OBJ_PUSH_CRATE]  = SPR_CRATE,
+	[OBJ_ROPE]        = SPR_ROPE_VERTICAL,
+	[OBJ_SPRING]      = SPR_SPRING,
+};
+
+//Sprite corresponding to each parked vehicle type (PARKED_* constant)
+const int data_parked_vehicle_sprites[] = {
+	[PARKED_CAR_BLUE]   = SPR_CAR_BLUE,
+	[PARKED_CAR_SILVER] = SPR_CAR_SILVER,
+	[PARKED_CAR_YELLOW] = SPR_CAR_YELLOW,
+	[PARKED_TRUCK]      = SPR_TRUCK,
 };
 
 //Gush movement patterns

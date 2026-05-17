@@ -1144,13 +1144,11 @@ static void handle_player_interactions()
 				break;
 
 			case OBJ_GUSH_CRACK:
+				thrown_back = true;
 				obj->type = OBJ_GUSH;
 
 				for (j = 0; j < MAX_GUSHES; j++) {
-
 					if (ctx.gushes[j].obj == NONE) {
-						thrown_back = true;
-
 						ctx.gushes[j].obj = i;
 						ctx.gushes[j].y = 266;
 						ctx.gushes[j].move_pattern = data_gush_move_pattern_2;
@@ -1504,8 +1502,10 @@ static void move_camera()
 		cam->x += cam->xvel * delta_time;
 
 		if (cam->xvel > 0 && cam->x >= cam->xdest) {
+			cam->x = cam->xdest;
 			cam->xvel = 0;
 		} else if (cam->xvel < 0 && cam->x <= cam->xdest) {
+			cam->x = cam->xdest;
 			cam->xvel = 0;
 		}
 	}
@@ -2297,7 +2297,7 @@ static void update_sequence()
 		case 111:
 			//Camera moves to the right
 			cam->xvel = CAMERA_XVEL / 4;
-			cam->xdest = VSCREEN_MAX_WIDTH * 2 - 136;
+			cam->xdest = 824;
 			ctx.sequence_delay = 3;
 			ctx.sequence_step++;
 			break;
@@ -2327,7 +2327,7 @@ static void update_sequence()
 			//Player character appears from the left side of the screen and
 			//is running crazily
 			cutscene_player->sprite = SPR_PLAYER_RUN;
-			cutscene_player->x = cam->x - 80;
+			cutscene_player->x = 744;
 			cutscene_player->y = 204;
 			cutscene_player->xvel = 210;
 			cutscene_player_anim->running = true;
@@ -2345,9 +2345,9 @@ static void update_sequence()
 				flagman_anim->frame = 0;
 				flagman_anim->running = true;
 			}
-			if (cutscene_player->x >= cam->x + 304) {
+			if (cutscene_player->x >= 1128) {
 				//Player character decelerates
-				cutscene_player->x = cam->x + 304;
+				cutscene_player->x = 1128;
 				cutscene_player->acc = -252;
 				ctx.sequence_step++;
 			}
@@ -2360,9 +2360,9 @@ static void update_sequence()
 					cutscene_player->x += 8;
 				}
 			}
-			if (cutscene_player->xvel <= 0 || cutscene_player->x >= cam->x + 392) {
+			if (cutscene_player->xvel <= 0 || cutscene_player->x >= 1216) {
 				//Player character stops
-				cutscene_player->x = cam->x + 392;
+				cutscene_player->x = 1216;
 				cutscene_player->xvel = 0;
 				cutscene_player->acc = 0;
 				cutscene_player->sprite = SPR_PLAYER_STAND;
@@ -2394,16 +2394,16 @@ static void update_sequence()
 
 		case 119:
 			//Hen appears from the left side of the screen
-			ctx.hen.x = cam->x - 64;
+			ctx.hen.x = 760;
 			ctx.hen.xvel = 360;
 			start_animation(ANIM_HEN);
 			ctx.sequence_step++;
 			break;
 
 		case 120:
-			if (ctx.hen.x >= cam->x + 120) {
+			if (ctx.hen.x >= 944) {
 				//Hen decelerates
-				ctx.hen.x = cam->x + 120;
+				ctx.hen.x = 944;
 				ctx.hen.acc = -252;
 				ctx.sequence_step++;
 			}
@@ -2416,9 +2416,9 @@ static void update_sequence()
 				flagman_anim->frame = 0;
 				flagman_anim->running = true;
 			}
-			if (ctx.hen.xvel <= 0 || ctx.hen.x >= cam->x + 352) {
+			if (ctx.hen.xvel <= 0 || ctx.hen.x >= 1176) {
 				//Hen stops
-				ctx.hen.x = cam->x + 352;
+				ctx.hen.x = 1176;
 				ctx.hen.xvel = 0;
 				ctx.hen.acc = 0;
 				ctx.anims[ANIM_HEN].running = false;
@@ -2436,14 +2436,14 @@ static void update_sequence()
 			break;
 
 		case 123:
-			if (bus->x >= cam->x - 60) {
+			if (bus->x >= 764) {
 				//Bus reaches the flagman, who swings the flag
 				ctx.bus_reached_flagman = true;
 				flagman_anim->frame = 0;
 				flagman_anim->running = true;
 
 				//Traffic jam stops
-				bus->x = cam->x - 60;
+				bus->x = 764;
 				bus->xvel = 0;
 				ctx.anims[ANIM_CAR_WHEELS].running = false;
 				ctx.anims[ANIM_CAR_WHEELS].frame = 0;

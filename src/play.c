@@ -1813,6 +1813,7 @@ static void update_sequence()
 		//----------------------------------------------------------------------
 		case 20: //SEQ_BUS_LEAVING
 			//Bus leaves while closing the front door
+			ctx.anims[ANIM_BUS_DOOR_FRONT].reverse = true;
 			start_animation(ANIM_BUS_DOOR_FRONT);
 			bus->acc = 252;
 			bus->xvel = 6;
@@ -1932,21 +1933,6 @@ static void update_sequence()
 			break;
 
 		case 52:
-			if (pl->state == PLAYER_STATE_SLIP) {
-				input_right = false;
-				ctx.sequence_step++;
-			} else if (bird->sprite == SPR_BIRD) {
-				ctx.sequence_step++;
-			} else if (pl->xvel <= 0 || pl->x >= bus->x + 342) {
-				//Player character jumps into the bus
-				pl->x = bus->x + 342;
-				pl->xvel = 0;
-				jump_timeout = JUMP_TIMEOUT; //Trigger a jump
-				ctx.sequence_step++;
-			}
-			break;
-
-		case 53:
 			ctx.sequence_step = SEQ_GOAL_REACHED_SCENE1;
 			switch (ctx.goal_scene) {
 				case 2: ctx.sequence_step = SEQ_GOAL_REACHED_SCENE2; break;
@@ -1959,7 +1945,16 @@ static void update_sequence()
 
 		//----------------------------------------------------------------------
 		case 60: //SEQ_GOAL_REACHED_SCENE1
-			input_jump = false;
+			if (pl->xvel <= 0 || pl->x >= bus->x + 342) {
+				//Player character jumps into the bus
+				pl->x = bus->x + 342;
+				pl->xvel = 0;
+				jump_timeout = JUMP_TIMEOUT; //Trigger a jump
+				ctx.sequence_step++;
+			}
+			break;
+
+		case 61:
 			if (pl->yvel > 0 && pl->y >= BUS_Y + 36) {
 				//Player character is now in the bus and score count starts
 				show_player_in_bus();
@@ -1968,7 +1963,7 @@ static void update_sequence()
 			}
 			break;
 
-		case 61:
+		case 62:
 			if (!ctx.counting_score) {
 				//Score count finished
 				ctx.sequence_delay = 0.5f;
@@ -1976,14 +1971,23 @@ static void update_sequence()
 			}
 			break;
 
-		case 62:
+		case 63:
 			ctx.sequence_step = SEQ_BUS_LEAVING;
 			break;
 
 
 		//----------------------------------------------------------------------
 		case 70: //SEQ_GOAL_REACHED_SCENE2
-			input_jump = false;
+			if (pl->xvel <= 0 || pl->x >= bus->x + 342) {
+				//Player character jumps into the bus
+				pl->x = bus->x + 342;
+				pl->xvel = 0;
+				jump_timeout = JUMP_TIMEOUT; //Trigger a jump
+				ctx.sequence_step++;
+			}
+			break;
+
+		case 71:
 			if (pl->yvel > 0 && pl->y >= BUS_Y + 36) {
 				//Player character is now in the bus and score count starts
 				show_player_in_bus();
@@ -1992,7 +1996,7 @@ static void update_sequence()
 			}
 			break;
 
-		case 71:
+		case 72:
 			if (!ctx.counting_score) {
 				//Score count finished
 				ctx.sequence_delay = 0.5f;
@@ -2000,14 +2004,14 @@ static void update_sequence()
 			}
 			break;
 
-		case 72:
+		case 73:
 			//Bus front door closes
 			start_animation(ANIM_BUS_DOOR_FRONT);
 			ctx.sequence_delay = 0.5f;
 			ctx.sequence_step++;
 			break;
 
-		case 73:
+		case 74:
 			//Bearded man comes from the right side of the screen
 			cutscene_player->sprite = NONE;
 			bearded_man->sprite = SPR_BEARDED_MAN_WALK;
@@ -2023,7 +2027,7 @@ static void update_sequence()
 			ctx.sequence_step++;
 			break;
 
-		case 74:
+		case 75:
 			if (bearded_man->x <= bus->x + 380) {
 				//Bearded man decelerates
 				bearded_man->x = bus->x + 380;
@@ -2032,7 +2036,7 @@ static void update_sequence()
 			}
 			break;
 
-		case 75:
+		case 76:
 			if (bearded_man->xvel >= 0 || bearded_man->x <= bus->x + 337) {
 				//Bearded man stops and bus front door opens
 				bearded_man->sprite = SPR_BEARDED_MAN_STAND;
@@ -2048,7 +2052,7 @@ static void update_sequence()
 			}
 			break;
 
-		case 76:
+		case 77:
 			//Bearded man jumps into the bus
 			bearded_man->sprite = SPR_BEARDED_MAN_JUMP;
 			bearded_man->yvel = -156;
@@ -2056,7 +2060,7 @@ static void update_sequence()
 			ctx.sequence_step++;
 			break;
 
-		case 77:
+		case 78:
 			if (bearded_man->y >= BUS_Y + 35 && bearded_man->yvel > 0) {
 				//Bearded man is now in the bus
 				bearded_man->sprite = SPR_BEARDED_MAN_STAND;
@@ -2070,8 +2074,7 @@ static void update_sequence()
 			}
 			break;
 
-		case 78:
-			ctx.anims[ANIM_BUS_DOOR_FRONT].reverse = true;
+		case 79:
 			ctx.sequence_step = SEQ_BUS_LEAVING;
 			break;
 
@@ -2079,8 +2082,8 @@ static void update_sequence()
 		//----------------------------------------------------------------------
 		case 80: //SEQ_GOAL_REACHED_SCENE3
 			//Player character slips on a banana peel and hits the floor
-			if (pl->on_floor) {
-				ctx.sequence_delay = 0.2f;
+			if (pl->state == PLAYER_STATE_SLIP) {
+				ctx.sequence_delay = 0.7f;
 				ctx.sequence_step++;
 			}
 			break;
@@ -2211,6 +2214,16 @@ static void update_sequence()
 
 		//----------------------------------------------------------------------
 		case 100: //SEQ_GOAL_REACHED_SCENE5
+			if (pl->xvel <= 0 || pl->x >= bus->x + 342) {
+				//Player character jumps into the bus
+				pl->x = bus->x + 342;
+				pl->xvel = 0;
+				jump_timeout = JUMP_TIMEOUT; //Trigger a jump
+				ctx.sequence_step++;
+			}
+			break;
+
+		case 101:
 			//Bus leaves before the player character can enter it
 			start_animation(ANIM_BUS_DOOR_FRONT);
 			bus->acc = 252;
@@ -2218,7 +2231,7 @@ static void update_sequence()
 			ctx.sequence_step++;
 			break;
 
-		case 101:
+		case 102:
 			if (bus->x >= ctx.level_size + 32) {
 				//Player character starts running crazily
 				bus->acc = 0;
@@ -2238,16 +2251,17 @@ static void update_sequence()
 			}
 			break;
 
-		case 102:
+		case 103:
 			if (cutscene_player->x >= ctx.level_size + 32) {
 				//Score count starts
 				start_score_count();
 				cutscene_player->xvel = 0;
+				cutscene_player->acc = 0;
 				ctx.sequence_step++;
 			}
 			break;
 
-		case 103:
+		case 104:
 			if (!ctx.counting_score) {
 				//Score count finished
 				ctx.sequence_delay = 0.5f;
@@ -2255,14 +2269,14 @@ static void update_sequence()
 			}
 			break;
 
-		case 104:
+		case 105:
 			//Screen wipes to black
 			ctx.wipe_out = true;
 			ctx.sequence_delay = 1;
 			ctx.sequence_step++;
 			break;
 
-		case 105:
+		case 106:
 			ctx.sequence_step = SEQ_FINISHED;
 			break;
 
@@ -2273,14 +2287,14 @@ static void update_sequence()
 			pl->visible = false;
 			pl->state = PLAYER_STATE_INACTIVE;
 
-			cam->x = VSCREEN_MAX_WIDTH + 24;
+			cam->x = 504;
 
 			bus->x = 96;
 			bus->xvel = 0;
 			bus->route_sign = 0; //Finish (checkered flag) sign
 
 			flagman->sprite = SPR_FLAGMAN;
-			flagman->x = VSCREEN_MAX_WIDTH * 2 + 32;
+			flagman->x = 992;
 			flagman->y = 180;
 			flagman_anim->running = false;
 			flagman_anim->loop = false;
@@ -2290,13 +2304,15 @@ static void update_sequence()
 			flagman_anim->delay = 0.1f;
 			flagman_anim->max_delay = 0.1f;
 
+			set_animation(ANIM_CAR_WHEELS, false, true, false, 2, 0.1f);
+
 			ctx.sequence_delay = 1;
 			ctx.sequence_step++;
 			break;
 
 		case 111:
 			//Camera moves to the right
-			cam->xvel = CAMERA_XVEL / 4;
+			cam->xvel = (CAMERA_XVEL / 4);
 			cam->xdest = 824;
 			ctx.sequence_delay = 3;
 			ctx.sequence_step++;

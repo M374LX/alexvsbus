@@ -2287,7 +2287,7 @@ static void update_sequence()
 			pl->visible = false;
 			pl->state = PLAYER_STATE_INACTIVE;
 
-			cam->x = 504;
+			cam->x = 672;
 
 			bus->x = 96;
 			bus->xvel = 0;
@@ -2313,7 +2313,7 @@ static void update_sequence()
 		case 111:
 			//Camera moves to the right
 			cam->xvel = (CAMERA_XVEL / 4);
-			cam->xdest = 824;
+			cam->xdest = 992;
 			ctx.sequence_delay = 3;
 			ctx.sequence_step++;
 			break;

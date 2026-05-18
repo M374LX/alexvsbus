@@ -333,8 +333,16 @@ static void draw_play()
 	draw_offset_x = (int)ctx->cam.x;
 	draw_offset_y = camy - (vscreen_height - VSCREEN_MAX_HEIGHT);
 
-	if (vscreen_width <= 320 && ctx->ending) {
-		draw_offset_x += 168;
+	if (ctx->ending) {
+		if (vscreen_width >= 480) {
+			draw_offset_x -= 160;
+		} else if (vscreen_width > 320) {
+			draw_offset_x -= 112;
+		}
+
+		if (draw_offset_x < 0) {
+			draw_offset_x = 0;
+		}
 	}
 
 	first_column = draw_offset_x / LEVEL_BLOCK_SIZE;

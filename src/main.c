@@ -1082,6 +1082,8 @@ static void load_config()
 	config.window_scale = 2;
 	config.scanlines_enabled = false;
 	config.vscreen_auto_size = true;
+	config.vscreen_width = 0;
+	config.vscreen_height = 0;
 	config.audio_enabled = true;
 	config.sfx_enabled = true;
 	config.music_enabled = true;
@@ -1188,6 +1190,11 @@ static void load_config()
 				}
 			}
 		}
+	}
+
+	//Force automatic vscreen sizing if no valid size is found in the config file
+	if (config.vscreen_width <= 0 || config.vscreen_height <= 0) {
+		config.vscreen_auto_size = true;
 	}
 
 #ifndef __ANDROID__

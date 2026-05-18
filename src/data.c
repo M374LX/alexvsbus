@@ -122,19 +122,21 @@ const int data_sprites[] = {
 	856,  72,   8,   8,   //SPR_DUNG
 	152,  696,  40,  8,   //SPR_ERROR
 	0,    176,  64,  88,  //SPR_FLAGMAN
-	952,  0,    24,  88,  //SPR_GUSH
-	1000, 96,   16,  8,   //SPR_GUSH_CRACK
-	976,  96,   16,  8,   //SPR_GUSH_HOLE
+	952,  0,    24,  8,   //SPR_GUSH_TOP
+	952,  16,   24,  24,  //SPR_GUSH_MIDDLE
+	984,  48,   16,  8,   //SPR_GUSH_CRACK
+	952,  48,   24,  32,  //SPR_GUSH_HOLE
 	760,  88,   32,  32,  //SPR_HEN
 	872,  32,   16,  24,  //SPR_HYDRANT
 	480,  696,  224, 64,  //SPR_LOGO_SMALL
 	712,  680,  296, 80,  //SPR_LOGO_LARGE
-	288,  168,  32,  32,  //SPR_MEDAL1
-	328,  168,  32,  32,  //SPR_MEDAL2
-	368,  168,  32,  32,  //SPR_MEDAL3
-	816,  0,    16,  32,  //SPR_OVERHEAD_SIGN
-	1008, 184,  8,   320, //SPR_OVERHEAD_SIGN_BASE
-	840,  8,    16,  24,  //SPR_OVERHEAD_SIGN_BASE_TOP
+	288,  160,  24,  32,  //SPR_MEDAL1
+	320,  160,  24,  32,  //SPR_MEDAL2
+	352,  160,  32,  32,  //SPR_MEDAL3
+	768,  0,    16,  32,  //SPR_OVERHEAD_SIGN
+	792,  8,    16,  24,  //SPR_OVERHEAD_SIGN_BASE_TOP
+	816,  0,    8,   24,  //SPR_OVERHEAD_SIGN_BASE_MIDDLE
+	832,  0,    8,   24,  //SPR_OVERHEAD_SIGN_BASE_BOTTOM
 	136,  344,  32,  16,  //SPR_PASSAGEWAY_LEFT_FG
 	176,  344,  24,  16,  //SPR_PASSAGEWAY_RIGHT_FG
 	208,  344,  24,  24,  //SPR_PASSAGEWAY_RIGHT_CLOSED
@@ -245,7 +247,7 @@ const int data_player_anim_sprites[] = {
 //Sprite corresponding to each object type (OBJ_* constants)
 const int data_obj_sprites[] = {
 	[OBJ_BANANA_PEEL] = SPR_BANANA_PEEL,
-	[OBJ_GUSH]        = SPR_GUSH,
+	[OBJ_GUSH]        = SPR_GUSH_TOP,
 	[OBJ_GUSH_CRACK]  = SPR_GUSH_CRACK,
 	[OBJ_PUSH_CRATE]  = SPR_CRATE,
 	[OBJ_ROPE]        = SPR_ROPE_VERTICAL,

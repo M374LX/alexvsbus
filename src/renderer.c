@@ -99,10 +99,10 @@ static void draw_menu_border(int x, int y, int width, int height,
 static void draw_texture(Texture2D texture, Rectangle src, Rectangle dst,
 		bool hflip, bool vflip, int alpha);
 static void draw_gfx(Rectangle src, Rectangle dst, bool vflip, bool hflip, int alpha);
-static void draw_sprite_part(int spr, int dx, int dy, int sx, int sy, int sw, int sh);
 static void draw_sprite_flip(int spr, int dx, int dy, int frame, bool hflip, bool vflip);
 static void draw_sprite(int spr, int dx, int dy, int frame);
 static void draw_sprite_stretch(int spr, int dx, int dy, int w, int h);
+static void draw_char(char c, int color, int x, int y);
 static void draw_digits(int value, int width, int x, int y);
 static void draw_text(const char* text, int color, int x, int y);
 static void draw_touch_buttons(int input_state);
@@ -583,37 +583,51 @@ static void draw_play()
 		draw_sprite(spr, x, y, 0);
 	}
 
-	//Objects using PlayCtx.objs[]
+	//Objects using PlayCtx.objs[] except gushes
 	for (i = 0; i < MAX_OBJS; i++) {
 		Obj* obj = &ctx->objs[i];
 
 		//Ignore inexistent objects
 		if (obj->type == NONE) continue;
 
-		if (obj->type == OBJ_GUSH) {
-			int w = data_sprites[SPR_GUSH * 4 + 2];
-			int h = 265 - obj->y;
-			if (h <= 0) h = 1;
+		//Skip gushes
+		if (obj->type == OBJ_GUSH) continue;
 
-			frame = ctx->anims[ANIM_GUSHES].frame;
+		frame = 0;
 
-			draw_sprite_part(SPR_GUSH, obj->x, obj->y, frame * w, 0, w, h);
+		if (obj->type == OBJ_SPRING) {
+			frame = 5;
 
-			//Gush hole
-			draw_sprite(SPR_GUSH_HOLE, obj->x, 263, 0);
-		} else {
-			frame = 0;
-
-			if (obj->type == OBJ_SPRING) {
-				frame = 5;
-
-				if (i == ctx->hit_spring) {
-					frame = ctx->anims[ANIM_HIT_SPRING].frame;
-				}
+			if (i == ctx->hit_spring) {
+				frame = ctx->anims[ANIM_HIT_SPRING].frame;
 			}
-
-			draw_sprite(data_obj_sprites[obj->type], obj->x, obj->y, frame);
 		}
+
+		draw_sprite(data_obj_sprites[obj->type], obj->x, obj->y, frame);
+	}
+
+	//Gushes
+	for (i = 0; i < MAX_GUSHES; i++) {
+		Gush* gush = &ctx->gushes[i];
+		Obj* obj = &ctx->objs[gush->obj];
+
+		//Skip if it is not a gush
+		if (obj->type != OBJ_GUSH) continue;
+
+		x = obj->x;
+		y = obj->y;
+		frame = ctx->anims[ANIM_GUSHES].frame;
+
+		//Gush top
+		draw_sprite(SPR_GUSH_TOP, x, y, frame);
+
+		//Gush middle
+		for (y = obj->y + 8; y <= FLOOR_Y - 1; y += LEVEL_BLOCK_SIZE) {
+			draw_sprite(SPR_GUSH_MIDDLE, x, y, frame);
+		}
+
+		//Gush hole
+		draw_sprite(SPR_GUSH_HOLE, x, FLOOR_Y - 1, 0);
 	}
 
 	//Player character
@@ -640,7 +654,7 @@ static void draw_play()
 
 	//Medal icons (used in the ending sequence)
 	if (ctx->player_reached_flagman) {
-		x = (int)ctx->cutscene_objects[0].x;
+		x = (int)ctx->cutscene_objects[0].x + 4;
 		y = 160;
 
 		if (ctx->cutscene_objects[0].sprite == SPR_PLAYER_RUN) {
@@ -650,12 +664,12 @@ static void draw_play()
 		draw_sprite(SPR_MEDAL1, x, y, 0);
 	}
 	if (ctx->hen_reached_flagman) {
-		x = (int)ctx->hen.x;
+		x = (int)ctx->hen.x + 4;
 		y = 184;
 		draw_sprite(SPR_MEDAL2, x, y, 0);
 	}
 	if (ctx->bus_reached_flagman) {
-		x = (int)ctx->bus.x + 343;
+		x = (int)ctx->bus.x + 347;
 		y = 120;
 		draw_sprite(SPR_MEDAL3, x, y, 0);
 	}
@@ -739,20 +753,28 @@ static void draw_play()
 	//Overhead sign bases
 	for (i = 0; i < MAX_OVERHEAD_SIGNS; i++) {
 		OverheadSign* sign = &ctx->overhead_signs[i];
-		int h;
 
-		if (sign->x != NONE) {
-			spr = SPR_OVERHEAD_SIGN_BASE_TOP;
-			x = sign->x + 16;
-			y = sign->y + 8;
+		//No more overhead sign bases to draw
+		if (sign->x == NONE) break;
+
+		//Base top
+		spr = SPR_OVERHEAD_SIGN_BASE_TOP;
+		x = sign->x + 16;
+		y = sign->y + 8;
+		draw_sprite(spr, x, y, 0);
+
+		//Base bottom
+		spr = SPR_OVERHEAD_SIGN_BASE_BOTTOM;
+		x = sign->x + 24;
+		y = 248;
+		draw_sprite(spr, x, y, 0);
+
+		//Base middle
+		spr = SPR_OVERHEAD_SIGN_BASE_MIDDLE;
+		for (y = sign->y + 32; y < 248; y += LEVEL_BLOCK_SIZE) {
 			draw_sprite(spr, x, y, 0);
-
-			spr = SPR_OVERHEAD_SIGN_BASE;
-			x = sign->x + 24;
-			y = sign->y + 32;
-			h = 272 - y;
-			draw_sprite_part(spr, x, y, 0, 320 - h, 8, h);
 		}
+
 	}
 
 	//Crack particles
@@ -1160,27 +1182,6 @@ static void draw_gfx(Rectangle src, Rectangle dst, bool hflip, bool vflip, int a
 	draw_texture(gfx, src, dst, hflip, vflip, alpha);
 }
 
-static void draw_sprite_part(int spr, int dx, int dy, int sx, int sy, int sw, int sh)
-{
-	Rectangle src;
-	Rectangle dst;
-
-	sx += data_sprites[spr * 4 + 0];
-	sy += data_sprites[spr * 4 + 1];
-
-	src.x = sx;
-	src.y = sy;
-	src.width  = sw;
-	src.height = sh;
-
-	dst.x = dx;
-	dst.y = dy;
-	dst.width  = sw;
-	dst.height = sh;
-
-	draw_gfx(src, dst, false, false, 255);
-}
-
 static void draw_sprite_flip(int spr, int dx, int dy, int frame, bool hflip, bool vflip)
 {
 	int w  = data_sprites[spr * 4 + 2];
@@ -1232,6 +1233,39 @@ static void draw_sprite_stretch(int spr, int dx, int dy, int w, int h)
 	draw_gfx(src, dst, false, false, 255);
 }
 
+//Draws a single character from the character set
+static void draw_char(char c, int color, int x, int y)
+{
+	int spr;
+	int sx;
+	int sy;
+
+	Rectangle src;
+	Rectangle dst;
+
+	switch (color) {
+		case TXTCOL_GREEN: spr = SPR_CHARSET_GREEN; break;
+		case TXTCOL_GRAY:  spr = SPR_CHARSET_GRAY;  break;
+		default:           spr = SPR_CHARSET_WHITE; break;
+	}
+
+	c -= ' ';
+	sx = ((c % 16) * 8) + data_sprites[spr * 4 + 0];
+	sy = ((c / 16) * 8) + data_sprites[spr * 4 + 1];
+
+	src.x = sx;
+	src.y = sy;
+	src.width  = 8;
+	src.height = 8;
+
+	dst.x = x;
+	dst.y = y;
+	dst.width  = 8;
+	dst.height = 8;
+
+	draw_gfx(src, dst, false, false, 255);
+}
+
 static void draw_digits(int value, int width, int x, int y)
 {
 	char digits[12];
@@ -1261,7 +1295,7 @@ static void draw_digits(int value, int width, int x, int y)
 	}
 
 	for (i = num_digits - 1; i >= 0; i--) {
-		draw_sprite_part(SPR_CHARSET_WHITE, x, y, digits[i] * 8, 8, 8, 8);
+		draw_char(digits[i] + '0', TXTCOL_WHITE, x, y);
 		x += 8;
 	}
 }
@@ -1275,18 +1309,14 @@ static void draw_digits(int value, int width, int x, int y)
 //The newline (\n) character also reverts to the initial color
 static void draw_text(const char* text, int color, int x, int y)
 {
-	int i;
 	int len = strlen(text);
 	int initial_color = color;
-
-	int spr;
 	int dx = x;
 	int dy = y;
+	int i;
 
 	for (i = 0; i < len; i++) {
-		int c, sx, sy;
-
-		c = text[i];
+		char c = text[i];
 
 		if (c == 0x1B) {
 			color = (color == TXTCOL_GREEN) ? TXTCOL_WHITE : TXTCOL_GREEN;
@@ -1295,18 +1325,7 @@ static void draw_text(const char* text, int color, int x, int y)
 			dx = x;
 			color = initial_color;
 		} else {
-			c -= ' ';
-			sx = (c % 16) * 8;
-			sy = (c / 16) * 8;
-
-			switch (color) {
-				case TXTCOL_GREEN: spr = SPR_CHARSET_GREEN; break;
-				case TXTCOL_GRAY:  spr = SPR_CHARSET_GRAY;  break;
-				default:           spr = SPR_CHARSET_WHITE; break;
-			}
-
-			draw_sprite_part(spr, dx, dy, sx, sy, 8, 8);
-
+			draw_char(c, color, dx, dy);
 			dx += 8;
 		}
 	}

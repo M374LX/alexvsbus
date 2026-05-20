@@ -384,7 +384,7 @@ static void draw_play()
 
 		spr = SPR_PASSAGEWAY_RIGHT_CLOSED;
 		x = ctx->passageways[i].x + (w - LEVEL_BLOCK_SIZE);
-		y = FLOOR_Y - 16;
+		y = FLOOR_Y - 8;
 
 		draw_sprite(spr, x, y, 0);
 	}

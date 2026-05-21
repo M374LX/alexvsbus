@@ -1258,7 +1258,7 @@ void OpenURL(const char *url)
     else
     {
         char *cmd = (char *)RL_CALLOC(strlen(url) + 32, sizeof(char));
-        sprintf(cmd, "explorer \"%s\"", url);
+        snprintf(cmd, strlen(url) + 32, "explorer \"%s\"", url);
         int result = system(cmd);
         if (result == -1) TRACELOG(LOG_WARNING, "OpenURL() child process could not be created");
         RL_FREE(cmd);
@@ -2053,8 +2053,9 @@ static void HandleMouseButton(int button, char state)
 static void HandleRawInput(LPARAM lparam)
 {
     RAWINPUT input = { 0 };
-
-    UINT inputSize = sizeof(input);
+    UINT inputSize = 0;
+    if (GetRawInputData((HRAWINPUT)lparam, RID_INPUT, NULL, &inputSize, sizeof(RAWINPUTHEADER)) != 0) return;
+    if (inputSize > sizeof(input)) return;
     UINT size = GetRawInputData((HRAWINPUT)lparam, RID_INPUT, &input, &inputSize, sizeof(RAWINPUTHEADER));
 
     if (size == (UINT)-1) TRACELOG(LOG_ERROR, "WIN32: Failed to get raw input data [ERROR: %lu]", GetLastError());

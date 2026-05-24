@@ -622,7 +622,7 @@ static void draw_play()
 		draw_sprite(SPR_GUSH_TOP, x, y, frame);
 
 		//Gush middle
-		for (y = obj->y + 8; y <= FLOOR_Y - 1; y += LEVEL_BLOCK_SIZE) {
+		for (y = obj->y + 8; y < FLOOR_Y; y += LEVEL_BLOCK_SIZE) {
 			draw_sprite(SPR_GUSH_MIDDLE, x, y, frame);
 		}
 

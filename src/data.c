@@ -125,7 +125,7 @@ const int data_sprites[] = {
 	544,  96,   32,  8,   //SPR_GUSH_TOP
 	640,  96,   32,  24,  //SPR_GUSH_MIDDLE
 	736,  96,   16,  8,   //SPR_GUSH_CRACK
-	768,  96,   24,  32,  //SPR_GUSH_HOLE
+	768,  96,   16,  24,  //SPR_GUSH_HOLE
 	736,  128,  32,  32,  //SPR_HEN
 	896,  96,   16,  24,  //SPR_HYDRANT
 	384,  448,  224, 64,  //SPR_LOGO_SMALL
@@ -137,7 +137,7 @@ const int data_sprites[] = {
 	864,  32,   16,  24,  //SPR_OVERHEAD_SIGN_BASE_TOP
 	864,  64,   8,   24,  //SPR_OVERHEAD_SIGN_BASE_MIDDLE
 	864,  96,   8,   24,  //SPR_OVERHEAD_SIGN_BASE_BOTTOM
-	800,  32,   32,  16,  //SPR_PASSAGEWAY_LEFT_FG
+	800,  32,   24,  16,  //SPR_PASSAGEWAY_LEFT_FG
 	800,  64,   24,  16,  //SPR_PASSAGEWAY_RIGHT_FG
 	800,  96,   24,  24,  //SPR_PASSAGEWAY_RIGHT_CLOSED
 	704,  576,  32,  32,  //SPR_PAUSE

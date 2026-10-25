@@ -357,14 +357,14 @@ static void draw_play()
 				spr = SPR_LEVEL_BLOCK_0 + (i + 1);
 			} else { //Floor, deep hole, or passageway
 				int block_num;
-				int type;
+				int hole_type;
 
-				type = LVLCOL_NORMAL_FLOOR;
+				hole_type = HOLE_NONE;
 				if (col < MAX_LEVEL_COLUMNS) {
-					type = ctx->level_columns[col].type;
+					hole_type = ctx->level_columns[col].hole_type;
 				}
 
-				block_num = data_level_column_blocks[(type * 8) + (i - 3)];
+				block_num = data_level_column_blocks[(hole_type * 8) + (i - 3)];
 
 				spr = SPR_LEVEL_BLOCK_0 + block_num;
 			}
@@ -683,16 +683,16 @@ static void draw_play()
 
 		if (col >= MAX_LEVEL_COLUMNS) break;
 
-		switch (ctx->level_columns[col].type) {
-			case LVLCOL_DEEP_HOLE_LEFT:
+		switch (ctx->level_columns[col].hole_type) {
+			case HOLE_DEEP_LEFT:
 				spr = SPR_DEEP_HOLE_LEFT_FG;
 				break;
 
-			case LVLCOL_PASSAGEWAY_LEFT:
+			case HOLE_PASSAGEWAY_LEFT:
 				spr = SPR_PASSAGEWAY_LEFT_FG;
 				break;
 
-			case LVLCOL_PASSAGEWAY_RIGHT:
+			case HOLE_PASSAGEWAY_RIGHT:
 				spr = SPR_PASSAGEWAY_RIGHT_FG;
 				break;
 

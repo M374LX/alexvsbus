@@ -162,7 +162,7 @@ void play_clear()
 	ctx.cur_passageway = NONE;
 
 	for (i = 0; i < MAX_LEVEL_COLUMNS; i++) {
-		ctx.level_columns[i].type = LVLCOL_NORMAL_FLOOR;
+		ctx.level_columns[i].hole_type = HOLE_NONE;
 		ctx.level_columns[i].num_crates = 0;
 		ctx.level_columns[i].has_hydrant = false;
 		ctx.level_columns[i].has_rope = false;

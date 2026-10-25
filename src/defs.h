@@ -444,15 +444,15 @@ enum {
 #define MOVING_PEEL_SLIPPED 0
 #define MOVING_PEEL_THROWN 1
 
-//Level column types
+//Level column hole types
 enum {
-	LVLCOL_NORMAL_FLOOR = 0,
-	LVLCOL_DEEP_HOLE_LEFT = 1,
-	LVLCOL_DEEP_HOLE_MIDDLE = 2,
-	LVLCOL_DEEP_HOLE_RIGHT = 3,
-	LVLCOL_PASSAGEWAY_LEFT = 4,
-	LVLCOL_PASSAGEWAY_MIDDLE = 5,
-	LVLCOL_PASSAGEWAY_RIGHT = 6,
+	HOLE_NONE = 0,
+	HOLE_DEEP_LEFT = 1,
+	HOLE_DEEP_MIDDLE = 2,
+	HOLE_DEEP_RIGHT = 3,
+	HOLE_PASSAGEWAY_LEFT = 4,
+	HOLE_PASSAGEWAY_MIDDLE = 5,
+	HOLE_PASSAGEWAY_RIGHT = 6,
 };
 
 //Solid types
@@ -753,7 +753,7 @@ typedef struct {
 } Bus;
 
 typedef struct {
-	int type; //LVLCOL_* constants
+	int hole_type; //HOLE_* constants
 	int num_crates; //Number of stacked unpushable crates
 	bool has_hydrant;
 	bool has_rope;

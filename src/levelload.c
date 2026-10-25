@@ -347,10 +347,10 @@ int levelload_load(const char* filename)
 
 	//Ensure there are no unpushable crates on deep holes or passageway edges
 	for (i = 0; i < MAX_LEVEL_COLUMNS; i++) {
-		int type = ctx->level_columns[i].type;
+		int hole_type = ctx->level_columns[i].hole_type;
 		int num_crates = ctx->level_columns[i].num_crates;
 
-		if (type != LVLCOL_NORMAL_FLOOR && type != LVLCOL_PASSAGEWAY_MIDDLE) {
+		if (hole_type != HOLE_NONE && hole_type != HOLE_PASSAGEWAY_MIDDLE) {
 			if (num_crates > 0) {
 				return LVLERR_INVALID;
 			}
@@ -540,24 +540,24 @@ static void add_deep_hole(int x, int w)
 	}
 
 	for (i = 0; i < w; i++) {
-		int type;
+		int hole_type;
 
 		//Check if the deep hole is being added to a level column that already
 		//has a deep hole or passageway
-		if (ctx->level_columns[x + i].type != LVLCOL_NORMAL_FLOOR) {
+		if (ctx->level_columns[x + i].hole_type != HOLE_NONE) {
 			invalid = true;
 			return;
 		}
 
-		type = LVLCOL_DEEP_HOLE_MIDDLE;
+		hole_type = HOLE_DEEP_MIDDLE;
 		if (i == 0) {
-			type = LVLCOL_DEEP_HOLE_LEFT;
+			hole_type = HOLE_DEEP_LEFT;
 		} else if (i == w - 1) {
-			type = LVLCOL_DEEP_HOLE_RIGHT;
+			hole_type = HOLE_DEEP_RIGHT;
 		}
 
 		//Insert deep hole into level columns
-		ctx->level_columns[x + i].type = type;
+		ctx->level_columns[x + i].hole_type = hole_type;
 	}
 
 	num_deep_holes++;
@@ -682,24 +682,24 @@ static void add_passageway(int x, int w)
 	//Check if there is already a deep hole or passageway on the occupied level
 	//columns
 	for (i = 0; i < w; i++) {
-		int type;
+		int hole_type;
 
 		//Check if the passageway is being added to a level column that already
 		//has a deep hole or passageway
-		if (ctx->level_columns[x + i].type != LVLCOL_NORMAL_FLOOR) {
+		if (ctx->level_columns[x + i].hole_type != HOLE_NONE) {
 			invalid = true;
 			return;
 		}
 
-		type = LVLCOL_PASSAGEWAY_MIDDLE;
+		hole_type = HOLE_PASSAGEWAY_MIDDLE;
 		if (i == 0) {
-			type = LVLCOL_PASSAGEWAY_LEFT;
+			hole_type = HOLE_PASSAGEWAY_LEFT;
 		} else if (i == w - 1) {
-			type = LVLCOL_PASSAGEWAY_RIGHT;
+			hole_type = HOLE_PASSAGEWAY_RIGHT;
 		}
 
 		//Insert passageway into level columns
-		ctx->level_columns[x + i].type = type;
+		ctx->level_columns[x + i].hole_type = hole_type;
 	}
 
 	ctx->passageways[num_passageways].x = x;
@@ -790,19 +790,19 @@ static void validate_level_columns()
 	int i;
 
 	for (i = 0; i < MAX_LEVEL_COLUMNS; i++) {
-		int type = ctx->level_columns[i].type;
+		int hole_type = ctx->level_columns[i].hole_type;
 		int num_crates = ctx->level_columns[i].num_crates;
 		bool has_hydrant = ctx->level_columns[i].has_hydrant;
 		bool has_rope = ctx->level_columns[i].has_rope;
 
 		if (has_hydrant) {
-			if (has_rope || num_crates != 0 || type != LVLCOL_NORMAL_FLOOR) {
+			if (has_rope || num_crates != 0 || hole_type != HOLE_NONE) {
 				invalid = true;
 			}
 		}
 
 		if (num_crates > 0) {
-			if (type != LVLCOL_NORMAL_FLOOR && type != LVLCOL_PASSAGEWAY_MIDDLE) {
+			if (hole_type != HOLE_NONE && hole_type != HOLE_PASSAGEWAY_MIDDLE) {
 				invalid = true;
 			}
 		}
@@ -827,20 +827,20 @@ static void validate_positions()
 	for (i = 0; i < num_respawn_points; i++) {
 		int x = ctx->respawn_points[i].x;
 		int y = ctx->respawn_points[i].y;
-		int type = ctx->level_columns[x].type;
+		int hole_type = ctx->level_columns[x].hole_type;
 
 		if (y != 9 - ctx->level_columns[x].num_crates) {
 			invalid = true;
 			return;
 		}
 
-		if (type != LVLCOL_NORMAL_FLOOR && type != LVLCOL_DEEP_HOLE_RIGHT) {
+		if (hole_type != HOLE_NONE && hole_type != HOLE_DEEP_RIGHT) {
 			invalid = true;
 			return;
 		}
 
-		if (ctx->level_columns[x + 1].type == LVLCOL_DEEP_HOLE_LEFT) continue;
-		if (ctx->level_columns[x + 2].type == LVLCOL_DEEP_HOLE_LEFT) continue;
+		if (ctx->level_columns[x + 1].hole_type == HOLE_DEEP_LEFT) continue;
+		if (ctx->level_columns[x + 2].hole_type == HOLE_DEEP_LEFT) continue;
 
 		invalid = true;
 		return;
@@ -851,7 +851,7 @@ static void validate_positions()
 		int x = ctx->coins[i].x;
 		int y = ctx->coins[i].y;
 
-		int col_type = ctx->level_columns[x].type;
+		int col_hole_type = ctx->level_columns[x].hole_type;
 		int col_num_crates = ctx->level_columns[x].num_crates;
 
 		if (y == 11) {
@@ -862,9 +862,9 @@ static void validate_positions()
 		if (y > 11) {
 			//A coin's Y position can be greater than 11 only if it is in a
 			//passageway
-			if (col_type != LVLCOL_PASSAGEWAY_LEFT
-					&& col_type != LVLCOL_PASSAGEWAY_MIDDLE
-					&& col_type != LVLCOL_PASSAGEWAY_RIGHT) {
+			if (col_hole_type != HOLE_PASSAGEWAY_LEFT
+					&& col_hole_type != HOLE_PASSAGEWAY_MIDDLE
+					&& col_hole_type != HOLE_PASSAGEWAY_RIGHT) {
 
 				invalid = true;
 			}
@@ -885,7 +885,7 @@ static void validate_positions()
 		int x = ctx->objs[i].x;
 		int y = ctx->objs[i].y;
 
-		int col_type = ctx->level_columns[x].type;
+		int col_hole_type = ctx->level_columns[x].hole_type;
 		int col_num_crates = ctx->level_columns[x].num_crates;
 
 		if (y == 11) {
@@ -897,9 +897,9 @@ static void validate_positions()
 		if (y > 11) {
 			//An object's Y position can be greater than 11 only if it is in a
 			//passageway
-			if (col_type != LVLCOL_PASSAGEWAY_LEFT
-					&& col_type != LVLCOL_PASSAGEWAY_MIDDLE
-					&& col_type != LVLCOL_PASSAGEWAY_RIGHT) {
+			if (col_hole_type != HOLE_PASSAGEWAY_LEFT
+					&& col_hole_type != HOLE_PASSAGEWAY_MIDDLE
+					&& col_hole_type != HOLE_PASSAGEWAY_RIGHT) {
 
 				invalid = true;
 				return;
@@ -922,7 +922,7 @@ static void validate_positions()
 					return;
 				}
 
-				if (col_type != LVLCOL_NORMAL_FLOOR) {
+				if (col_hole_type != HOLE_NONE) {
 					invalid = true;
 					return;
 				}
@@ -936,14 +936,14 @@ static void validate_positions()
 						return;
 					}
 
-					if (col_type != LVLCOL_NORMAL_FLOOR
-							&& col_type != LVLCOL_PASSAGEWAY_MIDDLE) {
+					if (col_hole_type != HOLE_NONE
+							&& col_hole_type != HOLE_PASSAGEWAY_MIDDLE) {
 
 						invalid = true;
 						return;
 					}
 				} else if (y == 14) {
-					if (col_type != LVLCOL_PASSAGEWAY_RIGHT) {
+					if (col_hole_type != HOLE_PASSAGEWAY_RIGHT) {
 						invalid = true;
 						return;
 					}
@@ -960,15 +960,15 @@ static void validate_positions()
 		int j;
 
 		for (j = 0; j < w; j++) {
-			int col_type = ctx->level_columns[x + j].type;
+			int col_hole_type = ctx->level_columns[x + j].hole_type;
 			int col_num_crates = ctx->level_columns[x + j].num_crates;
 
 			if (col_num_crates > 0) {
 				invalid = true;
 			}
 
-			if (col_type != LVLCOL_NORMAL_FLOOR
-					&& col_type != LVLCOL_PASSAGEWAY_MIDDLE) {
+			if (col_hole_type != HOLE_NONE
+					&& col_hole_type != HOLE_PASSAGEWAY_MIDDLE) {
 
 				invalid = true;
 			}
@@ -1113,25 +1113,25 @@ static void add_solids()
 	for (i = 1; i < num_level_columns; i++) {
 		int x;
 
-		switch (ctx->level_columns[i].type) {
-			case LVLCOL_NORMAL_FLOOR:
+		switch (ctx->level_columns[i].hole_type) {
+			case HOLE_NONE:
 				ctx->solids[num_solids - 1].right += LEVEL_BLOCK_SIZE;
 				break;
 
-			case LVLCOL_DEEP_HOLE_LEFT:
+			case HOLE_DEEP_LEFT:
 				ctx->solids[num_solids - 1].right += 12;
 				break;
 
-			case LVLCOL_DEEP_HOLE_RIGHT:
+			case HOLE_DEEP_RIGHT:
 				x = (LEVEL_BLOCK_SIZE * i) + 14;
 				add_solid(SOL_FULL, x, 264, 10, 80);
 				break;
 
-			case LVLCOL_PASSAGEWAY_LEFT:
+			case HOLE_PASSAGEWAY_LEFT:
 				ctx->solids[num_solids - 1].right += 6;
 				break;
 
-			case LVLCOL_PASSAGEWAY_RIGHT:
+			case HOLE_PASSAGEWAY_RIGHT:
 				x = (LEVEL_BLOCK_SIZE * (i + 1));
 				add_solid(SOL_FULL, x, 264, 0, 80);
 				break;

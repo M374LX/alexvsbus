@@ -60,13 +60,13 @@ static int cursor_direction;
 static int prev_cursor_direction;
 static float cursor_delay;
 static int difficulty; //Selected difficulty
-static int level_num;   //Selected level number
+static int level_num;  //Selected level number
 static float level_start_delay;
 static int cheat_pos;
 
 //If the selected item is between store_sel_min and store_sel_max (inclusive),
 //then it is stored in stored_sel; if an item's target is -2 (-1 would
-//conflict with the constant NONE), then the item to be selected is
+//conflict with the constant MENUDIR_NONE), then the item to be selected is
 //retrieved from stored_sel;
 static int stored_sel;
 static int store_sel_min;
@@ -98,11 +98,11 @@ MenuCtx* menu_init(DisplayParams* dp, Config* cfg)
 	config = cfg;
 
 	difficulty = DIFFICULTY_NORMAL;
-	cursor_direction = NONE;
-	prev_cursor_direction = NONE;
+	cursor_direction = MENUDIR_NONE;
+	prev_cursor_direction = MENUDIR_NONE;
 
 	ctx.display_name = "";
-	ctx.action = NONE;
+	ctx.action = MENUACT_NONE;
 	ctx.use_cursor = !config->touch_enabled;
 	ctx.selected_visible = true;
 	ctx.text[0] = '\0';
@@ -211,8 +211,8 @@ void menu_handle_keys(int input_held, int input_hit)
 	if (wait_input_up) {
 		if (input_held == 0) wait_input_up = false;
 
-		cursor_direction = NONE;
-		prev_cursor_direction = NONE;
+		cursor_direction = MENUDIR_NONE;
+		prev_cursor_direction = MENUDIR_NONE;
 
 		return;
 	}
@@ -227,7 +227,7 @@ void menu_handle_keys(int input_held, int input_hit)
 	} else if ((input_held & INPUT_RIGHT) > 0) {
 		cursor_direction = MENUDIR_RIGHT;
 	} else {
-		cursor_direction = NONE;
+		cursor_direction = MENUDIR_NONE;
 	}
 
 	//Confirm
@@ -290,7 +290,7 @@ void menu_update(float dt)
 
 	//Handle selected item change
 	selection_changed = false;
-	if (cursor_direction != NONE) {
+	if (cursor_direction != MENUDIR_NONE) {
 		cursor_delay -= dt;
 
 		if (prev_cursor_direction != cursor_direction) {
@@ -817,7 +817,7 @@ static void confirm(int item, bool change_item)
 		case MENU_PAUSE:
 			switch (item) {
 				case 0:
-					close_all();
+					ctx.action = MENUACT_RESUME;
 					break;
 
 				case 1:
@@ -841,7 +841,7 @@ static void confirm(int item, bool change_item)
 		case MENU_TRYAGAIN_PAUSE:
 			switch (item){
 				case 0:
-					ctx.action = MENUACT_TRYAGAIN;
+					ctx.action = MENUACT_TRY_AGAIN;
 					break;
 
 				case 1:
@@ -857,7 +857,7 @@ static void confirm(int item, bool change_item)
 		case MENU_TRYAGAIN_TIMEUP:
 			switch (item){
 				case 0:
-					ctx.action = MENUACT_TRYAGAIN;
+					ctx.action = MENUACT_TRY_AGAIN;
 					break;
 
 				case 1:
@@ -1062,7 +1062,7 @@ static void load_menu(int menu_type)
 		it->offset_y = 0;
 		it->caption = "";
 		it->value[0] = '\0';
-		it->icon_sprite = NONE;
+		it->icon_sprite = SPR_NULL;
 		it->disabled = false;
 		it->hidden = false;
 	}
@@ -1083,9 +1083,9 @@ static void load_menu(int menu_type)
 			break;
 
 		case MENU_DIFFICULTY:
-			set_item(0,  8,  5,  3,  3,  3,  1, NONE);
-			set_item(1,  8,  5,  3,  3,  0,  2, NONE);
-			set_item(2,  8,  5,  3,  3,  1,  3, NONE);
+			set_item(0,  8,  5,  3,  3,  3,  1, SPR_NULL);
+			set_item(1,  8,  5,  3,  3,  0,  2, SPR_NULL);
+			set_item(2,  8,  5,  3,  3,  1,  3, SPR_NULL);
 			set_item(3,  5,  5, -2, -2,  2,  0, SPR_MENU_RETURN);
 			ctx.num_items = 4;
 			position_items_center(0, 2, false, 10, 0);
@@ -1119,9 +1119,9 @@ static void load_menu(int menu_type)
 			break;
 
 		case MENU_SETTINGS:
-			set_item(0, 26,  3,  3,  1,  3,  3, NONE);
-			set_item(1, 26,  3,  0,  2,  3,  3, NONE);
-			set_item(2, 26,  3,  1,  3,  3,  3, NONE);
+			set_item(0, 26,  3,  3,  1,  3,  3, SPR_NULL);
+			set_item(1, 26,  3,  0,  2,  3,  3, SPR_NULL);
+			set_item(2, 26,  3,  1,  3,  3,  3, SPR_NULL);
 			set_item(3,  5,  5,  2,  0, -2, -2, SPR_MENU_RETURN);
 			ctx.num_items = 4;
 			position_items_center(0, 2, true, 4, 0);
@@ -1132,10 +1132,10 @@ static void load_menu(int menu_type)
 			break;
 
 		case MENU_DISPLAY_SETTINGS:
-			set_item(0, 26,  3,  4,  1,  4,  4, NONE);
-			set_item(1, 26,  3,  0,  2,  4,  4, NONE);
-			set_item(2, 26,  3,  1,  3,  4,  4, NONE);
-			set_item(3, 26,  3,  2,  4,  4,  4, NONE);
+			set_item(0, 26,  3,  4,  1,  4,  4, SPR_NULL);
+			set_item(1, 26,  3,  0,  2,  4,  4, SPR_NULL);
+			set_item(2, 26,  3,  1,  3,  4,  4, SPR_NULL);
+			set_item(3, 26,  3,  2,  4,  4,  4, SPR_NULL);
 			set_item(4,  5,  5,  3,  0, -2, -2, SPR_MENU_RETURN);
 			ctx.num_items = 5;
 			position_items_center(0, 3, true, 4, 0);
@@ -1147,9 +1147,9 @@ static void load_menu(int menu_type)
 			break;
 
 		case MENU_WINDOW_SCALE:
-			set_item(0, 16,  3,  3,  1,  3,  3, NONE);
-			set_item(1, 16,  3,  0,  2,  3,  3, NONE);
-			set_item(2, 16,  3,  1,  3,  3,  3, NONE);
+			set_item(0, 16,  3,  3,  1,  3,  3, SPR_NULL);
+			set_item(1, 16,  3,  0,  2,  3,  3, SPR_NULL);
+			set_item(2, 16,  3,  1,  3,  3,  3, SPR_NULL);
 			set_item(3,  5,  5,  2,  0, -2, -2, SPR_MENU_RETURN);
 			ctx.num_items = 4;
 			position_items_center(0, 2, true, 4, 0);
@@ -1160,9 +1160,9 @@ static void load_menu(int menu_type)
 			break;
 
 		case MENU_VSCREEN_SIZE:
-			set_item(0, 26,  3,  3,  1,  3,  3, NONE);
-			set_item(1, 26,  3,  0,  2,  3,  3, NONE);
-			set_item(2, 26,  3,  1,  3,  3,  3, NONE);
+			set_item(0, 26,  3,  3,  1,  3,  3, SPR_NULL);
+			set_item(1, 26,  3,  0,  2,  3,  3, SPR_NULL);
+			set_item(2, 26,  3,  1,  3,  3,  3, SPR_NULL);
 			set_item(3,  5,  5,  2,  0, -2, -2, SPR_MENU_RETURN);
 			ctx.num_items = 4;
 			position_items_center(0, 2, true, 4, 0);
@@ -1173,11 +1173,11 @@ static void load_menu(int menu_type)
 			break;
 
 		case MENU_VSCREEN_WIDTH:
-			set_item(0,  5,  3,  5,  5,  4,  1, NONE);
-			set_item(1,  5,  3,  5,  5,  0,  2, NONE);
-			set_item(2,  5,  3,  5,  5,  1,  3, NONE);
-			set_item(3,  5,  3,  5,  5,  2,  4, NONE);
-			set_item(4,  5,  3,  5,  5,  3,  5, NONE);
+			set_item(0,  5,  3,  5,  5,  4,  1, SPR_NULL);
+			set_item(1,  5,  3,  5,  5,  0,  2, SPR_NULL);
+			set_item(2,  5,  3,  5,  5,  1,  3, SPR_NULL);
+			set_item(3,  5,  3,  5,  5,  2,  4, SPR_NULL);
+			set_item(4,  5,  3,  5,  5,  3,  5, SPR_NULL);
 			set_item(5,  5,  5, -2, -2,  3,  0, SPR_MENU_RETURN);
 			ctx.num_items = 6;
 			position_items_center(0, 4, false, 6, 0);
@@ -1193,11 +1193,11 @@ static void load_menu(int menu_type)
 			break;
 
 		case MENU_VSCREEN_HEIGHT:
-			set_item(0,  5,  3,  5,  5,  5,  1, NONE);
-			set_item(1,  5,  3,  5,  5,  0,  2, NONE);
-			set_item(2,  5,  3,  5,  5,  1,  3, NONE);
-			set_item(3,  5,  3,  5,  5,  2,  4, NONE);
-			set_item(4,  5,  3,  5,  5,  3,  5, NONE);
+			set_item(0,  5,  3,  5,  5,  5,  1, SPR_NULL);
+			set_item(1,  5,  3,  5,  5,  0,  2, SPR_NULL);
+			set_item(2,  5,  3,  5,  5,  1,  3, SPR_NULL);
+			set_item(3,  5,  3,  5,  5,  2,  4, SPR_NULL);
+			set_item(4,  5,  3,  5,  5,  3,  5, SPR_NULL);
 			set_item(5,  5,  5, -2, -2,  4,  0, SPR_MENU_RETURN);
 			ctx.num_items = 6;
 			position_items_center(0, 4, false, 6, 0);
@@ -1213,9 +1213,9 @@ static void load_menu(int menu_type)
 			break;
 
 		case MENU_AUDIO_SETTINGS:
-			set_item(0, 26,  3,  3,  1,  3,  3, NONE);
-			set_item(1, 26,  3,  0,  2,  3,  3, NONE);
-			set_item(2, 26,  3,  1,  3,  3,  3, NONE);
+			set_item(0, 26,  3,  3,  1,  3,  3, SPR_NULL);
+			set_item(1, 26,  3,  0,  2,  3,  3, SPR_NULL);
+			set_item(2, 26,  3,  1,  3,  3,  3, SPR_NULL);
 			set_item(3,  5,  5,  2,  0, -2, -2, SPR_MENU_RETURN);
 			ctx.num_items = 4;
 			position_items_center(0, 2, true, 4, 0);
@@ -1226,7 +1226,7 @@ static void load_menu(int menu_type)
 			break;
 
 		case MENU_ABOUT:
-			set_item(0, 16,  3,  1,  1,  1,  1, NONE);
+			set_item(0, 16,  3,  1,  1,  1,  1, SPR_NULL);
 			set_item(1,  5,  5,  0,  0,  0,  0, SPR_MENU_RETURN);
 			ctx.num_items = 2;
 			set_item_position(0, ALIGN_CENTER, 0, 14); //Credits

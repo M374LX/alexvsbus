@@ -57,9 +57,10 @@ enum {
 
 //Delayed action types
 enum {
-	DELACT_TITLE = 0,
-	DELACT_NEXT_DIFFICULTY = 1,
-	DELACT_TRY_AGAIN = 2,
+	DELACT_NONE = 0,
+	DELACT_TITLE = 1,
+	DELACT_NEXT_DIFFICULTY = 2,
+	DELACT_TRY_AGAIN = 3,
 };
 
 //Difficulty
@@ -93,9 +94,10 @@ enum {
 
 //Screen wiping commands
 enum {
-	WIPECMD_IN = 0,
-	WIPECMD_OUT = 1,
-	WIPECMD_CLEAR = 2,
+	WIPECMD_NONE = 0,
+	WIPECMD_IN = 1,
+	WIPECMD_OUT = 2,
+	WIPECMD_CLEAR = 3,
 };
 
 //Other screen wiping constants
@@ -113,13 +115,6 @@ enum {
 //As in many retro games, 8x8 tiles are commonly used as the basic unit for
 //positioning and size
 #define TILE_SIZE 8
-
-//Special constant meaning that something does not exist or is unset or
-//inactive
-//
-//Commonly used as an object's X position or as an index within
-//PlayCtx.objs[]
-#define NONE (-1)
 
 
 
@@ -358,6 +353,7 @@ enum {
 
 //Cursor movement directions
 enum {
+	MENUDIR_NONE = -1,
 	MENUDIR_UP = 0,
 	MENUDIR_DOWN = 1,
 	MENUDIR_LEFT = 2,
@@ -395,10 +391,12 @@ enum {
 
 //Menu action types
 enum {
-	MENUACT_QUIT = 0,
+	MENUACT_NONE = 0,
 	MENUACT_TITLE = 1, //Go to title screen
 	MENUACT_PLAY = 2,
-	MENUACT_TRYAGAIN = 3,
+	MENUACT_RESUME = 3,
+	MENUACT_TRY_AGAIN = 4,
+	MENUACT_QUIT = 5,
 };
 
 
@@ -468,20 +466,22 @@ enum {
 
 //Object types (for objects that use PlayCtx.objs[])
 enum {
-	OBJ_BANANA_PEEL = 0,
-	OBJ_GUSH = 1,
-	OBJ_GUSH_CRACK = 2,
-	OBJ_PUSH_CRATE = 3,
-	OBJ_ROPE = 4,
-	OBJ_SPRING = 5,
+	OBJ_NONE = 0,
+	OBJ_BANANA_PEEL = 1,
+	OBJ_GUSH = 2,
+	OBJ_GUSH_CRACK = 3,
+	OBJ_PUSH_CRATE = 4,
+	OBJ_ROPE = 5,
+	OBJ_SPRING = 6,
 };
 
 //Parked vehicle types
 enum {
-	PARKED_CAR_BLUE = 0,
-	PARKED_CAR_SILVER = 1,
-	PARKED_CAR_YELLOW = 2,
-	PARKED_TRUCK = 3,
+	PARKED_NONE = 0,
+	PARKED_CAR_BLUE = 1,
+	PARKED_CAR_SILVER = 2,
+	PARKED_CAR_YELLOW = 3,
+	PARKED_TRUCK = 4,
 };
 
 //Even if the player presses the jump button before the character hits the
@@ -782,7 +782,7 @@ typedef struct {
 
 //Rope grabbed by the player character
 typedef struct {
-	int obj; //Index of the rope within PlayCtx.objs[]
+	int obj; //Index of the rope within PlayCtx.objs[] (-1 if none)
 	float x;
 	float xmin, xmax;
 	float xvel;
@@ -898,6 +898,8 @@ typedef struct {
 typedef struct {
 	int difficulty;
 	int level_num;
+	int score;
+
 	bool last_level; //Last level of current difficulty
 	bool ending; //True if it is the ending sequence
 	int level_size;
@@ -905,7 +907,6 @@ typedef struct {
 	int bgm;
 	int goal_scene; //Which of the five cutscenes to use when reaching the goal (1-5)
 
-	int score;
 	int time;
 	float time_delay;
 	bool time_running;
@@ -943,7 +944,7 @@ typedef struct {
 	int hit_spring;
 
 	//Index within passageways[] of the passageway the player character is in,
-	//if any, or NONE if none
+	//if any, or -1 if none
 	int cur_passageway;
 
 	//Objects that appear when triggered

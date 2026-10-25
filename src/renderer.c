@@ -393,7 +393,7 @@ static void draw_play()
 	x = (int)ctx->bus.x;
 	y = BUS_Y;
 	draw_sprite(SPR_BUS, x, y, 0);
-	if (ctx->bus.route_sign != NONE) {
+	if (ctx->bus.route_sign >= 0) {
 		if (ctx->bus.route_sign == 0) {
 			//Finish (checkered flag) sign
 			frame = 4;
@@ -426,7 +426,7 @@ static void draw_play()
 	for (i = 0; i < MAX_CUTSCENE_OBJECTS; i++) {
 		CutsceneObject* cobj = &ctx->cutscene_objects[i];
 
-		if (cobj->sprite == NONE || !cobj->in_bus) continue;
+		if (cobj->sprite == SPR_NULL || !cobj->in_bus) continue;
 
 		spr = cobj->sprite;
 		x = (int)cobj->x + (int)ctx->bus.x;
@@ -468,7 +468,7 @@ static void draw_play()
 	}
 
 	//Passing car
-	if (ctx->car.x != NONE) {
+	if (ctx->car.x > 0) {
 		x = (int)ctx->car.x;
 		y = PASSING_CAR_Y;
 		frame = ctx->anims[ANIM_CAR_WHEELS].frame;
@@ -486,7 +486,7 @@ static void draw_play()
 	}
 
 	//Hen
-	if (ctx->hen.x != NONE) {
+	if (ctx->hen.x > 0) {
 		frame = ctx->anims[ANIM_HEN].frame;
 		draw_sprite(SPR_HEN, (int)ctx->hen.x, HEN_Y, frame);
 	}
@@ -564,7 +564,7 @@ static void draw_play()
 		y = ctx->overhead_signs[i].y;
 
 		//No more overhead signs to draw
-		if (x == NONE) break;
+		if (x <= 0) break;
 
 		draw_sprite(spr, x, y, 0);
 	}
@@ -574,7 +574,7 @@ static void draw_play()
 		int type = ctx->parked_vehicles[i].type;
 
 		//No more vehicles to draw
-		if (type == NONE) break;
+		if (type == PARKED_NONE) break;
 
 		spr = data_parked_vehicle_sprites[type];
 		x = ctx->parked_vehicles[i].x;
@@ -588,7 +588,7 @@ static void draw_play()
 		Obj* obj = &ctx->objs[i];
 
 		//Ignore inexistent objects
-		if (obj->type == NONE) continue;
+		if (obj->type == OBJ_NONE) continue;
 
 		//Skip gushes
 		if (obj->type == OBJ_GUSH) continue;
@@ -643,7 +643,7 @@ static void draw_play()
 	for (i = 0; i < MAX_CUTSCENE_OBJECTS; i++) {
 		CutsceneObject* cobj = &ctx->cutscene_objects[i];
 
-		if (cobj->sprite == NONE || cobj->in_bus) continue;
+		if (cobj->sprite == SPR_NULL || cobj->in_bus) continue;
 
 		spr = cobj->sprite;
 		x = (int)cobj->x;
@@ -721,7 +721,7 @@ static void draw_play()
 		x = ctx->moving_peels[i].x;
 		y = ctx->moving_peels[i].y;
 
-		if (ctx->moving_peels[i].obj != NONE) {
+		if (ctx->moving_peels[i].obj >= 0) {
 			draw_sprite(SPR_BANANA_PEEL, x, y, 0);
 		}
 	}
@@ -733,7 +733,7 @@ static void draw_play()
 		y = ctx->coins[i].y;
 		frame = ctx->anims[ANIM_COINS].frame;
 
-		if (x != NONE) {
+		if (x > 0) {
 			draw_sprite(spr, x, y, frame);
 		}
 	}
@@ -742,7 +742,7 @@ static void draw_play()
 	for (i = 0; i < MAX_PUSHABLE_CRATES; i++) {
 		PushableCrate* crate = &ctx->pushable_crates[i];
 
-		if (crate->obj != NONE && crate->show_arrow) {
+		if (crate->obj >= 0 && crate->show_arrow) {
 			x = ctx->objs[crate->obj].x - 48 + (int)ctx->push_arrow.xoffs;
 			y = FLOOR_Y - 24;
 
@@ -755,7 +755,7 @@ static void draw_play()
 		OverheadSign* sign = &ctx->overhead_signs[i];
 
 		//No more overhead sign bases to draw
-		if (sign->x == NONE) break;
+		if (sign->x <= 0) break;
 
 		//Base top
 		spr = SPR_OVERHEAD_SIGN_BASE_TOP;
@@ -783,7 +783,7 @@ static void draw_play()
 		y = (int)ctx->crack_particles[i].y;
 		frame = ctx->anims[ANIM_CRACK_PARTICLES].frame;
 
-		if (x != NONE) {
+		if (x > 0) {
 			draw_sprite(SPR_CRACK_PARTICLE, x, y, frame);
 		}
 	}
@@ -793,7 +793,7 @@ static void draw_play()
 		x = ctx->coin_sparks[i].x;
 		y = ctx->coin_sparks[i].y;
 
-		if (x != NONE) {
+		if (x > 0) {
 			bool gold = ctx->coin_sparks[i].gold;
 			spr = gold ? SPR_COIN_SPARK_GOLD : SPR_COIN_SPARK_SILVER;
 			frame = ctx->anims[ANIM_COIN_SPARKS + i].frame;
@@ -1031,7 +1031,7 @@ static void draw_menu_item(MenuItem* item, bool selected)
 	}
 
 	//Draw item icon
-	if (item->icon_sprite != NONE) {
+	if (item->icon_sprite != SPR_NULL) {
 		int spr = item->icon_sprite;
 		if (selected) spr++;
 

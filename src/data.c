@@ -246,6 +246,7 @@ const int data_player_anim_sprites[] = {
 
 //Sprite corresponding to each object type (OBJ_* constants)
 const int data_obj_sprites[] = {
+	[OBJ_NONE]        = SPR_NULL,
 	[OBJ_BANANA_PEEL] = SPR_BANANA_PEEL,
 	[OBJ_GUSH]        = SPR_GUSH_TOP,
 	[OBJ_GUSH_CRACK]  = SPR_GUSH_CRACK,
@@ -256,6 +257,7 @@ const int data_obj_sprites[] = {
 
 //Sprite corresponding to each parked vehicle type (PARKED_* constant)
 const int data_parked_vehicle_sprites[] = {
+	[PARKED_NONE]       = SPR_NULL,
 	[PARKED_CAR_BLUE]   = SPR_CAR_BLUE,
 	[PARKED_CAR_SILVER] = SPR_CAR_SILVER,
 	[PARKED_CAR_YELLOW] = SPR_CAR_YELLOW,

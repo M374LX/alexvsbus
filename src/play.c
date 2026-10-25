@@ -110,8 +110,9 @@ void play_clear()
 	input_jump = false;
 	jump_timeout = 0;
 
-	ctx.difficulty = 0;
-	ctx.level_num = 0;
+	//Note that these properties of PlayCtx are not cleared by this function:
+	//difficulty, level_num, and score
+
 	ctx.last_level = false;
 	ctx.ending = false;
 	ctx.level_size = 0;
@@ -147,19 +148,19 @@ void play_clear()
 	ctx.player.anim_type = PLAYER_ANIM_STAND;
 	ctx.player.old_anim_type = PLAYER_ANIM_STAND;
 	ctx.player.state = PLAYER_STATE_NORMAL;
-	ctx.player.old_state = NONE;
+	ctx.player.old_state = -1;
 	handle_player_state_change();
 
 	ctx.bus.x = 24;
 	ctx.bus.xvel = 0;
 	ctx.bus.acc = 0;
 
-	ctx.grabbed_rope.obj = NONE;
-	ctx.hit_spring = NONE;
-	ctx.car.x = NONE;
-	ctx.hen.x = NONE;
+	ctx.grabbed_rope.obj = -1;
+	ctx.hit_spring = -1;
+	ctx.car.x = 0;
+	ctx.hen.x = 0;
 
-	ctx.cur_passageway = NONE;
+	ctx.cur_passageway = -1;
 
 	for (i = 0; i < MAX_LEVEL_COLUMNS; i++) {
 		ctx.level_columns[i].hole_type = HOLE_NONE;
@@ -169,54 +170,54 @@ void play_clear()
 	}
 
 	for (i = 0; i < MAX_COINS; i++) {
-		ctx.coins[i].x = NONE;
+		ctx.coins[i].x = 0;
 	}
 
 	for (i = 0; i < MAX_OBJS; i++) {
-		ctx.objs[i].type = NONE;
+		ctx.objs[i].type = OBJ_NONE;
 	}
 
 	for (i = 0; i < MAX_GUSHES; i++) {
-		ctx.gushes[i].obj = NONE;
+		ctx.gushes[i].obj = -1;
 	}
 
 	for (i = 0; i < MAX_MOVING_PEELS; i++) {
-		ctx.moving_peels[i].obj = NONE;
+		ctx.moving_peels[i].obj = -1;
 	}
 
 	for (i = 0; i < MAX_OVERHEAD_SIGNS; i++) {
-		ctx.overhead_signs[i].x = NONE;
+		ctx.overhead_signs[i].x = 0;
 	}
 
 	for (i = 0; i < MAX_PARKED_VEHICLES; i++) {
-		ctx.parked_vehicles[i].type = NONE;
+		ctx.parked_vehicles[i].type = PARKED_NONE;
 	}
 
 	for (i = 0; i < MAX_PASSAGEWAYS; i++) {
-		ctx.passageways[i].x = NONE;
+		ctx.passageways[i].x = 0;
 		ctx.passageways[i].exit_opened = false;
 	}
 
 	for (i = 0; i < MAX_PUSHABLE_CRATES; i++) {
-		ctx.pushable_crates[i].obj = NONE;
+		ctx.pushable_crates[i].obj = -1;
 		ctx.pushable_crates[i].pushed = false;
 		ctx.pushable_crates[i].show_arrow = false;
 	}
 
 	for (i = 0; i < MAX_RESPAWN_POINTS; i++) {
-		ctx.respawn_points[i].x = NONE;
+		ctx.respawn_points[i].x = 0;
 	}
 
 	for (i = 0; i < MAX_SOLIDS; i++) {
-		ctx.solids[i].type = NONE;
+		ctx.solids[i].type = -1;
 	}
 
 	for (i = 0; i < MAX_TRIGGERS; i++) {
-		ctx.triggers[i].x = NONE;
+		ctx.triggers[i].x = 0;
 	}
 
 	for (i = 0; i < MAX_CUTSCENE_OBJECTS; i++) {
-		ctx.cutscene_objects[i].sprite = NONE;
+		ctx.cutscene_objects[i].sprite = SPR_NULL;
 		ctx.cutscene_objects[i].x = 0;
 		ctx.cutscene_objects[i].y = 0;
 		ctx.cutscene_objects[i].xvel = 0;
@@ -227,11 +228,11 @@ void play_clear()
 	}
 
 	for (i = 0; i < MAX_COIN_SPARKS; i++) {
-		ctx.coin_sparks[i].x = NONE;
+		ctx.coin_sparks[i].x = 0;
 	}
 
 	for (i = 0; i < MAX_CRACK_PARTICLES; i++) {
-		ctx.crack_particles[i].x = NONE;
+		ctx.crack_particles[i].x = 0;
 	}
 
 	set_animation(ANIM_PLAYER, true, true, false, 1, 0.1f);
@@ -559,7 +560,7 @@ static void move_objects()
 		MovingPeel* peel = &ctx.moving_peels[i];
 		Obj* obj;
 
-		if (peel->obj == NONE) continue;
+		if (peel->obj < 0) continue;
 
 		obj = &ctx.objs[peel->obj];
 
@@ -569,8 +570,8 @@ static void move_objects()
 
 		//Deactivate the peel when it gets too far downwards
 		if (peel->y >= 400) {
-			obj->type = NONE;
-			peel->obj = NONE;
+			obj->type = OBJ_NONE;
+			peel->obj = -1;
 		}
 
 		//Stop the peel when it hits the destination Y position
@@ -578,7 +579,7 @@ static void move_objects()
 			obj->type = OBJ_BANANA_PEEL;
 			peel->x = peel->xdest;
 			peel->y = peel->ydest;
-			peel->obj = NONE;
+			peel->obj = -1;
 		}
 
 		obj->x = (int)peel->x;
@@ -594,7 +595,7 @@ static void move_objects()
 		float ydest = gush->ydest;
 
 		//Ignore inexistent gushes
-		if (gush->obj == NONE) continue;
+		if (gush->obj < 0) continue;
 
 		y += yvel * delta_time;
 
@@ -618,7 +619,7 @@ static void move_objects()
 	}
 
 	//Grabbed rope
-	if (ctx.grabbed_rope.obj != NONE) {
+	if (ctx.grabbed_rope.obj >= 0) {
 		Obj* obj = &ctx.objs[ctx.grabbed_rope.obj];
 
 		ctx.grabbed_rope.x += ctx.grabbed_rope.xvel * delta_time;
@@ -628,7 +629,7 @@ static void move_objects()
 			ctx.grabbed_rope.xvel = -192;
 		} else if (ctx.grabbed_rope.x <= ctx.grabbed_rope.xmin) {
 			ctx.grabbed_rope.x = ctx.grabbed_rope.xmin;
-			ctx.grabbed_rope.obj = NONE;
+			ctx.grabbed_rope.obj = -1;
 		}
 
 		obj->x = (int)ctx.grabbed_rope.x;
@@ -638,7 +639,7 @@ static void move_objects()
 	for (i = 0; i < MAX_PUSHABLE_CRATES; i++) {
 		PushableCrate* crate = &ctx.pushable_crates[i];
 
-		if (crate->obj != NONE && crate->pushed) {
+		if (crate->obj >= 0 && crate->pushed) {
 			Solid* sol = &ctx.solids[crate->solid];
 
 			crate->x += 72 * delta_time;
@@ -651,21 +652,21 @@ static void move_objects()
 	}
 
 	//Passing car
-	if (ctx.car.x != NONE) {
+	if (ctx.car.x > 0) {
 		ctx.car.x += ctx.car.xvel * delta_time;
 
 		if (ctx.car.x >= ctx.cam.x + VSCREEN_MAX_WIDTH + 64) {
-			ctx.car.x = NONE;
+			ctx.car.x = 0;
 		}
 	}
 
 	//Hen
-	if (ctx.hen.x != NONE) {
+	if (ctx.hen.x > 0) {
 		ctx.hen.xvel += ctx.hen.acc * delta_time;
 		ctx.hen.x += ctx.hen.xvel * delta_time;
 
 		if (ctx.hen.x > ctx.cam.x + VSCREEN_MAX_WIDTH + 64) {
-			ctx.hen.x = NONE;
+			ctx.hen.x = 0;
 		}
 	}
 
@@ -674,14 +675,14 @@ static void move_objects()
 		CrackParticle* ptcl = &ctx.crack_particles[i];
 
 		//Ignore inexistent particles
-		if (ptcl->x == NONE) continue;
+		if (ptcl->x <= 0) continue;
 
 		ptcl->yvel += ptcl->grav * delta_time;
 		ptcl->x += ptcl->xvel * delta_time;
 		ptcl->y += ptcl->yvel * delta_time;
 
 		if (ptcl->y >= 400) {
-			ptcl->x = NONE;
+			ptcl->x = 0;
 		}
 	}
 
@@ -690,7 +691,7 @@ static void move_objects()
 		CutsceneObject* cobj = &ctx.cutscene_objects[i];
 
 		//Ignore inexistent cutscene objects
-		if (cobj->sprite == NONE) continue;
+		if (cobj->sprite == SPR_NULL) continue;
 
 		cobj->xvel += cobj->acc * delta_time;
 		cobj->yvel += cobj->grav * delta_time;
@@ -703,11 +704,11 @@ static void move_objects()
 //banana peel
 static void handle_car_thrown_peel()
 {
-	if (ctx.car.x == NONE || ctx.car.threw_peel) return;
+	if (ctx.car.x <= 0 || ctx.car.threw_peel) return;
 	if (ctx.car.x < ctx.car.peel_throw_x) return;
 
 	for (int i = 0; i < MAX_OBJS; i++) {
-		if (ctx.objs[i].type == NONE) {
+		if (ctx.objs[i].type == OBJ_NONE) {
 			MovingPeel* peel = &ctx.moving_peels[MOVING_PEEL_THROWN];
 
 			peel->obj = i;
@@ -789,7 +790,7 @@ static void handle_solids()
 			Solid* sol = &ctx.solids[i];
 
 			//No more solids
-			if (sol->type == NONE) break;
+			if (sol->type < 0) break;
 
 			//Only solids of type SOL_FULL are taken into account
 			if (sol->type != SOL_FULL) continue;
@@ -844,7 +845,7 @@ static void handle_solids()
 			int type = sol->type;
 
 			//No more solids
-			if (type == NONE) break;
+			if (type < 0) break;
 
 			//Only solids of these two types are taken into account
 			if (type != SOL_FULL && type != SOL_PASSAGEWAY_EXIT) continue;
@@ -873,7 +874,7 @@ static void handle_solids()
 			Solid* sol = &ctx.solids[i];
 
 			//No more solids
-			if (sol->type == NONE) break;
+			if (sol->type < 0) break;
 
 			//Ignore solids that are out of the reach of the player character's
 			//bounding box in the opposite axis (X)
@@ -967,12 +968,12 @@ static void handle_passageways()
 		int pw_left = pw->x;
 		int pw_entry_right = pw_left + LEVEL_BLOCK_SIZE;
 
-		if (pw_left == NONE) {
+		if (pw_left <= 0) {
 			break; //No more passageways
 		}
 
 		//Check if the player character is entering a passageway
-		if (ctx.cur_passageway == NONE && pl_bottom >= FLOOR_Y + 4) {
+		if (ctx.cur_passageway < 0 && pl_bottom >= FLOOR_Y + 4) {
 			if (pl_left > pw_left && pl_left < pw_entry_right) {
 				ctx.cur_passageway = i;
 
@@ -985,7 +986,7 @@ static void handle_passageways()
 	}
 
 	//Check if the player character is leaving a passageway
-	if (ctx.cur_passageway != NONE) {
+	if (ctx.cur_passageway >= 0) {
 		Passageway* pw = &ctx.passageways[ctx.cur_passageway];
 		int pw_right = pw->x + pw->width;
 
@@ -1002,7 +1003,7 @@ static void handle_passageways()
 			}
 
 			if (pl_top < FLOOR_Y - 54) {
-				ctx.cur_passageway = NONE;
+				ctx.cur_passageway = -1;
 
 				//Move camera up
 				if (!ctx.time_up) {
@@ -1035,7 +1036,7 @@ static void handle_player_interactions()
 		int coin_bottom;
 
 		//Ignore inexistent or collected coins
-		if (coin->x == NONE) continue;
+		if (coin->x <= 0) continue;
 
 		coin_left = coin->x + 2;
 		coin_right = coin_left + 4;
@@ -1062,7 +1063,7 @@ static void handle_player_interactions()
 		ctx.next_coin_spark %= MAX_COIN_SPARKS;
 
 		//Remove the coin
-		coin->x = NONE;
+		coin->x = 0;
 	}
 
 	for (i = 0; i < MAX_OBJS; i++) {
@@ -1076,7 +1077,7 @@ static void handle_player_interactions()
 		}
 
 		//Ignore inexistent objects
-		if (obj->type == NONE) continue;
+		if (obj->type == OBJ_NONE) continue;
 
 		obj_left = obj->x;
 		obj_top = obj->y;
@@ -1135,7 +1136,7 @@ static void handle_player_interactions()
 				ctx.moving_peels[MOVING_PEEL_SLIPPED].obj = i;
 				ctx.moving_peels[MOVING_PEEL_SLIPPED].x = obj->x;
 				ctx.moving_peels[MOVING_PEEL_SLIPPED].y = obj->y;
-				obj->type = NONE;
+				obj->type = OBJ_NONE;
 				slipped = true;
 				break;
 
@@ -1148,7 +1149,7 @@ static void handle_player_interactions()
 				obj->type = OBJ_GUSH;
 
 				for (j = 0; j < MAX_GUSHES; j++) {
-					if (ctx.gushes[j].obj == NONE) {
+					if (ctx.gushes[j].obj < 0) {
 						ctx.gushes[j].obj = i;
 						ctx.gushes[j].y = 266;
 						ctx.gushes[j].move_pattern = data_gush_move_pattern_2;
@@ -1170,13 +1171,13 @@ static void handle_player_interactions()
 					if (ctx.grabbed_rope.x > ctx.grabbed_rope.xmax - 64) {
 						break;
 					}
-				} else if (ctx.grabbed_rope.obj != NONE) {
+				} else if (ctx.grabbed_rope.obj >= 0) {
 					Obj* rope = &ctx.objs[ctx.grabbed_rope.obj];
 					rope->x = (int)ctx.grabbed_rope.xmin;
-					ctx.grabbed_rope.obj = NONE;
+					ctx.grabbed_rope.obj = -1;
 				}
 
-				if (ctx.grabbed_rope.obj == NONE) {
+				if (ctx.grabbed_rope.obj < 0) {
 					ctx.grabbed_rope.xmin = obj->x;
 					ctx.grabbed_rope.xmax = obj->x + 352;
 				}
@@ -1237,12 +1238,12 @@ static void handle_player_interactions()
 		int y = (int)ctx.player.y + 48;
 
 		//Skip crates that do not exist or have been pushed
-		if (crate->obj == NONE || crate->pushed) continue;
+		if (crate->obj < 0 || crate->pushed) continue;
 
 		//If the point does not overlap the crate's solid, then the player
 		//is not pushing the crate
 		sol = &ctx.solids[crate->solid];
-		if (sol->type == NONE) continue;
+		if (sol->type < 0) continue;
 		if (x < sol->left) continue;
 		if (x > sol->right) continue;
 		if (y < sol->top) continue;
@@ -1272,7 +1273,7 @@ static void handle_triggers()
 
 		//Ignore triggers that do not exist or the player character has not
 		//reached
-		if (tr->x == NONE || tr->x > plx) continue;
+		if (tr->x <= 0 || tr->x > plx) continue;
 
 		if (tr->what == TRIGGER_HEN) {
 			ctx.hen.x = tr->x - (VSCREEN_MAX_WIDTH / 2) - 32;
@@ -1288,7 +1289,7 @@ static void handle_triggers()
 			start_animation(ANIM_CAR_WHEELS);
 		}
 
-		tr->x = NONE;
+		tr->x = 0;
 	}
 }
 
@@ -1377,7 +1378,7 @@ static void handle_fall_sound()
 {
 	Player* pl = &ctx.player;
 	int pl_bottom = (int)pl->y + pl->height;
-	bool in_passageway = (ctx.cur_passageway != NONE);
+	bool in_passageway = (ctx.cur_passageway >= 0);
 
 	if (!ctx.time_up && !pl->fell && !in_passageway) {
 		if (pl_bottom > FLOOR_Y + 8 && pl->yvel > 0) {
@@ -1403,7 +1404,7 @@ static void handle_respawn()
 
 		//Leave the loop on the first respawn point that does not exist or
 		//is to the right of the player character
-		if (rp->x == NONE || rp->x > ctx.player.x) break;
+		if (rp->x <= 0 || rp->x > ctx.player.x) break;
 
 		rx = rp->x;
 		ry = rp->y;
@@ -1836,8 +1837,8 @@ static void update_sequence()
 		//----------------------------------------------------------------------
 		case 30: //SEQ_TIMEUP_BUS_NEAR
 			//Camera moves towards the bus
-			if (ctx.car.x != NONE) break; //Wait until the car and hen are
-			if (ctx.hen.x != NONE) break; //not visible anymore
+			if (ctx.car.x > 0) break; //Wait until the car and hen are
+			if (ctx.hen.x > 0) break; //not visible anymore
 			cam->follow_player = false;
 			cam->xdest = level_size;
 			cam->xvel = CAMERA_XVEL;
@@ -1873,8 +1874,8 @@ static void update_sequence()
 			cam->x = cam->xmax;
 			cam->y = 0;
 			cam->fixed_at_rightmost = true;
-			ctx.car.x = NONE;
-			ctx.hen.x = NONE;
+			ctx.car.x = 0;
+			ctx.hen.x = 0;
 			ctx.wipe_in = true;
 			ctx.sequence_delay = 0.5f;
 			ctx.sequence_step++;
@@ -1890,7 +1891,7 @@ static void update_sequence()
 			if (ctx.goal_scene == 3) {
 				if (pl->x > bus->x + 192) {
 					//A banana peel is thrown from the right side of the screen
-					ctx.objs[0].type = NONE;
+					ctx.objs[0].type = OBJ_NONE;
 					ctx.objs[0].x = level_size;
 					ctx.objs[0].y = BUS_Y + 72;
 					thrown_peel->obj = 0;
@@ -2013,7 +2014,7 @@ static void update_sequence()
 
 		case 74:
 			//Bearded man comes from the right side of the screen
-			cutscene_player->sprite = NONE;
+			cutscene_player->sprite = SPR_NULL;
 			bearded_man->sprite = SPR_BEARDED_MAN_WALK;
 			bearded_man->x = ctx.level_size;
 			bearded_man->y = 203;
@@ -2153,7 +2154,7 @@ static void update_sequence()
 		case 91:
 			if (dung->y >= pl->y + 12) {
 				//Bird dung hits the player character
-				dung->sprite = NONE;
+				dung->sprite = SPR_NULL;
 				dung->yvel = 0;
 				pl->visible = false;
 				cutscene_player->sprite = SPR_PLAYER_CLEAN_DUNG;
@@ -2179,7 +2180,7 @@ static void update_sequence()
 		case 93:
 			//Player character finishes cleaning the dung
 			pl->visible = true;
-			cutscene_player->sprite = NONE;
+			cutscene_player->sprite = SPR_NULL;
 			ctx.sequence_delay = 0.2f;
 			ctx.sequence_step++;
 			break;

@@ -112,7 +112,7 @@ int levelload_load(const char* filename)
 		return LVLERR_CANNOT_OPEN;
 	}
 
-	x_max = NONE;
+	x_max = 0;
 	num_coins = 0;
 	num_objs = 0;
 	num_crate_blocks = 0;
@@ -127,10 +127,10 @@ int levelload_load(const char* filename)
 	num_triggers = 0;
 	num_car_triggers = 0;
 
-	ctx->level_size = NONE;
-	ctx->bg_color = NONE;
-	ctx->bgm = NONE;
-	ctx->goal_scene = NONE;
+	ctx->level_size = 0;
+	ctx->bg_color = 0;
+	ctx->bgm = 0;
+	ctx->goal_scene = 0;
 
 	x = VSCREEN_MAX_WIDTH_LEVEL_BLOCKS;
 
@@ -159,13 +159,13 @@ int levelload_load(const char* filename)
 		token2 = lineread_token_int(tmp, 2);
 		token3 = lineread_token_int(tmp, 3);
 
-		if (token1 == NONE) {
+		if (token1 < 0) {
 			return LVLERR_INVALID;
 		}
 
 		if (str_starts_with(tmp, "level-size ")) {
 			//Error: level size redefinition
-			if (ctx->level_size != NONE) {
+			if (ctx->level_size != 0) {
 				return LVLERR_INVALID;
 			}
 
@@ -182,7 +182,7 @@ int levelload_load(const char* filename)
 			continue;
 		} else if (str_starts_with(tmp, "sky-color ")) {
 			//Error: sky color redefinition
-			if (ctx->bg_color != NONE) {
+			if (ctx->bg_color != 0) {
 				return LVLERR_INVALID;
 			}
 
@@ -196,7 +196,7 @@ int levelload_load(const char* filename)
 			continue;
 		} else if (str_starts_with(tmp, "bgm ")) {
 			//Error: BGM redefinition
-			if (ctx->bgm != NONE) {
+			if (ctx->bgm != 0) {
 				return LVLERR_INVALID;
 			}
 
@@ -210,7 +210,7 @@ int levelload_load(const char* filename)
 			continue;
 		} else if (str_starts_with(tmp, "goal-scene ")) {
 			//Error: goal cutscene redefinition
-			if (ctx->goal_scene != NONE) {
+			if (ctx->goal_scene != 0) {
 				return LVLERR_INVALID;
 			}
 
@@ -226,8 +226,8 @@ int levelload_load(const char* filename)
 
 		//Error: adding objects without defining the level size, sky color,
 		//BGM, and goal cutscene
-		if (ctx->level_size == NONE || ctx->bg_color == NONE ||
-				ctx->bgm == NONE || ctx->goal_scene == NONE) {
+		if (ctx->level_size == 0 || ctx->bg_color == 0 ||
+				ctx->bgm == 0 || ctx->goal_scene == 0) {
 
 			return LVLERR_INVALID;
 		}
@@ -250,7 +250,7 @@ int levelload_load(const char* filename)
 		} else if (str_starts_with(tmp, "crates ")) {
 			add_crate_block(x, token2, token3);
 		} else if (str_starts_with(tmp, "gush ")) {
-			add_obj(OBJ_GUSH, x, NONE, false);
+			add_obj(OBJ_GUSH, x, -1, false);
 
 			if (num_gushes >= MAX_GUSHES) {
 				return LVLERR_INVALID;
@@ -265,14 +265,14 @@ int levelload_load(const char* filename)
 
 			num_gushes++;
 		} else if (str_starts_with(tmp, "gush-crack ")) {
-			add_obj(OBJ_GUSH_CRACK, x, NONE, false);
+			add_obj(OBJ_GUSH_CRACK, x, -1, false);
 		} else if (str_starts_with(tmp, "hydrant ")) {
 			add_hydrant(x);
 		} else if (str_starts_with(tmp, "overhead-sign ")) {
 			add_overhead_sign(x, token2);
 		} else if (str_starts_with(tmp, "rope ")) {
 			add_horizontal_rope(x);
-			add_obj(OBJ_ROPE, x, NONE, false);
+			add_obj(OBJ_ROPE, x, -1, false);
 		} else if (str_starts_with(tmp, "spring ")) {
 			//10 is the Y position corresponding to the floor
 			add_obj(OBJ_SPRING, x, 10, true);
@@ -298,7 +298,7 @@ int levelload_load(const char* filename)
 			add_obj(OBJ_SPRING, x + token2 - 1, 14, true);
 
 			//Pushable crate over passageway entry
-			add_obj(OBJ_PUSH_CRATE, x, NONE, false);
+			add_obj(OBJ_PUSH_CRATE, x, -1, false);
 			ctx->pushable_crates[num_passageways - 1].obj = num_objs - 1;
 		} else if (str_starts_with(tmp, "passageway-arrow ")) {
 			add_passageway(x, token2);
@@ -308,7 +308,7 @@ int levelload_load(const char* filename)
 			add_obj(OBJ_SPRING, x + token2 - 1, 14, true);
 
 			//Pushable crate over passageway entry
-			add_obj(OBJ_PUSH_CRATE, x, NONE, false);
+			add_obj(OBJ_PUSH_CRATE, x, -1, false);
 			ctx->pushable_crates[num_passageways - 1].obj = num_objs - 1;
 			ctx->pushable_crates[num_passageways - 1].show_arrow = true;
 		} else {
@@ -435,7 +435,7 @@ static void add_obj(int type, int x, int y, bool use_y)
 	}
 
 	//Check if the object's position is within the allowed range
-	if (y > 14 || (y != NONE && y < 2) || (use_y && y == NONE) || x > x_max) {
+	if (y > 14 || (y != -1 && y < 2) || (use_y && y == -1) || x > x_max) {
 		invalid = true;
 		return;
 	}
@@ -1003,7 +1003,7 @@ static void convert_positions()
 		int x = ctx->objs[i].x * LEVEL_BLOCK_SIZE;
 		int y = ctx->objs[i].y;
 
-		if (y != NONE) {
+		if (y >= 0) {
 			y *= LEVEL_BLOCK_SIZE;
 		}
 

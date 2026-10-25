@@ -212,7 +212,7 @@ int lineread_token_int(const char* str, int token)
 	int token_len = 0;
 
 	if (token_ptr == NULL) {
-		return NONE;
+		return -1;
 	}
 
 	//Determine number of characters in the token
@@ -228,13 +228,13 @@ int lineread_token_int(const char* str, int token)
 
 	//Five digits are allowed at most
 	if (token_len == 0 || token_len > 5) {
-		return NONE;
+		return -1;
 	}
 
 	//An integer token is valid only if followed by the end of the line or a
 	//space
 	if (token_ptr[token_len] != '\0' && token_len[token_ptr] != ' ') {
-		return NONE;
+		return -1;
 	}
 
 	return atoi(token_ptr);

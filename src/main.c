@@ -568,8 +568,8 @@ static bool init()
 
 	config.fullscreen = window_is_fullscreen();
 
-	delayed_action_type = NONE;
-	wipe_cmd = NONE;
+	delayed_action_type = DELACT_NONE;
+	wipe_cmd = WIPECMD_NONE;
 
 	play_clear();
 	show_title();
@@ -681,15 +681,6 @@ static void handle_menu_action()
 	int difficulty = (param >> 4);
 
 	switch (menu_ctx->action) {
-		case MENUACT_QUIT:
-			if (screen_type == SCR_PLAY) {
-				show_title();
-			} else {
-				menu_close_all();
-				quit = true;
-			}
-			break;
-
 		case MENUACT_TITLE:
 			show_title();
 			break;
@@ -699,14 +690,27 @@ static void handle_menu_action()
 			start_level(level_num, difficulty, false);
 			break;
 
-		case MENUACT_TRYAGAIN:
+		case MENUACT_RESUME:
+			menu_close_all();
+			break;
+
+		case MENUACT_TRY_AGAIN:
 			menu_close_all();
 			delayed_action_type = DELACT_TRY_AGAIN;
 			action_delay = 0;
 			break;
+
+		case MENUACT_QUIT:
+			if (screen_type == SCR_PLAY) {
+				show_title();
+			} else {
+				menu_close_all();
+				quit = true;
+			}
+			break;
 	}
 
-	menu_ctx->action = NONE;
+	menu_ctx->action = MENUACT_NONE;
 }
 
 static void handle_pause()
@@ -777,7 +781,7 @@ static void handle_level_end()
 
 static void handle_delayed_action()
 {
-	if (delayed_action_type == NONE) return;
+	if (delayed_action_type == DELACT_NONE) return;
 
 	action_delay -= delta_time;
 	if (action_delay > 0) return;
@@ -797,7 +801,7 @@ static void handle_delayed_action()
 			break;
 	}
 
-	delayed_action_type = NONE;
+	delayed_action_type = DELACT_NONE;
 }
 
 static void update_screen_wipe()
@@ -827,7 +831,8 @@ static void update_screen_wipe()
 			wipe_delta = 0;
 			break;
 	}
-	wipe_cmd = NONE;
+
+	wipe_cmd = WIPECMD_NONE;
 
 	wipe_delay -= delta_time;
 	if (wipe_delay > 0) return;

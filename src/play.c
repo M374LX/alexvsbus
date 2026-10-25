@@ -1095,12 +1095,12 @@ static void handle_player_interactions()
 			case OBJ_GUSH:
 				obj_left += 3;
 				obj_right = obj_left + 9;
-				obj_bottom += 72;
+				obj_bottom += 24;
 				break;
 
 			case OBJ_GUSH_CRACK:
 				obj_left += 3;
-				obj_right = obj_left + 10;
+				obj_right = obj_left + 9;
 				break;
 
 			case OBJ_ROPE:

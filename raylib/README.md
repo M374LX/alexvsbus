@@ -1,4 +1,4 @@
-This directory contains an adaption of raylib 6.0 for use by the game
+This directory contains an adaption of raylib 6.2 for use by the game
 "Alex vs Bus: The Race". The library's upstream repository can be found at
 https://github.com/raysan5/raylib.
 

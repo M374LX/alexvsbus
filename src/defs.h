@@ -421,8 +421,8 @@ enum {
 #define MAX_SOLIDS 96
 #define MAX_TRIGGERS 8
 #define MAX_RESPAWN_POINTS 32
-#define MAX_COIN_SPARKS 12
-#define MAX_CRACK_PARTICLES 12
+#define MAX_COIN_SPARKS 16
+#define MAX_CRACK_PARTICLES 16
 
 //A level block is the basic unit for positioning objects in the level
 #define LEVEL_BLOCK_SIZE (TILE_SIZE * 3)
@@ -556,9 +556,9 @@ enum {
 	ANIM_BUS_DOOR_FRONT = 7,
 	ANIM_CAR_WHEELS = 8,
 	ANIM_HEN = 9,
-	ANIM_COIN_SPARKS = 10, //12 positions starting at 10
-	ANIM_CUTSCENE_OBJECTS = 22, //2 positions starting at 22
-	NUM_ANIMS = 24
+	ANIM_COIN_SPARKS = 10, //16 positions starting at 10
+	ANIM_CUTSCENE_OBJECTS = 26, //2 positions starting at 26
+	NUM_ANIMS = 28
 };
 
 //Sequence types

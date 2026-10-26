@@ -437,27 +437,32 @@ static void add_crack_particles(int x, int y)
 //Moves the bus to the end of the level
 static void move_bus_to_end()
 {
+	float x = (ctx.level_size - 456);
+
+	//Nothing to do if the bus is already at the end
+	if (ctx.bus.x >= x) return;
+
+	ctx.bus.x = x;
 	ctx.bus.acc = 0;
 	ctx.bus.xvel = 0;
-	ctx.bus.x = ctx.level_size - 456;
 
-	//Make rear door closed
+	//Ensure the rear door is closed
 	ctx.anims[ANIM_BUS_DOOR_REAR].running = false;
 	ctx.anims[ANIM_BUS_DOOR_REAR].frame = 0;
 	ctx.anims[ANIM_BUS_DOOR_REAR].reverse = false;
 
-	//Make front door open
+	//Ensure the front door is open
 	ctx.anims[ANIM_BUS_DOOR_FRONT].running = false;
 	ctx.anims[ANIM_BUS_DOOR_FRONT].frame = 3;
 	ctx.anims[ANIM_BUS_DOOR_FRONT].reverse = true;
 
-	//Bus route sign
+	//Set route sign
 	if (ctx.last_level) {
 		//Finish (checkered flag) sign
 		ctx.bus.route_sign = 0;
 	} else {
 		//Sign corresponding to the next level
-		ctx.bus.route_sign = ctx.level_num + 1;
+		ctx.bus.route_sign++;
 	}
 }
 

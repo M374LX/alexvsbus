@@ -393,20 +393,12 @@ static void draw_play()
 	x = (int)ctx->bus.x;
 	y = BUS_Y;
 	draw_sprite(SPR_BUS, x, y, 0);
-	if (ctx->bus.route_sign >= 0) {
-		if (ctx->bus.route_sign == 0) {
-			//Finish (checkered flag) sign
-			frame = 4;
-		} else {
-			//Frame zero corresponds to the sign containing number two, as
-			//there is no number one sign
-			frame = ctx->bus.route_sign - 2;
-		}
 
-		if (frame >= 0) {
-			draw_sprite(SPR_BUS_ROUTE, x + 308, y + 48, frame);
-		}
-	}
+	//Bus route sign
+	frame = ctx->bus.route_sign;
+	draw_sprite(SPR_BUS_ROUTE, x + 308, y + 48, frame);
+
+	//Bus wheels
 	frame = ctx->anims[ANIM_BUS_WHEELS].frame;
 	draw_sprite(SPR_BUS_WHEEL, x + 104, y + 80, frame);
 	draw_sprite(SPR_BUS_WHEEL, x + 296, y + 80, frame);

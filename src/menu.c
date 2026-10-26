@@ -629,7 +629,7 @@ static void confirm(int item, bool change_item)
 			if (item < ctx.num_items - 1) {
 				ctx.level_selected = true;
 				level_num = item + 1;
-				level_start_delay = 0.75f;
+				level_start_delay = 0.7f;
 			} else {
 				//Return
 				close();

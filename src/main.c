@@ -965,7 +965,12 @@ static void start_level(int level_num, int difficulty, bool skip_initial_sequenc
 		}
 	}
 
-	play_ctx->bus.route_sign = level_num;
+	//Set bus route sign
+	//Note: we subtract one from the level number because there is no sign
+	//numbered one and thus value 1 refers to sign 2 while value 2 refers to
+	//sign 3 and so on
+	play_ctx->bus.route_sign = level_num - 1;
+
 	play_ctx->cam.fixed_at_leftmost = true;
 
 	audio_play_bgm(play_ctx->bgm);
@@ -989,6 +994,9 @@ static void start_ending_sequence(int difficulty)
 	play_ctx->level_size = 8 * VSCREEN_MAX_WIDTH;
 	play_ctx->bg_color = SPR_BG_SKY3;
 	play_ctx->bgm = BGM3;
+
+	//Use the bus route sign with a checkered flag
+	play_ctx->bus.route_sign = 0;
 
 	play_ctx->sequence_step = SEQ_ENDING;
 	play_ctx->sequence_delay = 0;

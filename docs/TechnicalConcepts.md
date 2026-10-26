@@ -17,40 +17,30 @@ menu to be shown over the play screen, for instance.
 
 ## Game objects
 
-Objects that appear during the game include the player character, the bus,
+Objects that appear during gameplay include the player character, the bus,
 banana peels, coin, crates, springs, and so on.
 
 The file that handles the play session, including the game objects, is
 ``play.c``.
 
 The ``PlayCtx`` struct, defined in ``defs.h``, keeps track of the current play
-session. Its member ``objs[]`` stores the type and position of the objects the
-player character interacts with other than coins: banana peels, gushes, gush
-cracks, pushable crates, ropes, and springs. Certain object types require
-additional data and reference an index within ``objs[]``. This is why structs
-like ``Gush`` and ``PushableCrate`` exist in ``defs.h``. Each type of object
-that uses ``objs[]`` is identified by one of the ``OBJ_*`` constants defined
-also in ``defs.h``.
-
-Objects that do not use ``objs[]`` include the player character, coins, and the
-bus, among others. For these, there are separate structs, like ``Player``,
-``Coin``, and ``Bus``.
-
-There are also structs for static objects, like ``OverheadSign`` and
-``ParkedVehicle``.
+session. It has members representing different objects, like ``player``,
+``bus``, ``coins``, ``banana_peels``, and so on.
 
 Data about unpushable crates, hydrants, and horizontal ropes is kept in the
-level columns.
+level columns, while the member ``ropes`` refers to the vertical ropes, which
+the player character can grab, and ``pushable_crates`` refers to pushable
+crates.
 
 
 ## Level columns
 
-Levels are divided into columns, each 24 pixels wide. Each column has a type
-(normal floor, deep hole left, deep hole middle, deep hole right, passageway
-left, passageway middle, or passageway right) and a number of stacked unpushable
-crates (pushable crates are handled separately), as well as boolean variables
-determining if a hydrant or horizontal rope is present. The ``LevelColumn``
-struct is defined in ``defs.h``.
+Levels are divided into columns, each 24 pixels wide. Each column has a hole
+type (normal floor, deep hole left, deep hole middle, deep hole right,
+passageway left, passageway middle, or passageway right) and a number of stacked
+unpushable crates (pushable crates are handled separately), as well as boolean
+variables determining if a hydrant or horizontal rope is present. The
+``LevelColumn`` struct is defined in ``defs.h``.
 
 
 ## Level blocks
@@ -59,12 +49,12 @@ A level block can refer to either the basic positioning unit for game objects or
 one of the small images used to draw the level. In either case, a level block is
 24x24 pixels.
 
-Each level column type has a fixed stack of blocks.
+Each hole type in a level column has a fixed stack of blocks.
 
 
 ## Solids
 
-The solids are what prevent the player character from moving through the floor
+The solids are what prevents the player character from moving through the floor
 or objects like crates and parked vehicles. These are handled separately from
 the objects themselves. The struct that stores information about solids is
 ``Solid``, which is defined in ``defs.h``.
@@ -93,12 +83,12 @@ function ``update_sequence()``, found in ``play.c``.
 
 ## Sprites
 
-The graphics are contained in a single image file (gfx.png). Each element in
+The graphics are contained in a single image file: ``gfx.png``. Each element in
 the file is referred to as a sprite.
 
 A sprite can have more than one animation frame.
 
-The list of sprites with the respective boundaries within the gfx.png file is
-in the ``data_sprite[]`` array, found in the ``data.c`` file, and each sprite
+The list of sprites with the respective boundaries within the ``gfx.png`` file
+is in the ``data_sprite[]`` array, found in the ``data.c`` file, and each sprite
 has an ``SPR_*`` constant defined in ``defs.h``.
 

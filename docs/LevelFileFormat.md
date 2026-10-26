@@ -5,8 +5,8 @@ This document describes the format of a file that stores level data.
 
 The name of a level file consists of "level" followed by the level number and
 then a letter that determines the difficulty (n = normal; h = hard; s = super).
-For example, ``level1n`` is the first level of normal difficulty and ``level2h``
-is the second level of hard difficulty.
+For example, ``level1n`` is the first level of the normal difficulty and
+``level2h`` is the second level of the hard difficulty.
 
 
 ## Contents

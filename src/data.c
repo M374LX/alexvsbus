@@ -56,7 +56,7 @@ const int data_cheat_sequence[] = {
 	3, 0, 2, 1, 3, 0, 1, 2, 1, 3, 0, 2, -1
 };
 
-//Level block numbers for each level column type
+//Level block numbers for each level column hole type
 const int data_level_column_blocks[] = {
 	//HOLE_NONE (normal floor)
 	0x04, 0x05, 0x06, 0x06, 0x06, 0x06, 0x00, 0x00,
@@ -244,20 +244,8 @@ const int data_player_anim_sprites[] = {
 	[PLAYER_ANIM_GRABROPE]  = SPR_PLAYER_GRABROPE,
 };
 
-//Sprite corresponding to each object type (OBJ_* constants)
-const int data_obj_sprites[] = {
-	[OBJ_NONE]        = SPR_NULL,
-	[OBJ_BANANA_PEEL] = SPR_BANANA_PEEL,
-	[OBJ_GUSH]        = SPR_GUSH_TOP,
-	[OBJ_GUSH_CRACK]  = SPR_GUSH_CRACK,
-	[OBJ_PUSH_CRATE]  = SPR_CRATE,
-	[OBJ_ROPE]        = SPR_ROPE_VERTICAL,
-	[OBJ_SPRING]      = SPR_SPRING,
-};
-
 //Sprite corresponding to each parked vehicle type (PARKED_* constant)
 const int data_parked_vehicle_sprites[] = {
-	[PARKED_NONE]       = SPR_NULL,
 	[PARKED_CAR_BLUE]   = SPR_CAR_BLUE,
 	[PARKED_CAR_SILVER] = SPR_CAR_SILVER,
 	[PARKED_CAR_YELLOW] = SPR_CAR_YELLOW,

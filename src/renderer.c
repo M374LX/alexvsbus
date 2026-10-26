@@ -316,7 +316,7 @@ static void draw_play()
 	int i, j;
 
 	//Background color
-	draw_sprite_stretch(ctx->bg_color, 0, 0, vscreen_width, vscreen_height);
+	draw_sprite_stretch(ctx->sky_color, 0, 0, vscreen_width, vscreen_height);
 
 	camy = (int)ctx->cam.y;
 
@@ -360,7 +360,7 @@ static void draw_play()
 				int hole_type;
 
 				hole_type = HOLE_NONE;
-				if (col < MAX_LEVEL_COLUMNS) {
+				if (col < ctx->num_level_columns) {
 					hole_type = ctx->level_columns[col].hole_type;
 				}
 
@@ -388,52 +388,6 @@ static void draw_play()
 
 		draw_sprite(spr, x, y, 0);
 	}
-
-	//Bus body, wheels, and route sign
-	x = (int)ctx->bus.x;
-	y = BUS_Y;
-	draw_sprite(SPR_BUS, x, y, 0);
-
-	//Bus route sign
-	frame = ctx->bus.route_sign;
-	draw_sprite(SPR_BUS_ROUTE, x + 308, y + 48, frame);
-
-	//Bus wheels
-	frame = ctx->anims[ANIM_BUS_WHEELS].frame;
-	draw_sprite(SPR_BUS_WHEEL, x + 104, y + 80, frame);
-	draw_sprite(SPR_BUS_WHEEL, x + 296, y + 80, frame);
-
-	//Characters at bus rear door
-	if (ctx->bus.num_characters >= 1) {
-		draw_sprite(SPR_BUS_CHARACTER_1, x + 72, y + 24, 0);
-	}
-	if (ctx->bus.num_characters >= 2) {
-		draw_sprite(SPR_BUS_CHARACTER_2, x + 64, y + 24, 0);
-	}
-	if (ctx->bus.num_characters >= 3) {
-		draw_sprite(SPR_BUS_CHARACTER_3, x + 80, y + 24, 0);
-	}
-
-	//Cutscene objects (if in the bus)
-	for (i = 0; i < MAX_CUTSCENE_OBJECTS; i++) {
-		CutsceneObject* cobj = &ctx->cutscene_objects[i];
-
-		if (cobj->sprite == SPR_NULL || !cobj->in_bus) continue;
-
-		spr = cobj->sprite;
-		x = (int)cobj->x + (int)ctx->bus.x;
-		y = (int)cobj->y;
-		frame = ctx->anims[ANIM_CUTSCENE_OBJECTS + i].frame;
-		draw_sprite(spr, x, y, frame);
-	}
-
-	//Bus doors
-	x = (int)ctx->bus.x;
-	y = BUS_Y;
-	frame = ctx->anims[ANIM_BUS_DOOR_REAR].frame;
-	draw_sprite(SPR_BUS_DOOR, x + 64,  y + 16, frame);
-	frame = ctx->anims[ANIM_BUS_DOOR_FRONT].frame;
-	draw_sprite(SPR_BUS_DOOR, x + 344, y + 16, frame);
 
 	//Ending sequence traffic jam cars
 	if (ctx->ending) {
@@ -483,6 +437,59 @@ static void draw_play()
 		draw_sprite(SPR_HEN, (int)ctx->hen.x, HEN_Y, frame);
 	}
 
+	//Bus if visible (400 is the width of the bus in pixels)
+	x = (int)ctx->bus.x - draw_offset_x;
+	if (x < vscreen_width && x + 400 > 0) {
+		//Bus body
+		x = (int)ctx->bus.x;
+		y = BUS_Y;
+		draw_sprite(SPR_BUS, x, y, 0);
+
+		//Cutscene objects (if in the bus)
+		for (i = 0; i < MAX_CUTSCENE_OBJECTS; i++) {
+			CutsceneObject* cobj = &ctx->cutscene_objects[i];
+
+			if (cobj->sprite == SPR_NULL || !cobj->in_bus) continue;
+
+			spr = cobj->sprite;
+			x = (int)cobj->x + (int)ctx->bus.x;
+			y = (int)cobj->y;
+			frame = ctx->anims[ANIM_CUTSCENE_OBJECTS + i].frame;
+			draw_sprite(spr, x, y, frame);
+		}
+
+		x = (int)ctx->bus.x;
+		y = BUS_Y;
+
+		//Bus route sign
+		frame = ctx->bus.route_sign;
+		draw_sprite(SPR_BUS_ROUTE, x + 308, y + 48, frame);
+
+		//Bus wheels
+		frame = ctx->anims[ANIM_BUS_WHEELS].frame;
+		draw_sprite(SPR_BUS_WHEEL, x + 104, y + 80, frame);
+		draw_sprite(SPR_BUS_WHEEL, x + 296, y + 80, frame);
+
+		//Characters at bus rear door
+		if (ctx->bus.num_characters >= 1) {
+			draw_sprite(SPR_BUS_CHARACTER_1, x + 72, y + 24, 0);
+		}
+		if (ctx->bus.num_characters >= 2) {
+			draw_sprite(SPR_BUS_CHARACTER_2, x + 64, y + 24, 0);
+		}
+		if (ctx->bus.num_characters >= 3) {
+			draw_sprite(SPR_BUS_CHARACTER_3, x + 80, y + 24, 0);
+		}
+
+		//Bus doors
+		x = (int)ctx->bus.x;
+		y = BUS_Y;
+		frame = ctx->anims[ANIM_BUS_DOOR_REAR].frame;
+		draw_sprite(SPR_BUS_DOOR, x + 64,  y + 16, frame);
+		frame = ctx->anims[ANIM_BUS_DOOR_FRONT].frame;
+		draw_sprite(SPR_BUS_DOOR, x + 344, y + 16, frame);
+	}
+
 	//Light poles (at most two are visible)
 	draw_sprite(SPR_POLE, ctx->pole_x, POLE_Y, 0);
 	draw_sprite(SPR_POLE, ctx->pole_x + POLE_DISTANCE, POLE_Y, 0);
@@ -490,12 +497,23 @@ static void draw_play()
 	//Bus stop sign
 	draw_sprite(SPR_BUS_STOP_SIGN, ctx->bus_stop_sign_x, BUS_STOP_SIGN_Y, 0);
 
+	//Parked vehicles
+	for (i = 0; i < ctx->num_parked_vehicles; i++) {
+		int type = ctx->parked_vehicles[i].type;
+
+		spr = data_parked_vehicle_sprites[type];
+		x = ctx->parked_vehicles[i].x;
+		y = (type == PARKED_TRUCK) ? PARKED_TRUCK_Y : PARKED_CAR_Y;
+
+		draw_sprite(spr, x, y, 0);
+	}
+
 	//Unpushable crates (from level columns)
 	for (i = 0; i < 21; i++) {
 		int col = first_column + i;
 		int h;
 
-		if (col >= MAX_LEVEL_COLUMNS) break;
+		if (col >= ctx->num_level_columns) break;
 
 		h = ctx->level_columns[col].num_crates;
 
@@ -515,7 +533,7 @@ static void draw_play()
 		bool has_rope = false;
 		bool next_has_rope = false;
 
-		if (col >= MAX_LEVEL_COLUMNS) break;
+		if (col >= ctx->num_level_columns) break;
 
 		//Hydrant
 		if (ctx->level_columns[col].has_hydrant) {
@@ -526,7 +544,7 @@ static void draw_play()
 		}
 
 		has_rope = ctx->level_columns[col].has_rope;
-		if (col + 1 < MAX_LEVEL_COLUMNS) {
+		if (col + 1 < ctx->num_level_columns) {
 			next_has_rope = ctx->level_columns[col + 1].has_rope;
 		}
 
@@ -549,86 +567,93 @@ static void draw_play()
 		}
 	}
 
+	//Pushable crates
+	for (i = 0; i < MAX_PUSHABLE_CRATES; i++) {
+		x = ctx->pushable_crates[i].x;
+		y = PUSHABLE_CRATE_Y;
+
+		//No more crates to draw
+		if (x <= 0) break;
+
+		draw_sprite(SPR_CRATE, x, y, 0);
+	}
+
 	//Overhead signs
-	for (i = 0; i < MAX_PARKED_VEHICLES; i++) {
+	for (i = 0; i < ctx->num_overhead_signs; i++) {
 		spr = SPR_OVERHEAD_SIGN;
 		x = ctx->overhead_signs[i].x;
 		y = ctx->overhead_signs[i].y;
 
-		//No more overhead signs to draw
-		if (x <= 0) break;
-
 		draw_sprite(spr, x, y, 0);
 	}
 
-	//Parked vehicles
-	for (i = 0; i < MAX_PARKED_VEHICLES; i++) {
-		int type = ctx->parked_vehicles[i].type;
-
-		//No more vehicles to draw
-		if (type == PARKED_NONE) break;
-
-		spr = data_parked_vehicle_sprites[type];
-		x = ctx->parked_vehicles[i].x;
-		y = (type == PARKED_TRUCK) ? PARKED_TRUCK_Y : PARKED_CAR_Y;
-
-		draw_sprite(spr, x, y, 0);
-	}
-
-	//Objects using PlayCtx.objs[] except gushes
-	for (i = 0; i < MAX_OBJS; i++) {
-		Obj* obj = &ctx->objs[i];
-
-		//Ignore inexistent objects
-		if (obj->type == OBJ_NONE) continue;
-
-		//Skip gushes
-		if (obj->type == OBJ_GUSH) continue;
-
-		frame = 0;
-
-		if (obj->type == OBJ_SPRING) {
-			frame = 5;
-
-			if (i == ctx->hit_spring) {
-				frame = ctx->anims[ANIM_HIT_SPRING].frame;
-			}
-		}
-
-		draw_sprite(data_obj_sprites[obj->type], obj->x, obj->y, frame);
-	}
-
-	//Gushes
-	for (i = 0; i < MAX_GUSHES; i++) {
+	//Gushes and gush cracks
+	for (i = 0; i < ctx->num_gushes; i++) {
 		Gush* gush = &ctx->gushes[i];
-		Obj* obj = &ctx->objs[gush->obj];
 
-		//Skip if it is not a gush
-		if (obj->type != OBJ_GUSH) continue;
+		x = gush->x;
+		y = gush->y;
 
-		x = obj->x;
-		y = obj->y;
-		frame = ctx->anims[ANIM_GUSHES].frame;
+		if (gush->is_crack) {
+			draw_sprite(SPR_GUSH_CRACK, x, y, 0);
+		} else {
+			frame = ctx->anims[ANIM_GUSHES].frame;
 
-		//Gush top
-		draw_sprite(SPR_GUSH_TOP, x, y, frame);
+			//Gush top
+			draw_sprite(SPR_GUSH_TOP, x, y, frame);
 
-		//Gush middle
-		for (y = obj->y + 8; y < FLOOR_Y; y += LEVEL_BLOCK_SIZE) {
-			draw_sprite(SPR_GUSH_MIDDLE, x, y, frame);
+			//Gush middle
+			for (y = gush->y + 8; y < FLOOR_Y; y += LEVEL_BLOCK_SIZE) {
+				draw_sprite(SPR_GUSH_MIDDLE, x, y, frame);
+			}
+
+			//Gush hole
+			draw_sprite(SPR_GUSH_HOLE, x, FLOOR_Y - 1, 0);
 		}
-
-		//Gush hole
-		draw_sprite(SPR_GUSH_HOLE, x, FLOOR_Y - 1, 0);
 	}
 
-	//Player character
-	if (ctx->player.visible) {
-		spr = data_player_anim_sprites[ctx->player.anim_type];
-		x = (int)ctx->player.x;
-		y = (int)ctx->player.y;
-		frame = ctx->anims[ANIM_PLAYER].frame;
-		draw_sprite(spr, x, y, frame);
+	//Banana peels (not moving)
+	for (i = 0; i < ctx->num_banana_peels; i++) {
+		x = ctx->banana_peels[i].x;
+		y = ctx->banana_peels[i].y;
+
+		if (x > 0) {
+			draw_sprite(SPR_BANANA_PEEL, x, y, 0);
+		}
+	}
+
+	//Ropes (except the one being grabbed)
+	for (i = 0; i < ctx->num_ropes; i++) {
+		x = ctx->ropes[i].x;
+		y = ROPE_Y + 5;
+
+		//Skip if it is the rope being grabbed
+		if (ctx->grabbed_rope.index == i) continue;
+
+		if (x > 0) {
+			draw_sprite(SPR_ROPE_VERTICAL, x, y, 0);
+		}
+	}
+
+	//Grabbed rope
+	if (ctx->grabbed_rope.index >= 0) {
+		x = ctx->grabbed_rope.x;
+		y = ROPE_Y + 5;
+
+		draw_sprite(SPR_ROPE_VERTICAL, x, y, 0);
+	}
+
+	//Springs
+	for (i = 0; i < ctx->num_springs; i++) {
+		x = ctx->springs[i].x;
+		y = ctx->springs[i].y;
+		frame = 5;
+
+		if (i == ctx->hit_spring) {
+			frame = ctx->anims[ANIM_HIT_SPRING].frame;
+		}
+
+		draw_sprite(SPR_SPRING, x, y, frame);
 	}
 
 	//Cutscene objects (if not in the bus)
@@ -666,6 +691,16 @@ static void draw_play()
 		draw_sprite(SPR_MEDAL3, x, y, 0);
 	}
 
+	//Player character
+	if (ctx->player.visible) {
+		spr = data_player_anim_sprites[ctx->player.anim_type];
+		x = (int)ctx->player.x;
+		y = (int)ctx->player.y;
+		frame = ctx->anims[ANIM_PLAYER].frame;
+
+		draw_sprite(spr, x, y, frame);
+	}
+
 	//Deep hole and passageway foreground sprites (from level columns)
 	for (i = 0; i < 21; i++) {
 		int col = first_column + i;
@@ -673,7 +708,7 @@ static void draw_play()
 		x = col * LEVEL_BLOCK_SIZE;
 		y = FLOOR_Y;
 
-		if (col >= MAX_LEVEL_COLUMNS) break;
+		if (col >= ctx->num_level_columns) break;
 
 		switch (ctx->level_columns[col].hole_type) {
 			case HOLE_DEEP_LEFT:
@@ -695,31 +730,18 @@ static void draw_play()
 		draw_sprite(spr, x, y, 0);
 	}
 
-	//When slipping, the player character is drawn in front of hole foregrounds
-	if (ctx->player.visible) {
-		int state = ctx->player.state;
-
-		if (state == PLAYER_STATE_SLIP || state == PLAYER_STATE_GETUP) {
-			spr = data_player_anim_sprites[ctx->player.anim_type];
-			x = (int)ctx->player.x;
-			y = (int)ctx->player.y;
-			frame = ctx->anims[ANIM_PLAYER].frame;
-			draw_sprite(spr, x, y, frame);
-		}
-	}
-
 	//Moving banana peels
 	for (i = 0; i < MAX_MOVING_PEELS; i++) {
 		x = ctx->moving_peels[i].x;
 		y = ctx->moving_peels[i].y;
 
-		if (ctx->moving_peels[i].obj >= 0) {
+		if (ctx->moving_peels[i].x > 0) {
 			draw_sprite(SPR_BANANA_PEEL, x, y, 0);
 		}
 	}
 
 	//Coins
-	for (i = 0; i < MAX_COINS; i++) {
+	for (i = 0; i < ctx->num_coins; i++) {
 		spr = ctx->coins[i].gold ? SPR_COIN_GOLD : SPR_COIN_SILVER;
 		x = ctx->coins[i].x;
 		y = ctx->coins[i].y;
@@ -730,20 +752,8 @@ static void draw_play()
 		}
 	}
 
-	//Pushable crate arrows
-	for (i = 0; i < MAX_PUSHABLE_CRATES; i++) {
-		PushableCrate* crate = &ctx->pushable_crates[i];
-
-		if (crate->obj >= 0 && crate->show_arrow) {
-			x = ctx->objs[crate->obj].x - 48 + (int)ctx->push_arrow.xoffs;
-			y = FLOOR_Y - 24;
-
-			draw_sprite(SPR_PUSH_ARROW, x, y, 0);
-		}
-	}
-
 	//Overhead sign bases
-	for (i = 0; i < MAX_OVERHEAD_SIGNS; i++) {
+	for (i = 0; i < ctx->num_overhead_signs; i++) {
 		OverheadSign* sign = &ctx->overhead_signs[i];
 
 		//No more overhead sign bases to draw
@@ -767,6 +777,21 @@ static void draw_play()
 			draw_sprite(spr, x, y, 0);
 		}
 
+	}
+
+	//Pushable crate arrows
+	for (i = 0; i < MAX_PUSHABLE_CRATES; i++) {
+		PushableCrate* crate = &ctx->pushable_crates[i];
+
+		//No more crates to draw
+		if (crate->x <= 0) break;
+
+		if (crate->show_arrow) {
+			x = crate->x - 48 + (int)ctx->push_arrow.xoffs;
+			y = FLOOR_Y - 24;
+
+			draw_sprite(SPR_PUSH_ARROW, x, y, 0);
+		}
 	}
 
 	//Crack particles

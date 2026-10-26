@@ -113,19 +113,21 @@ void play_clear()
 	//Note that these properties of PlayCtx are not cleared by this function:
 	//difficulty, level_num, and score
 
-	ctx.last_level = false;
-	ctx.ending = false;
-	ctx.level_size = 0;
-	ctx.bg_color = 0;
+	ctx.num_level_columns = 0;
+	ctx.level_size_pixels = 0;
+	ctx.sky_color = 0;
 	ctx.bgm = 0;
 	ctx.goal_scene = 0;
 
 	ctx.time = 90;
+
 	ctx.time_running = false;
 	ctx.time_up = false;
 	ctx.goal_reached = false;
 	ctx.counting_score = false;
 	ctx.can_pause = false;
+	ctx.last_level = false;
+	ctx.ending = false;
 
 	ctx.crate_push_remaining = 0.7f;
 
@@ -155,11 +157,22 @@ void play_clear()
 	ctx.bus.xvel = 0;
 	ctx.bus.acc = 0;
 
-	ctx.grabbed_rope.obj = -1;
-	ctx.hit_spring = -1;
 	ctx.car.x = 0;
 	ctx.hen.x = 0;
 
+	ctx.num_banana_peels = 0;
+	ctx.num_coins = 0;
+	ctx.num_gushes = 0;
+	ctx.num_overhead_signs = 0;
+	ctx.num_parked_vehicles = 0;
+	ctx.num_respawn_points = 0;
+	ctx.num_ropes = 0;
+	ctx.num_solids = 0;
+	ctx.num_springs = 0;
+	ctx.num_triggers = 0;
+
+	ctx.grabbed_rope.index = -1;
+	ctx.hit_spring = -1;
 	ctx.cur_passageway = -1;
 
 	for (i = 0; i < MAX_LEVEL_COLUMNS; i++) {
@@ -169,28 +182,8 @@ void play_clear()
 		ctx.level_columns[i].has_rope = false;
 	}
 
-	for (i = 0; i < MAX_COINS; i++) {
-		ctx.coins[i].x = 0;
-	}
-
-	for (i = 0; i < MAX_OBJS; i++) {
-		ctx.objs[i].type = OBJ_NONE;
-	}
-
-	for (i = 0; i < MAX_GUSHES; i++) {
-		ctx.gushes[i].obj = -1;
-	}
-
 	for (i = 0; i < MAX_MOVING_PEELS; i++) {
-		ctx.moving_peels[i].obj = -1;
-	}
-
-	for (i = 0; i < MAX_OVERHEAD_SIGNS; i++) {
-		ctx.overhead_signs[i].x = 0;
-	}
-
-	for (i = 0; i < MAX_PARKED_VEHICLES; i++) {
-		ctx.parked_vehicles[i].type = PARKED_NONE;
+		ctx.moving_peels[i].x = 0;
 	}
 
 	for (i = 0; i < MAX_PASSAGEWAYS; i++) {
@@ -199,17 +192,9 @@ void play_clear()
 	}
 
 	for (i = 0; i < MAX_PUSHABLE_CRATES; i++) {
-		ctx.pushable_crates[i].obj = -1;
+		ctx.pushable_crates[i].x = 0;
 		ctx.pushable_crates[i].pushed = false;
 		ctx.pushable_crates[i].show_arrow = false;
-	}
-
-	for (i = 0; i < MAX_RESPAWN_POINTS; i++) {
-		ctx.respawn_points[i].x = 0;
-	}
-
-	for (i = 0; i < MAX_SOLIDS; i++) {
-		ctx.solids[i].type = -1;
 	}
 
 	for (i = 0; i < MAX_TRIGGERS; i++) {
@@ -321,7 +306,7 @@ void play_adapt_to_screen_size()
 	int vscreen_width = display_params->vscreen_width;
 
 	cam->xmin = 0;
-	cam->xmax = ctx.level_size - vscreen_width;
+	cam->xmax = ctx.level_size_pixels - vscreen_width;
 	cam->follow_player_min_x = 64;
 	cam->follow_player_max_x = vscreen_width / 2;
 
@@ -437,7 +422,7 @@ static void add_crack_particles(int x, int y)
 //Moves the bus to the end of the level
 static void move_bus_to_end()
 {
-	float x = (ctx.level_size - 456);
+	float x = (ctx.level_size_pixels - 456);
 
 	//Nothing to do if the bus is already at the end
 	if (ctx.bus.x >= x) return;
@@ -563,11 +548,9 @@ static void move_objects()
 	//Moving banana peels
 	for (i = 0; i < MAX_MOVING_PEELS; i++) {
 		MovingPeel* peel = &ctx.moving_peels[i];
-		Obj* obj;
 
-		if (peel->obj < 0) continue;
-
-		obj = &ctx.objs[peel->obj];
+		//If there is no moving peel, skip
+		if (peel->x <= 0) continue;
 
 		peel->yvel += peel->grav * delta_time;
 		peel->x += peel->xvel * delta_time;
@@ -575,32 +558,35 @@ static void move_objects()
 
 		//Deactivate the peel when it gets too far downwards
 		if (peel->y >= 400) {
-			obj->type = OBJ_NONE;
-			peel->obj = -1;
+			peel->x = 0;
 		}
 
-		//Stop the peel when it hits the destination Y position
+		//Stop the peel when it hits the destination Y position and add
+		//a non-moving peel to the banana_peels[] array
 		if (peel->y >= peel->ydest) {
-			obj->type = OBJ_BANANA_PEEL;
-			peel->x = peel->xdest;
-			peel->y = peel->ydest;
-			peel->obj = -1;
-		}
+			//Stop the moving peel
+			peel->x = 0;
 
-		obj->x = (int)peel->x;
-		obj->y = (int)peel->y;
+			//Add a peel to ctx.banana_peels
+			ctx.banana_peels[ctx.num_banana_peels].x = peel->xdest;
+			ctx.banana_peels[ctx.num_banana_peels].y = peel->ydest;
+			ctx.num_banana_peels++;
+		}
 	}
 
 	//Gushes
-	for (i = 0; i < MAX_GUSHES; i++) {
+	for (i = 0; i < ctx.num_gushes; i++) {
 		Gush* gush = &ctx.gushes[i];
 
 		float y = gush->y;
 		float yvel = gush->yvel;
 		float ydest = gush->ydest;
 
-		//Ignore inexistent gushes
-		if (gush->obj < 0) continue;
+		//Skip inexistent gushes
+		if (gush->x <= 0) continue;
+
+		//Skip gush cracks
+		if (gush->is_crack) continue;
 
 		y += yvel * delta_time;
 
@@ -620,13 +606,10 @@ static void move_objects()
 		}
 
 		gush->y = y;
-		ctx.objs[gush->obj].y = (int)y;
 	}
 
 	//Grabbed rope
-	if (ctx.grabbed_rope.obj >= 0) {
-		Obj* obj = &ctx.objs[ctx.grabbed_rope.obj];
-
+	if (ctx.grabbed_rope.index >= 0) {
 		ctx.grabbed_rope.x += ctx.grabbed_rope.xvel * delta_time;
 
 		if (ctx.grabbed_rope.x >= ctx.grabbed_rope.xmax) {
@@ -634,23 +617,20 @@ static void move_objects()
 			ctx.grabbed_rope.xvel = -192;
 		} else if (ctx.grabbed_rope.x <= ctx.grabbed_rope.xmin) {
 			ctx.grabbed_rope.x = ctx.grabbed_rope.xmin;
-			ctx.grabbed_rope.obj = -1;
+			ctx.grabbed_rope.index = -1;
 		}
-
-		obj->x = (int)ctx.grabbed_rope.x;
 	}
 
 	//Pushable crates
 	for (i = 0; i < MAX_PUSHABLE_CRATES; i++) {
 		PushableCrate* crate = &ctx.pushable_crates[i];
 
-		if (crate->obj >= 0 && crate->pushed) {
+		if (crate->x > 0 && crate->pushed) {
 			Solid* sol = &ctx.solids[crate->solid];
 
 			crate->x += 72 * delta_time;
 			if (crate->x >= crate->xmax) crate->x = crate->xmax;
 
-			ctx.objs[crate->obj].x = (int)crate->x;
 			sol->left = (int)crate->x;
 			sol->right = (int)crate->x + 24;
 		}
@@ -679,7 +659,7 @@ static void move_objects()
 	for (i = 0; i < MAX_CRACK_PARTICLES; i++) {
 		CrackParticle* ptcl = &ctx.crack_particles[i];
 
-		//Ignore inexistent particles
+		//Skip inexistent particles
 		if (ptcl->x <= 0) continue;
 
 		ptcl->yvel += ptcl->grav * delta_time;
@@ -695,7 +675,7 @@ static void move_objects()
 	for (i = 0; i < MAX_CUTSCENE_OBJECTS; i++) {
 		CutsceneObject* cobj = &ctx.cutscene_objects[i];
 
-		//Ignore inexistent cutscene objects
+		//Skip inexistent cutscene objects
 		if (cobj->sprite == SPR_NULL) continue;
 
 		cobj->xvel += cobj->acc * delta_time;
@@ -709,27 +689,20 @@ static void move_objects()
 //banana peel
 static void handle_car_thrown_peel()
 {
+	MovingPeel* peel = &ctx.moving_peels[MOVING_PEEL_THROWN];
+
 	if (ctx.car.x <= 0 || ctx.car.threw_peel) return;
 	if (ctx.car.x < ctx.car.peel_throw_x) return;
 
-	for (int i = 0; i < MAX_OBJS; i++) {
-		if (ctx.objs[i].type == OBJ_NONE) {
-			MovingPeel* peel = &ctx.moving_peels[MOVING_PEEL_THROWN];
+	peel->x = ctx.car.peel_throw_x + 90;
+	peel->y = 200;
+	peel->xvel = 144;
+	peel->yvel = -12;
+	peel->grav = 504;
+	peel->xdest = peel->x + 70;
+	peel->ydest = 256;
 
-			peel->obj = i;
-			peel->x = ctx.car.peel_throw_x + 90;
-			peel->y = 200;
-			peel->xvel = 144;
-			peel->yvel = -12;
-			peel->grav = 504;
-			peel->xdest = peel->x + 70;
-			peel->ydest = 256;
-
-			ctx.car.threw_peel = true;
-
-			break;
-		}
-	}
+	ctx.car.threw_peel = true;
 }
 
 //Updates the position of the player character (without taking solids into
@@ -791,16 +764,13 @@ static void handle_solids()
 		int i;
 
 		//Iterate through the solids to find the horizontal limit
-		for (i = 0; i < MAX_SOLIDS; i++) {
+		for (i = 0; i < ctx.num_solids; i++) {
 			Solid* sol = &ctx.solids[i];
-
-			//No more solids
-			if (sol->type < 0) break;
 
 			//Only solids of type SOL_FULL are taken into account
 			if (sol->type != SOL_FULL) continue;
 
-			//Ignore solids that are out of the reach of the player character's
+			//Skip solids that are out of the reach of the player character's
 			//bounding box in the opposite axis (Y)
 			if (sol->top >= pl_bottom || sol->bottom < pl_top) continue;
 
@@ -845,17 +815,14 @@ static void handle_solids()
 		//Detect if the player character's bounding box is on a ledge while
 		//the sprite appears to be standing on the air, so we can prevent
 		//this weird visual effect
-		for (i = 0; i < MAX_SOLIDS; i++) {
+		for (i = 0; i < ctx.num_solids; i++) {
 			Solid* sol = &ctx.solids[i];
 			int type = sol->type;
-
-			//No more solids
-			if (type < 0) break;
 
 			//Only solids of these two types are taken into account
 			if (type != SOL_FULL && type != SOL_PASSAGEWAY_EXIT) continue;
 
-			//Ignore solids that are out of the reach of the player character's
+			//Skip solids that are out of the reach of the player character's
 			//bounding box in the opposite axis (X)
 			if (sol->left >= pl_right || sol->right <= pl_left) continue;
 
@@ -875,13 +842,10 @@ static void handle_solids()
 		}
 
 		//Iterate through the solids to find the vertical limit
-		for (i = 0; i < MAX_SOLIDS; i++) {
+		for (i = 0; i < ctx.num_solids; i++) {
 			Solid* sol = &ctx.solids[i];
 
-			//No more solids
-			if (sol->type < 0) break;
-
-			//Ignore solids that are out of the reach of the player character's
+			//Skip solids that are out of the reach of the player character's
 			//bounding box in the opposite axis (X)
 			if (sol->left >= pl_right || sol->right <= pl_left) continue;
 
@@ -925,7 +889,7 @@ static void handle_solids()
 				}
 			} else {
 				if (sol->type == SOL_PASSAGEWAY_EXIT && pl->yvel < -162) {
-					//Ignore passageway exit solids if the player character is
+					//Skip passageway exit solids if the player character is
 					//moving upwards at a high enough velocity, as when hitting
 					//a spring
 					continue;
@@ -1019,44 +983,40 @@ static void handle_passageways()
 	}
 }
 
-//Handles the interactions between the player character and most other objects
+//Handles the interactions between the player character and other objects
 static void handle_player_interactions()
 {
-	Player* pl = &ctx.player;
-	int pl_left = (int)pl->x + PLAYER_BOX_OFFSET_X;
-	int pl_top = (int)pl->y;
-	int pl_right = pl_left + PLAYER_BOX_WIDTH;
+	Player* pl    = &ctx.player;
+	int pl_left   = (int)pl->x + PLAYER_BOX_OFFSET_X;
+	int pl_top    = (int)pl->y;
+	int pl_right  = pl_left + PLAYER_BOX_WIDTH;
 	int pl_bottom = pl_top + pl->height;
 	bool collected_coin = false;
-	bool slipped = false;
-	bool thrown_back = false;
-	int i, j;
+	int i;
 
-	for (i = 0; i < MAX_COINS; i++) {
+	//Nothing to do if the player character is inactive
+	if (pl->state == PLAYER_STATE_INACTIVE) return;
+
+	//Handle coins
+	for (i = 0; i < ctx.num_coins; i++) {
 		Coin* coin = &ctx.coins[i];
 		CoinSpark* spk;
-		int coin_left;
-		int coin_right;
-		int coin_top;
-		int coin_bottom;
+		int coin_left   = coin->x   + 2;
+		int coin_top    = coin->y   + 2;
+		int coin_right  = coin_left + 4;
+		int coin_bottom = coin_top  + 4;
 
-		//Ignore inexistent or collected coins
+		//Skip collected coins
 		if (coin->x <= 0) continue;
 
-		coin_left = coin->x + 2;
-		coin_right = coin_left + 4;
-		coin_top = coin->y + 2;
-		coin_bottom = coin_top + 4;
-
-		//Skip if the player character is not touching the coin
+		//Check if the bounding boxes overlap and skip if not
 		if (pl_right  < coin_left || pl_left > coin_right)  continue;
 		if (pl_bottom < coin_top  || pl_top  > coin_bottom) continue;
 
 		//The coin has been collected
 		collected_coin = true;
-		ctx.score += coin->gold ? 100 : 50;
 
-		//Add spark
+		//Add coin spark
 		spk = &ctx.coin_sparks[ctx.next_coin_spark];
 		spk->x = coin->x;
 		spk->y = coin->y;
@@ -1069,140 +1029,9 @@ static void handle_player_interactions()
 
 		//Remove the coin
 		coin->x = 0;
-	}
 
-	for (i = 0; i < MAX_OBJS; i++) {
-		Obj* obj = &ctx.objs[i];
-		int obj_left, obj_right, obj_top, obj_bottom;
-
-		//The player character interacts with objects within PlayCtx.objs[] only
-		//in the normal state
-		if (pl->state != PLAYER_STATE_NORMAL) {
-			break;
-		}
-
-		//Ignore inexistent objects
-		if (obj->type == OBJ_NONE) continue;
-
-		obj_left = obj->x;
-		obj_top = obj->y;
-		obj_right = obj_left;
-		obj_bottom = obj_top;
-
-		//Determine the bounding box of the object
-		switch (obj->type) {
-			case OBJ_BANANA_PEEL:
-				obj_left += 1;
-				obj_right = obj_left + 6;
-				obj_top += 2;
-				obj_bottom = obj_top;
-				break;
-
-			case OBJ_GUSH:
-				obj_left += 3;
-				obj_right = obj_left + 9;
-				obj_bottom += 24;
-				break;
-
-			case OBJ_GUSH_CRACK:
-				obj_left += 3;
-				obj_right = obj_left + 9;
-				break;
-
-			case OBJ_ROPE:
-				obj_right += 4;
-				obj_bottom += 64;
-				break;
-
-			case OBJ_SPRING:
-				obj_right += 16;
-				obj_top += 8;
-				obj_bottom += 8;
-				break;
-		}
-
-		if (obj->type == OBJ_ROPE) {
-			//For ropes, check interaction using a point close to the player
-			//character
-			int px = (int)pl->x + 21;
-			int py = (int)pl->y + 28;
-
-			if (px < obj_left || px > obj_right)  continue;
-			if (py < obj_top  || py > obj_bottom) continue;
-		} else {
-			//For other object types, check interaction using player
-			//character's bounding box
-			if (pl_right  < obj_left || pl_left > obj_right)  continue;
-			if (pl_bottom < obj_top  || pl_top  > obj_bottom) continue;
-		}
-
-		switch (obj->type) {
-			case OBJ_BANANA_PEEL:
-				ctx.moving_peels[MOVING_PEEL_SLIPPED].obj = i;
-				ctx.moving_peels[MOVING_PEEL_SLIPPED].x = obj->x;
-				ctx.moving_peels[MOVING_PEEL_SLIPPED].y = obj->y;
-				obj->type = OBJ_NONE;
-				slipped = true;
-				break;
-
-			case OBJ_GUSH:
-				thrown_back = true;
-				break;
-
-			case OBJ_GUSH_CRACK:
-				thrown_back = true;
-				obj->type = OBJ_GUSH;
-
-				for (j = 0; j < MAX_GUSHES; j++) {
-					if (ctx.gushes[j].obj < 0) {
-						ctx.gushes[j].obj = i;
-						ctx.gushes[j].y = 266;
-						ctx.gushes[j].move_pattern = data_gush_move_pattern_2;
-						ctx.gushes[j].move_pattern_pos = 0;
-						ctx.gushes[j].yvel = -144;
-						ctx.gushes[j].ydest = data_gush_move_pattern_2[1];
-
-						add_crack_particles(obj->x + 6, 276);
-
-						break;
-					}
-				}
-
-				break;
-
-			case OBJ_ROPE:
-				if (ctx.grabbed_rope.obj == i) {
-					//Cannot grab the same rope again right after releasing it
-					if (ctx.grabbed_rope.x > ctx.grabbed_rope.xmax - 64) {
-						break;
-					}
-				} else if (ctx.grabbed_rope.obj >= 0) {
-					Obj* rope = &ctx.objs[ctx.grabbed_rope.obj];
-					rope->x = (int)ctx.grabbed_rope.xmin;
-					ctx.grabbed_rope.obj = -1;
-				}
-
-				if (ctx.grabbed_rope.obj < 0) {
-					ctx.grabbed_rope.xmin = obj->x;
-					ctx.grabbed_rope.xmax = obj->x + 352;
-				}
-
-				pl->state = PLAYER_STATE_GRABROPE;
-				ctx.grabbed_rope.obj = i;
-				ctx.grabbed_rope.x = obj->x;
-				ctx.grabbed_rope.xvel = 258;
-
-				break;
-
-			case OBJ_SPRING:
-				if (pl->yvel >= 0) {
-					audio_play_sfx(SFX_SPRING);
-					pl->yvel = -246;
-					ctx.hit_spring = i;
-					start_animation(ANIM_HIT_SPRING);
-				}
-				break;
-		}
+		//Add score
+		ctx.score += coin->gold ? 100 : 50;
 	}
 
 	//Play a sound effect if the player character has collected a coin
@@ -1210,32 +1039,14 @@ static void handle_player_interactions()
 		audio_play_sfx(SFX_COIN);
 	}
 
-	//Act if the player character has slipped on a banana peel
-	if (slipped) {
-		MovingPeel* peel = &ctx.moving_peels[MOVING_PEEL_SLIPPED];
-
-		audio_play_sfx(SFX_SLIP);
-		pl->state = PLAYER_STATE_SLIP;
-
-		peel->xvel = 150;
-		peel->yvel = -204;
-		peel->grav = 504;
-
-		//For the destination Y position, use a value below the limit,
-		//which is 400
-		peel->xdest = 0;
-		peel->ydest = 500;
-
-	}
-
-	//Act if the player character has been thrown back by a gush
-	if (thrown_back) {
-		audio_play_sfx(SFX_HIT);
-		pl->state = PLAYER_STATE_THROWBACK;
-	}
+	//The player character does not interact with objects other than coins
+	//if not in the normal state
+	if (pl->state != PLAYER_STATE_NORMAL) return;
 
 	//Handle pushable crates
-	if (!input_right) ctx.crate_push_remaining = 0.7f;
+	if (!input_right) {
+		ctx.crate_push_remaining = 0.7f;
+	}
 	for (i = 0; i < MAX_PUSHABLE_CRATES; i++) {
 		PushableCrate* crate = &ctx.pushable_crates[i];
 		Solid* sol;
@@ -1243,26 +1054,144 @@ static void handle_player_interactions()
 		int y = (int)ctx.player.y + 48;
 
 		//Skip crates that do not exist or have been pushed
-		if (crate->obj < 0 || crate->pushed) continue;
+		if (crate->x <= 0 || crate->pushed) continue;
 
-		//If the point does not overlap the crate's solid, then the player
-		//is not pushing the crate
+		//If the point at offset (24, 48) from the player character does not
+		//overlap the crate's solid, the player is not pushing the crate
 		sol = &ctx.solids[crate->solid];
-		if (sol->type < 0) continue;
-		if (x < sol->left) continue;
-		if (x > sol->right) continue;
-		if (y < sol->top) continue;
-		if (y > sol->bottom) continue;
+		if (x < sol->left || x > sol->right)  continue;
+		if (y < sol->top  || y > sol->bottom) continue;
 
-		//If we got here, then the player is pushing the crate
+		//If we got here, the player is pushing the crate
 		ctx.crate_push_remaining -= delta_time;
 		if (ctx.crate_push_remaining <= 0) {
-			//Finished pushing
+			//Finished pushing the crate
 			ctx.crate_push_remaining = 0.7f;
 			crate->show_arrow = false;
 			crate->pushed = true;
+
 			audio_play_sfx(SFX_CRATE);
+
+			//No more interactions to check
+			return;
 		}
+	}
+
+	//Handle banana peels
+	for (i = 0; i < ctx.num_banana_peels; i++) {
+		MovingPeel* moving_peel = &ctx.moving_peels[MOVING_PEEL_SLIPPED];
+		int peel_left   = ctx.banana_peels[i].x + 1;
+		int peel_top    = ctx.banana_peels[i].y + 2;
+		int peel_right  = peel_left + 6;
+		int peel_bottom = peel_top;
+
+		//Skip inexistent or removed peels
+		if (ctx.banana_peels[i].x <= 0) continue;
+
+		//Check if the bounding boxes overlap and skip if not
+		if (pl_right  < peel_left || pl_left > peel_right)  continue;
+		if (pl_bottom < peel_top  || pl_top  > peel_bottom) continue;
+
+		pl->state = PLAYER_STATE_SLIP;
+
+		//Make peel move
+		moving_peel->x = ctx.banana_peels[i].x;
+		moving_peel->y = ctx.banana_peels[i].y;
+		moving_peel->xvel = 150;
+		moving_peel->yvel = -204;
+		moving_peel->grav = 504;
+
+		//For the destination Y position, use a value below the limit,
+		//which is 400
+		moving_peel->xdest = 0;
+		moving_peel->ydest = 500;
+
+		//Remove the peel
+		ctx.banana_peels[i].x = 0;
+
+		audio_play_sfx(SFX_SLIP);
+
+		//No more interactions to check
+		return;
+	}
+
+	//Handle gushes and gush cracks
+	for (i = 0; i < ctx.num_gushes; i++) {
+		int gush_left   = ctx.gushes[i].x + 3;
+		int gush_top    = ctx.gushes[i].y;
+		int gush_right  = gush_left + 9;
+		int gush_bottom = gush_top  + 24;
+
+		//Check if the bounding boxes overlap and skip if not
+		if (pl_right  < gush_left || pl_left > gush_right)  continue;
+		if (pl_bottom < gush_top  || pl_top  > gush_bottom) continue;
+
+		pl->state = PLAYER_STATE_THROWBACK;
+
+		if (ctx.gushes[i].is_crack) {
+			ctx.gushes[i].y = GUSH_INITIAL_Y + 34;
+			ctx.gushes[i].yvel = -144;
+			ctx.gushes[i].ydest = data_gush_move_pattern_2[1];
+			ctx.gushes[i].is_crack = false;
+
+			add_crack_particles(ctx.gushes[i].x + 6, 276);
+		}
+
+		audio_play_sfx(SFX_HIT);
+
+		//No more interactions to check
+		return;
+	}
+
+	//Handle springs
+	for (i = 0; i < ctx.num_springs; i++) {
+		int spring_left   = ctx.springs[i].x;
+		int spring_top    = ctx.springs[i].y + 8;
+		int spring_right  = spring_left + 16;
+		int spring_bottom = spring_top;
+
+		//Check if the bounding boxes overlap and skip if not
+		if (pl_right  < spring_left || pl_left > spring_right)  continue;
+		if (pl_bottom < spring_top  || pl_top  > spring_bottom) continue;
+
+		if (pl->yvel >= 0) {
+			pl->yvel = -246;
+			ctx.hit_spring = i;
+
+			start_animation(ANIM_HIT_SPRING);
+			audio_play_sfx(SFX_SPRING);
+
+			//No more interactions to check
+			return;
+		}
+	}
+
+	//Handle ropes
+	for (i = 0; i < ctx.num_ropes; i++) {
+		int px          = (int)pl->x + 21;
+		int py          = (int)pl->y + 28;
+		int rope_left   = ctx.ropes[i].x;
+		int rope_top    = ROPE_Y     + 5;
+		int rope_right  = rope_left  + 4;
+		int rope_bottom = rope_top   + 64;
+		int rope_x      = ctx.ropes[i].x;
+
+		//Check if the point at offset (21, 28) from the player character
+		//overlaps the rope's bounding box and skip if not
+		if (px < rope_left || px > rope_right)  continue;
+		if (py < rope_top  || py > rope_bottom) continue;
+
+		pl->state = PLAYER_STATE_GRABROPE;
+
+		//Make rope move
+		ctx.grabbed_rope.x     = rope_x;
+		ctx.grabbed_rope.xmin  = rope_x;
+		ctx.grabbed_rope.xmax  = rope_x + 352;
+		ctx.grabbed_rope.xvel  = 258;
+		ctx.grabbed_rope.index = i;
+
+		//No more interactions to check
+		return;
 	}
 }
 
@@ -1270,15 +1199,14 @@ static void handle_player_interactions()
 //causes the appearance of a passing car or hen
 static void handle_triggers()
 {
-	int plx = (int)ctx.player.x;
 	int i;
 
-	for (i = 0; i < MAX_TRIGGERS; i++) {
+	for (i = 0; i < ctx.num_triggers; i++) {
 		Trigger* tr = &ctx.triggers[i];
 
-		//Ignore triggers that do not exist or the player character has not
+		//Skip triggers that do not exist or the player character has not
 		//reached
-		if (tr->x <= 0 || tr->x > plx) continue;
+		if (tr->x <= 0 || tr->x > (int)ctx.player.x) continue;
 
 		if (tr->what == TRIGGER_HEN) {
 			ctx.hen.x = tr->x - (VSCREEN_MAX_WIDTH / 2) - 32;
@@ -1404,7 +1332,7 @@ static void handle_respawn()
 	//above (lower than) 324
 	if (ctx.time_up || ctx.player.y < 324) return;
 
-	for (i = 0; i < MAX_RESPAWN_POINTS; i++) {
+	for (i = 0; i < ctx.num_respawn_points; i++) {
 		RespawnPoint* rp = &ctx.respawn_points[i];
 
 		//Leave the loop on the first respawn point that does not exist or
@@ -1694,7 +1622,7 @@ static void position_bus_stop_sign()
 {
 	if (ctx.level_num == 1 || ctx.cam.x > VSCREEN_MAX_WIDTH) {
 		//The sign is at the end of the level
-		ctx.bus_stop_sign_x = ctx.level_size - 40;
+		ctx.bus_stop_sign_x = ctx.level_size_pixels - 40;
 	} else {
 		//The sign is at the start of the level
 		ctx.bus_stop_sign_x = 176;
@@ -1719,7 +1647,7 @@ static void update_sequence()
 	Player* pl = &ctx.player;
 	Bus* bus = &ctx.bus;
 	PlayCamera* cam = &ctx.cam;
-	int level_size = ctx.level_size;
+	int level_size_pixels = ctx.level_size_pixels;
 
 	MovingPeel* thrown_peel = &ctx.moving_peels[MOVING_PEEL_THROWN];
 
@@ -1760,7 +1688,7 @@ static void update_sequence()
 
 		//----------------------------------------------------------------------
 		case 1: //SEQ_NORMAL_PLAY
-			if (pl->x >= level_size - 426) {
+			if (pl->x >= level_size_pixels - 426) {
 				ctx.goal_reached = true;
 				ctx.time_up = false;
 			}
@@ -1775,7 +1703,7 @@ static void update_sequence()
 
 				if (ctx.time_up) {
 					ctx.sequence_delay = 1;
-					if (pl->x >= level_size - 960) {
+					if (pl->x >= level_size_pixels - 960) {
 						ctx.sequence_step = SEQ_TIMEUP_BUS_NEAR;
 					} else {
 						ctx.sequence_step = SEQ_TIMEUP_BUS_FAR;
@@ -1845,7 +1773,7 @@ static void update_sequence()
 			if (ctx.car.x > 0) break; //Wait until the car and hen are
 			if (ctx.hen.x > 0) break; //not visible anymore
 			cam->follow_player = false;
-			cam->xdest = level_size;
+			cam->xdest = level_size_pixels;
 			cam->xvel = CAMERA_XVEL;
 			cam->yvel = 0;
 			ctx.sequence_step++;
@@ -1896,12 +1824,8 @@ static void update_sequence()
 			if (ctx.goal_scene == 3) {
 				if (pl->x > bus->x + 192) {
 					//A banana peel is thrown from the right side of the screen
-					ctx.objs[0].type = OBJ_NONE;
-					ctx.objs[0].x = level_size;
-					ctx.objs[0].y = BUS_Y + 72;
-					thrown_peel->obj = 0;
-					thrown_peel->x = ctx.objs[0].x;
-					thrown_peel->y = ctx.objs[0].y;
+					thrown_peel->x = level_size_pixels;
+					thrown_peel->y = BUS_Y + 72;
 					thrown_peel->xvel = -510;
 					thrown_peel->yvel = 204;
 					thrown_peel->grav = 504;
@@ -1913,7 +1837,7 @@ static void update_sequence()
 				if (pl->x >= bus->x + 120) {
 					//A bird appears
 					bird->sprite = SPR_BIRD;
-					bird->x = level_size - 584;
+					bird->x = level_size_pixels - 584;
 					bird->y = 120;
 					bird->xvel = 300;
 					bird_anim->running = true;
@@ -2021,7 +1945,7 @@ static void update_sequence()
 			//Bearded man comes from the right side of the screen
 			cutscene_player->sprite = SPR_NULL;
 			bearded_man->sprite = SPR_BEARDED_MAN_WALK;
-			bearded_man->x = ctx.level_size;
+			bearded_man->x = ctx.level_size_pixels;
 			bearded_man->y = 203;
 			bearded_man->xvel = -150;
 			bearded_man_anim->running = true;
@@ -2238,7 +2162,7 @@ static void update_sequence()
 			break;
 
 		case 102:
-			if (bus->x >= ctx.level_size + 32) {
+			if (bus->x >= ctx.level_size_pixels + 32) {
 				//Player character starts running crazily
 				bus->acc = 0;
 				bus->xvel = 0;
@@ -2258,7 +2182,7 @@ static void update_sequence()
 			break;
 
 		case 103:
-			if (cutscene_player->x >= ctx.level_size + 32) {
+			if (cutscene_player->x >= ctx.level_size_pixels + 32) {
 				//Score count starts
 				start_score_count();
 				cutscene_player->xvel = 0;

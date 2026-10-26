@@ -991,8 +991,8 @@ static void start_ending_sequence(int difficulty)
 
 	play_ctx->difficulty = difficulty;
 	play_ctx->ending = true;
-	play_ctx->level_size = 8 * VSCREEN_MAX_WIDTH;
-	play_ctx->bg_color = SPR_BG_SKY3;
+	play_ctx->level_size_pixels = 8 * VSCREEN_MAX_WIDTH;
+	play_ctx->sky_color = SPR_BG_SKY3;
 	play_ctx->bgm = BGM3;
 
 	//Use the bus route sign with a checkered flag

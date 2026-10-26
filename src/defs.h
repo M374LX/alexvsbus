@@ -402,18 +402,40 @@ enum {
 
 
 //==========================================================================
+// Constants: level loading
+//
+
+#define MAX_LEVEL_ENTRIES 256
+
+//Level entry types
+enum {
+	LVLENTRY_BANANA_PEEL = 0,
+	LVLENTRY_COIN_SILVER = 1,
+	LVLENTRY_COIN_GOLD = 2,
+	LVLENTRY_GUSH = 3,
+	LVLENTRY_GUSH_CRACK = 4,
+	LVLENTRY_OVERHEAD_SIGN = 5,
+	LVLENTRY_PUSHABLE_CRATE = 6,
+	LVLENTRY_ROPE = 7,
+	LVLENTRY_SPRING = 8,
+};
+
+
+
+//==========================================================================
 // Constants: gameplay
 //
 
 //Maximum numbers
 #define MAX_LEVEL_COLUMNS 480
 #define MAX_COINS 128
-#define MAX_OBJS 64
-#define MAX_CRATE_BLOCKS 32
+#define MAX_BANANA_PEELS 48
 #define MAX_DEEP_HOLES 32
 #define MAX_GUSHES 32
 #define MAX_MOVING_PEELS 2
 #define MAX_OVERHEAD_SIGNS 8
+#define MAX_ROPES 4
+#define MAX_SPRINGS 16
 #define MAX_PARKED_VEHICLES 8
 #define MAX_PASSAGEWAYS 4
 #define MAX_PUSHABLE_CRATES MAX_PASSAGEWAYS
@@ -464,24 +486,12 @@ enum {
 	SOL_PASSAGEWAY_EXIT = 6,
 };
 
-//Object types (for objects that use PlayCtx.objs[])
-enum {
-	OBJ_NONE = 0,
-	OBJ_BANANA_PEEL = 1,
-	OBJ_GUSH = 2,
-	OBJ_GUSH_CRACK = 3,
-	OBJ_PUSH_CRATE = 4,
-	OBJ_ROPE = 5,
-	OBJ_SPRING = 6,
-};
-
 //Parked vehicle types
 enum {
-	PARKED_NONE = 0,
-	PARKED_CAR_BLUE = 1,
-	PARKED_CAR_SILVER = 2,
-	PARKED_CAR_YELLOW = 3,
-	PARKED_TRUCK = 4,
+	PARKED_CAR_BLUE = 0,
+	PARKED_CAR_SILVER = 1,
+	PARKED_CAR_YELLOW = 2,
+	PARKED_TRUCK = 3,
 };
 
 //Even if the player presses the jump button before the character hits the
@@ -705,6 +715,18 @@ typedef struct {
 
 
 //==========================================================================
+// Structs: level loading
+//
+
+typedef struct {
+	int type; //LVLENTRY_* contstants
+	int x;
+	int y;
+} LevelEntry;
+
+
+
+//==========================================================================
 // Structs: gameplay
 //
 
@@ -760,37 +782,36 @@ typedef struct {
 } LevelColumn;
 
 typedef struct {
-	bool gold;
 	int x;
 	int y;
+} BananaPeel;
+
+typedef struct {
+	int x;
+	int y;
+	bool gold;
 } Coin;
 
-//Struct used for most game objects, which need only a type and a position
 typedef struct {
-	int type; //OBJ_* constants
-	int x, y;
-} Obj;
-
-typedef struct {
-	int obj; //Index of the gush within PlayCtx.objs[]
+	int x; //Can be an int because gushes never move horizontally
 	float y;
 	float yvel;
 	float ydest; //Destination Y position
 	const int* move_pattern;
 	int move_pattern_pos;
+	bool is_crack;
 } Gush;
 
 //Rope grabbed by the player character
 typedef struct {
-	int obj; //Index of the rope within PlayCtx.objs[] (-1 if none)
 	float x;
 	float xmin, xmax;
 	float xvel;
+	int index; //Index of the rope within PlayCtx.ropes[] (-1 if none)
 } GrabbedRope;
 
 //Moving banana peel
 typedef struct {
-	int obj; //Index of the peel within PlayCtx.objs[]
 	float x, y;
 	float xvel, yvel;
 	float grav;
@@ -808,13 +829,21 @@ typedef struct {
 } ParkedVehicle;
 
 typedef struct {
-	int obj; //Index of the crate within PlayCtx.objs[]
 	float x;
 	bool show_arrow;
 	bool pushed;
 	float xmax;
 	int solid; //Index within PlayCtx.solids[]
 } PushableCrate;
+
+typedef struct {
+	int x;
+} Rope;
+
+typedef struct {
+	int x;
+	int y;
+} Spring;
 
 typedef struct {
 	int sprite;
@@ -900,20 +929,22 @@ typedef struct {
 	int level_num;
 	int score;
 
-	bool last_level; //Last level of current difficulty
-	bool ending; //True if it is the ending sequence
-	int level_size;
-	int bg_color;
+	int num_level_columns;
+	int level_size_pixels;
+	int sky_color;
 	int bgm;
 	int goal_scene; //Which of the five cutscenes to use when reaching the goal (1-5)
 
 	int time;
 	float time_delay;
+
 	bool time_running;
 	bool time_up;
 	bool goal_reached;
 	bool counting_score;
 	bool can_pause;
+	bool last_level; //Last level of current difficulty
+	bool ending; //True if it is the ending sequence
 
 	int bus_stop_sign_x;
 	int pole_x;
@@ -924,15 +955,28 @@ typedef struct {
 	Player player;
 	Bus bus;
 
+	int num_coins;
+	int num_banana_peels;
+	int num_gushes;
+	int num_overhead_signs;
+	int num_parked_vehicles;
+	int num_respawn_points;
+	int num_ropes;
+	int num_solids;
+	int num_springs;
+	int num_triggers;
+
 	LevelColumn level_columns[MAX_LEVEL_COLUMNS];
+	BananaPeel banana_peels[MAX_BANANA_PEELS];
 	Coin coins[MAX_COINS];
-	Obj objs[MAX_OBJS];
 	Gush gushes[MAX_GUSHES];
 	MovingPeel moving_peels[MAX_MOVING_PEELS];
 	OverheadSign overhead_signs[MAX_OVERHEAD_SIGNS];
 	ParkedVehicle parked_vehicles[MAX_PARKED_VEHICLES];
 	Passageway passageways[MAX_PASSAGEWAYS];
 	PushableCrate pushable_crates[MAX_PUSHABLE_CRATES];
+	Rope ropes[MAX_ROPES];
+	Spring springs[MAX_SPRINGS];
 	RespawnPoint respawn_points[MAX_RESPAWN_POINTS];
 	Solid solids[MAX_SOLIDS];
 	Trigger triggers[MAX_TRIGGERS];
@@ -940,7 +984,7 @@ typedef struct {
 
 	GrabbedRope grabbed_rope;
 
-	//Index within objs[] of the last spring hit by the player character
+	//Index within springs[] of the last spring hit by the player character
 	int hit_spring;
 
 	//Index within passageways[] of the passageway the player character is in,

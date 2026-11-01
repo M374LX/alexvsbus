@@ -204,10 +204,10 @@ enum {
 	SPR_BG_SKY3 = 8,
 	SPR_BIRD = 9,
 	SPR_BUS = 10,
-	SPR_BUS_CHARACTER_1 = 11,
-	SPR_BUS_CHARACTER_2 = 12,
-	SPR_BUS_CHARACTER_3 = 13,
-	SPR_BUS_DOOR = 14,
+	SPR_BUS_DOOR = 11,
+	SPR_BUS_REAR_CHARACTER_1 = 12,
+	SPR_BUS_REAR_CHARACTER_2 = 13,
+	SPR_BUS_REAR_CHARACTER_3 = 14,
 	SPR_BUS_ROUTE = 15,
 	SPR_BUS_STOP_SIGN = 16,
 	SPR_BUS_WHEEL = 17,
@@ -461,8 +461,10 @@ enum {
 
 //There are at most two moving banana peels at a time, one because the player
 //character has slipped on it and another because it has been thrown
-#define MOVING_PEEL_SLIPPED 0
-#define MOVING_PEEL_THROWN 1
+enum {
+	MOVING_PEEL_SLIPPED = 0,
+	MOVING_PEEL_THROWN = 1,
+};
 
 //Level column hole types
 enum {
@@ -492,6 +494,13 @@ enum {
 	PARKED_CAR_SILVER = 1,
 	PARKED_CAR_YELLOW = 2,
 	PARKED_TRUCK = 3,
+};
+
+//Characters that can appear at the bus front door
+enum {
+	BUS_FRONT_CHAR_NONE = 0,
+	BUS_FRONT_CHAR_PLAYER = 1,
+	BUS_FRONT_CHAR_BEARDED_MAN = 2,
 };
 
 //Even if the player presses the jump button before the character hits the
@@ -771,7 +780,10 @@ typedef struct {
 	float acc; //Acceleration
 
 	int route_sign;
-	int num_characters; //Number of characters at the rear door
+
+	//Characters at the doors
+	int num_rear_characters;
+	int front_character; //BUS_FRONT_CHAR_* constants
 } Bus;
 
 typedef struct {
@@ -851,7 +863,6 @@ typedef struct {
 	float xvel, yvel;
 	float acc;
 	float grav;
-	bool in_bus;
 } CutsceneObject;
 
 //An invisible area the player character cannot pass through, which is placed

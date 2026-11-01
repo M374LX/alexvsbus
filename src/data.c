@@ -98,10 +98,10 @@ const int data_sprites[] = {
 	984,  0,    8,   8,   //SPR_BG_SKY3
 	288,  384,  16,  8,   //SPR_BIRD
 	0,    192,  408, 104, //SPR_BUS
-	0,    320,  24,  64,  //SPR_BUS_CHARACTER_1
-	32,   320,  24,  64,  //SPR_BUS_CHARACTER_2
-	64,   320,  24,  64,  //SPR_BUS_CHARACTER_3
 	416,  192,  64,  88,  //SPR_BUS_DOOR
+	0,    320,  24,  64,  //SPR_BUS_REAR_CHARACTER_1
+	32,   320,  24,  64,  //SPR_BUS_REAR_CHARACTER_2
+	64,   320,  24,  64,  //SPR_BUS_REAR_CHARACTER_3
 	416,  288,  32,  32,  //SPR_BUS_ROUTE
 	832,  0,    16,  88,  //SPR_BUS_STOP_SIGN
 	96,   320,  64,  40,  //SPR_BUS_WHEEL

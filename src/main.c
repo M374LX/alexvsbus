@@ -954,14 +954,14 @@ static void start_level(int level_num, int difficulty, bool skip_initial_sequenc
 	play_ctx->skip_initial_sequence = skip_initial_sequence;
 
 	if (play_ctx->last_level) {
-		play_ctx->bus.num_characters = 3;
+		play_ctx->bus.num_rear_characters = 3;
 	} else {
 		switch (level_num) {
-			case 1: play_ctx->bus.num_characters = 0; break;
-			case 2: play_ctx->bus.num_characters = 0; break;
-			case 3: play_ctx->bus.num_characters = 1; break;
-			case 4: play_ctx->bus.num_characters = 2; break;
-			case 5: play_ctx->bus.num_characters = 3; break;
+			case 1: play_ctx->bus.num_rear_characters = 0; break;
+			case 2: play_ctx->bus.num_rear_characters = 0; break;
+			case 3: play_ctx->bus.num_rear_characters = 1; break;
+			case 4: play_ctx->bus.num_rear_characters = 2; break;
+			case 5: play_ctx->bus.num_rear_characters = 3; break;
 		}
 	}
 

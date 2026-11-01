@@ -156,6 +156,8 @@ void play_clear()
 	ctx.bus.x = 24;
 	ctx.bus.xvel = 0;
 	ctx.bus.acc = 0;
+	ctx.bus.num_rear_characters = 0;
+	ctx.bus.front_character = BUS_FRONT_CHAR_NONE;
 
 	ctx.car.x = 0;
 	ctx.hen.x = 0;
@@ -209,7 +211,6 @@ void play_clear()
 		ctx.cutscene_objects[i].yvel = 0;
 		ctx.cutscene_objects[i].acc = 0;
 		ctx.cutscene_objects[i].grav = 0;
-		ctx.cutscene_objects[i].in_bus = false;
 	}
 
 	for (i = 0; i < MAX_COIN_SPARKS; i++) {
@@ -454,18 +455,12 @@ static void move_bus_to_end()
 static void show_player_in_bus()
 {
 	CutsceneObject* cutscene_player = &ctx.cutscene_objects[0];
-	Anim* anim = &ctx.anims[ANIM_CUTSCENE_OBJECTS + 0];
 
-	cutscene_player->sprite = SPR_PLAYER_STAND;
-	cutscene_player->in_bus = true;
-	cutscene_player->x = 342;
-	cutscene_player->y = BUS_Y + 36;
-
-	anim->frame = 0;
-	anim->num_frames = 1;
+	cutscene_player->sprite = SPR_NULL;
 
 	ctx.player.state = PLAYER_STATE_INACTIVE;
 	ctx.player.visible = false;
+	ctx.bus.front_character = BUS_FRONT_CHAR_PLAYER;
 }
 
 static void start_score_count()
@@ -1943,7 +1938,7 @@ static void update_sequence()
 
 		case 74:
 			//Bearded man comes from the right side of the screen
-			cutscene_player->sprite = SPR_NULL;
+			bus->front_character = BUS_FRONT_CHAR_NONE;
 			bearded_man->sprite = SPR_BEARDED_MAN_WALK;
 			bearded_man->x = ctx.level_size_pixels;
 			bearded_man->y = 203;
@@ -1992,13 +1987,8 @@ static void update_sequence()
 
 		case 78:
 			if (bearded_man->y >= BUS_Y + 35 && bearded_man->yvel > 0) {
-				//Bearded man is now in the bus
-				bearded_man->sprite = SPR_BEARDED_MAN_STAND;
-				bearded_man->grav = 0;
-				bearded_man->yvel = 0;
-				bearded_man->x -= bus->x; //Make position relative to the bus
-				bearded_man->y = BUS_Y + 35;
-				bearded_man->in_bus = true;
+				bearded_man->sprite = SPR_NULL;
+				bus->front_character = BUS_FRONT_CHAR_BEARDED_MAN;
 				ctx.sequence_delay = 0.2f;
 				ctx.sequence_step++;
 			}

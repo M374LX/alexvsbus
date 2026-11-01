@@ -445,21 +445,27 @@ static void draw_play()
 		y = BUS_Y;
 		draw_sprite(SPR_BUS, x, y, 0);
 
-		//Cutscene objects (if in the bus)
-		for (i = 0; i < MAX_CUTSCENE_OBJECTS; i++) {
-			CutsceneObject* cobj = &ctx->cutscene_objects[i];
+		//Character at bus front door
+		switch (ctx->bus.front_character) {
+			case BUS_FRONT_CHAR_PLAYER:
+				draw_sprite(SPR_PLAYER_STAND, x + 342, y + 36, 0);
+				break;
 
-			if (cobj->sprite == SPR_NULL || !cobj->in_bus) continue;
-
-			spr = cobj->sprite;
-			x = (int)cobj->x + (int)ctx->bus.x;
-			y = (int)cobj->y;
-			frame = ctx->anims[ANIM_CUTSCENE_OBJECTS + i].frame;
-			draw_sprite(spr, x, y, frame);
+			case BUS_FRONT_CHAR_BEARDED_MAN:
+				draw_sprite(SPR_BEARDED_MAN_STAND, x + 337, y + 35, 0);
+				break;
 		}
 
-		x = (int)ctx->bus.x;
-		y = BUS_Y;
+		//Characters at bus rear door
+		if (ctx->bus.num_rear_characters >= 1) {
+			draw_sprite(SPR_BUS_REAR_CHARACTER_1, x + 72, y + 24, 0);
+		}
+		if (ctx->bus.num_rear_characters >= 2) {
+			draw_sprite(SPR_BUS_REAR_CHARACTER_2, x + 64, y + 24, 0);
+		}
+		if (ctx->bus.num_rear_characters >= 3) {
+			draw_sprite(SPR_BUS_REAR_CHARACTER_3, x + 80, y + 24, 0);
+		}
 
 		//Bus route sign
 		frame = ctx->bus.route_sign;
@@ -469,17 +475,6 @@ static void draw_play()
 		frame = ctx->anims[ANIM_BUS_WHEELS].frame;
 		draw_sprite(SPR_BUS_WHEEL, x + 104, y + 80, frame);
 		draw_sprite(SPR_BUS_WHEEL, x + 296, y + 80, frame);
-
-		//Characters at bus rear door
-		if (ctx->bus.num_characters >= 1) {
-			draw_sprite(SPR_BUS_CHARACTER_1, x + 72, y + 24, 0);
-		}
-		if (ctx->bus.num_characters >= 2) {
-			draw_sprite(SPR_BUS_CHARACTER_2, x + 64, y + 24, 0);
-		}
-		if (ctx->bus.num_characters >= 3) {
-			draw_sprite(SPR_BUS_CHARACTER_3, x + 80, y + 24, 0);
-		}
 
 		//Bus doors
 		x = (int)ctx->bus.x;
@@ -656,11 +651,11 @@ static void draw_play()
 		draw_sprite(SPR_SPRING, x, y, frame);
 	}
 
-	//Cutscene objects (if not in the bus)
+	//Cutscene objects
 	for (i = 0; i < MAX_CUTSCENE_OBJECTS; i++) {
 		CutsceneObject* cobj = &ctx->cutscene_objects[i];
 
-		if (cobj->sprite == SPR_NULL || cobj->in_bus) continue;
+		if (cobj->sprite == SPR_NULL) continue;
 
 		spr = cobj->sprite;
 		x = (int)cobj->x;

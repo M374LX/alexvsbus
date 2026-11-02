@@ -405,19 +405,33 @@ enum {
 // Constants: level loading
 //
 
-#define MAX_LEVEL_ENTRIES 256
+#define MAX_LEVEL_ENTRIES  256
+#define MAX_OCCUPIED_AREAS 256
 
 //Level entry types
 enum {
 	LVLENTRY_BANANA_PEEL = 0,
-	LVLENTRY_COIN_SILVER = 1,
-	LVLENTRY_COIN_GOLD = 2,
-	LVLENTRY_GUSH = 3,
-	LVLENTRY_GUSH_CRACK = 4,
-	LVLENTRY_OVERHEAD_SIGN = 5,
-	LVLENTRY_PUSHABLE_CRATE = 6,
-	LVLENTRY_ROPE = 7,
-	LVLENTRY_SPRING = 8,
+	LVLENTRY_CAR_BLUE = 1,
+	LVLENTRY_CAR_SILVER = 2,
+	LVLENTRY_CAR_YELLOW = 3,
+	LVLENTRY_COIN_SILVER = 4,
+	LVLENTRY_COIN_GOLD = 5,
+	LVLENTRY_CRATES = 6,
+	LVLENTRY_DEEP_HOLE = 7,
+	LVLENTRY_GUSH = 8,
+	LVLENTRY_GUSH_CRACK = 9,
+	LVLENTRY_HYDRANT = 10,
+	LVLENTRY_OVERHEAD_SIGN = 11,
+	LVLENTRY_PASSAGEWAY = 12,
+	LVLENTRY_PASSAGEWAY_ARROW = 13,
+	LVLENTRY_RESPAWN_POINT = 14,
+	LVLENTRY_ROPE = 15,
+	LVLENTRY_SPRING = 16,
+	LVLENTRY_TRIGGER_CAR_BLUE = 17,
+	LVLENTRY_TRIGGER_CAR_SILVER = 18,
+	LVLENTRY_TRIGGER_CAR_YELLOW = 19,
+	LVLENTRY_TRIGGER_HEN = 20,
+	LVLENTRY_TRUCK = 21,
 };
 
 
@@ -720,18 +734,6 @@ typedef struct {
 	int action; //MENUACT_* constants
 	int action_param;
 } MenuCtx;
-
-
-
-//==========================================================================
-// Structs: level loading
-//
-
-typedef struct {
-	int type; //LVLENTRY_* contstants
-	int x;
-	int y;
-} LevelEntry;
 
 
 

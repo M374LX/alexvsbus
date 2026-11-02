@@ -52,45 +52,45 @@ extern const int data_gush_move_pattern_2[];
 
 static PlayCtx* ctx;
 
-static bool invalid;
+struct {
+	int x;
+	int type;
+	int token2;
+	int token3;
+} entries[MAX_LEVEL_ENTRIES];
 
-static int x_max;
-static int num_banana_peels;
-static int num_coins;
-static int num_gushes;
-static int num_solids;
-static int num_deep_holes;
-static int num_passageways;
-static int num_pushable_crates;
-static int num_overhead_signs;
-static int num_parked_vehicles;
-static int num_respawn_points;
-static int num_ropes;
-static int num_springs;
-static int num_triggers;
-static int num_car_triggers;
+struct {
+	int left;
+	int top;
+	int right;
+	int bottom;
+} occupied_areas[MAX_OCCUPIED_AREAS];
+
 static int num_entries;
-
-static LevelEntry entries[MAX_LEVEL_ENTRIES];
+static int num_occupied_areas;
+static int num_solids;
 
 //------------------------------------------------------------------------------
 
 //Function prototypes
-static void add_level_entry(int type, int x, int y, bool use_y);
-static void add_crates(int x, int w, int h);
-static void add_deep_hole(int x, int w);
-static void add_horizontal_rope(int x);
-static void add_hydrant(int x);
-static void add_parked_vehicle(int type, int x);
-static void add_passageway(int x, int y);
-static void add_respawn_point(int x, int y);
-static void add_trigger(int x, int what);
-static void validate_level_columns();
-static void validate_positions();
-static void convert_positions();
-static void add_objects_to_lists();
-static int add_solid(int type, int x, int y, int width, int height);
-static void add_solids();
+static int  read_file();
+static bool check_numbers();
+static bool add_deep_holes();
+static bool add_passageways();
+static bool add_unpushable_crates();
+static bool add_hydrants();
+static bool add_ropes();
+static bool add_parked_vehicles();
+static bool add_springs();
+static bool add_gushes();
+static bool add_banana_peels();
+static bool add_triggers();
+static bool add_overhead_signs();
+static bool add_respawn_poins();
+static bool add_coins();
+static int  add_solid(int type, int x, int y, int width, int height);
+static bool add_solids();
+static bool occupy_area(int x, int y, int width, int height);
 
 //------------------------------------------------------------------------------
 
@@ -101,49 +101,65 @@ void levelload_init(PlayCtx* pctx)
 
 int levelload_load(const char* filename)
 {
-	char tmp[48];
-	bool no_entries = true;
-	int x;
-	int i;
+	int error_type;
 
-	invalid = false;
+	num_entries = 0;
+	num_occupied_areas = 0;
+	num_solids = 0;
 
 	//The maximum allowed file size is 4 kB
 	if (get_file_size(filename) > 4096) {
 		return LVLERR_TOO_LARGE;
 	}
 
+	error_type = read_file(filename);
+	if (error_type != LVLERR_NONE) {
+		return error_type;
+	}
+
+	if (!check_numbers())         return LVLERR_INVALID;
+	if (!add_deep_holes())        return LVLERR_INVALID;
+	if (!add_passageways())       return LVLERR_INVALID;
+	if (!add_unpushable_crates()) return LVLERR_INVALID;
+	if (!add_hydrants())          return LVLERR_INVALID;
+	if (!add_ropes())             return LVLERR_INVALID;
+	if (!add_parked_vehicles())   return LVLERR_INVALID;
+	if (!add_springs())           return LVLERR_INVALID;
+	if (!add_gushes())            return LVLERR_INVALID;
+	if (!add_banana_peels())      return LVLERR_INVALID;
+	if (!add_triggers())          return LVLERR_INVALID;
+	if (!add_overhead_signs())    return LVLERR_INVALID;
+	if (!add_respawn_poins())     return LVLERR_INVALID;
+	if (!add_coins())             return LVLERR_INVALID;
+	if (!add_solids())            return LVLERR_INVALID;
+
+	return LVLERR_NONE;
+}
+
+//------------------------------------------------------------------------------
+
+static int read_file(const char* filename)
+{
+	char tmp[48];
+	int level_size_pixels = 0;
+	int num_level_columns = 0;
+	int sky_color = 0;
+	int bgm = 0;
+	int goal_scene = 0;
+	int x = 0;
+	int max_x = 0;
+
 	if (!lineread_open(filename)) {
 		return LVLERR_CANNOT_OPEN;
 	}
 
-	x_max = 0;
-	num_banana_peels = 0;
-	num_coins = 0;
-	num_gushes = 0;
-	num_solids = 0;
-	num_deep_holes = 0;
-	num_overhead_signs = 0;
-	num_parked_vehicles = 0;
-	num_passageways = 0;
-	num_pushable_crates = 0;
-	num_respawn_points = 0;
-	num_ropes = 0;
-	num_springs = 0;
-	num_triggers = 0;
-	num_car_triggers = 0;
-	num_entries = 0;
-
-	ctx->level_size_pixels = 0;
-	ctx->sky_color = 0;
-	ctx->bgm = 0;
-	ctx->goal_scene = 0;
-
 	x = VSCREEN_MAX_WIDTH_LEVEL_BLOCKS;
 
-	//Read file
 	while (!lineread_ended()) {
+		int entry_type = -1;
+		int width = 1;
 		int num_tokens;
+		int num_expected_tokens = 0;
 		int token1, token2, token3;
 
 		lineread_getline(tmp);
@@ -171,8 +187,12 @@ int levelload_load(const char* filename)
 		}
 
 		if (str_starts_with(tmp, "level-size ")) {
+			if (num_tokens != 2) {
+				return LVLERR_INVALID;
+			}
+
 			//Error: level size redefinition
-			if (ctx->level_size_pixels != 0) {
+			if (level_size_pixels != 0) {
 				return LVLERR_INVALID;
 			}
 
@@ -182,43 +202,55 @@ int levelload_load(const char* filename)
 			}
 
 			//Just before the last screen
-			x_max = (token1 - 1) * VSCREEN_MAX_WIDTH_LEVEL_BLOCKS;
+			max_x = (token1 - 1) * VSCREEN_MAX_WIDTH_LEVEL_BLOCKS;
 
-			ctx->level_size_pixels = token1 * VSCREEN_MAX_WIDTH;
-			ctx->num_level_columns = ctx->level_size_pixels / LEVEL_BLOCK_SIZE;
+			level_size_pixels = token1 * VSCREEN_MAX_WIDTH;
+			num_level_columns = level_size_pixels / LEVEL_BLOCK_SIZE;
 
 			continue;
 		} else if (str_starts_with(tmp, "sky-color ")) {
+			if (num_tokens != 2) {
+				return LVLERR_INVALID;
+			}
+
 			//Error: sky color redefinition
-			if (ctx->sky_color != 0) {
+			if (sky_color != 0) {
 				return LVLERR_INVALID;
 			}
 
 			switch (token1) {
-				case 1:  ctx->sky_color = SPR_BG_SKY1; break;
-				case 2:  ctx->sky_color = SPR_BG_SKY2; break;
-				case 3:  ctx->sky_color = SPR_BG_SKY3; break;
+				case 1:  sky_color = SPR_BG_SKY1; break;
+				case 2:  sky_color = SPR_BG_SKY2; break;
+				case 3:  sky_color = SPR_BG_SKY3; break;
 				default: return LVLERR_INVALID;
 			}
 
 			continue;
 		} else if (str_starts_with(tmp, "bgm ")) {
+			if (num_tokens != 2) {
+				return LVLERR_INVALID;
+			}
+
 			//Error: BGM redefinition
-			if (ctx->bgm != 0) {
+			if (bgm != 0) {
 				return LVLERR_INVALID;
 			}
 
 			switch (token1) {
-				case 1:  ctx->bgm = BGM1; break;
-				case 2:  ctx->bgm = BGM2; break;
-				case 3:  ctx->bgm = BGM3; break;
+				case 1:  bgm = BGM1; break;
+				case 2:  bgm = BGM2; break;
+				case 3:  bgm = BGM3; break;
 				default: return LVLERR_INVALID;
 			}
 
 			continue;
 		} else if (str_starts_with(tmp, "goal-scene ")) {
+			if (num_tokens != 2) {
+				return LVLERR_INVALID;
+			}
+
 			//Error: goal cutscene redefinition
-			if (ctx->goal_scene != 0) {
+			if (goal_scene != 0) {
 				return LVLERR_INVALID;
 			}
 
@@ -227,916 +259,934 @@ int levelload_load(const char* filename)
 				return LVLERR_INVALID;
 			}
 
-			ctx->goal_scene = token1;
+			goal_scene = token1;
 
 			continue;
 		}
 
 		//Error: adding entries without defining the level size, sky color,
 		//BGM track, and goal cutscene
-		if (ctx->level_size_pixels == 0 || ctx->sky_color == 0 ||
-				ctx->bgm == 0 || ctx->goal_scene == 0) {
+		if (level_size_pixels == 0
+				|| sky_color == 0
+				|| bgm == 0
+				|| goal_scene == 0) {
 
+			return LVLERR_INVALID;
+		}
+
+		if (str_starts_with(tmp, "banana-peel ")) {
+			entry_type = LVLENTRY_BANANA_PEEL;
+			num_expected_tokens = 3;
+		} else if (str_starts_with(tmp, "car-blue ")) {
+			entry_type = LVLENTRY_CAR_BLUE;
+			num_expected_tokens = 2;
+			width = 6;
+		} else if (str_starts_with(tmp, "car-silver ")) {
+			entry_type = LVLENTRY_CAR_SILVER;
+			num_expected_tokens = 2;
+			width = 6;
+		} else if (str_starts_with(tmp, "car-yellow ")) {
+			entry_type = LVLENTRY_CAR_YELLOW;
+			num_expected_tokens = 2;
+			width = 6;
+		} else if (str_starts_with(tmp, "coin-silver ")) {
+			entry_type = LVLENTRY_COIN_SILVER;
+			num_expected_tokens = 3;
+		} else if (str_starts_with(tmp, "coin-gold ")) {
+			entry_type = LVLENTRY_COIN_GOLD;
+			num_expected_tokens = 3;
+		} else if (str_starts_with(tmp, "crates ")) {
+			entry_type = LVLENTRY_CRATES;
+			num_expected_tokens = 4;
+			width = token2;
+		} else if (str_starts_with(tmp, "gush ")) {
+			entry_type = LVLENTRY_GUSH;
+			num_expected_tokens = 2;
+		} else if (str_starts_with(tmp, "gush-crack ")) {
+			entry_type = LVLENTRY_GUSH_CRACK;
+			num_expected_tokens = 2;
+		} else if (str_starts_with(tmp, "hydrant ")) {
+			entry_type = LVLENTRY_HYDRANT;
+			num_expected_tokens = 2;
+		} else if (str_starts_with(tmp, "overhead-sign ")) {
+			entry_type = LVLENTRY_OVERHEAD_SIGN;
+			num_expected_tokens = 3;
+		} else if (str_starts_with(tmp, "rope ")) {
+			entry_type = LVLENTRY_ROPE;
+			num_expected_tokens = 2;
+		} else if (str_starts_with(tmp, "spring ")) {
+			entry_type = LVLENTRY_SPRING;
+			num_expected_tokens = 2;
+		} else if (str_starts_with(tmp, "truck ")) {
+			entry_type = LVLENTRY_TRUCK;
+			num_expected_tokens = 2;
+			width = 12;
+		} else if (str_starts_with(tmp, "trigger-car-blue ")) {
+			entry_type = LVLENTRY_TRIGGER_CAR_BLUE;
+			num_expected_tokens = 2;
+		} else if (str_starts_with(tmp, "trigger-car-silver ")) {
+			entry_type = LVLENTRY_TRIGGER_CAR_SILVER;
+			num_expected_tokens = 2;
+		} else if (str_starts_with(tmp, "trigger-car-yellow ")) {
+			entry_type = LVLENTRY_TRIGGER_CAR_YELLOW;
+			num_expected_tokens = 2;
+		} else if (str_starts_with(tmp, "trigger-hen ")) {
+			entry_type = LVLENTRY_TRIGGER_HEN;
+			num_expected_tokens = 2;
+		} else if (str_starts_with(tmp, "respawn-point ")) {
+			entry_type = LVLENTRY_RESPAWN_POINT;
+			num_expected_tokens = 3;
+		} else if (str_starts_with(tmp, "deep-hole ")) {
+			entry_type = LVLENTRY_DEEP_HOLE;
+			num_expected_tokens = 3;
+			width = token2;
+		} else if (str_starts_with(tmp, "passageway ")) {
+			entry_type = LVLENTRY_PASSAGEWAY;
+			num_expected_tokens = 3;
+			width = token2;
+		} else if (str_starts_with(tmp, "passageway-arrow ")) {
+			entry_type = LVLENTRY_PASSAGEWAY_ARROW;
+			num_expected_tokens = 3;
+			width = token2;
+		} else {
+			//Error: invalid entry
+			return LVLERR_INVALID;
+		}
+
+		if (num_tokens != num_expected_tokens) {
+			return LVLERR_INVALID;
+		}
+
+		//Error: too many entries
+		if (num_entries >= MAX_LEVEL_ENTRIES) {
 			return LVLERR_INVALID;
 		}
 
 		//The value of token1 is relative to the previous X position
 		x += token1;
 
-		if (str_starts_with(tmp, "banana-peel ")) {
-			add_level_entry(LVLENTRY_BANANA_PEEL, x, token2, true);
-		} else if (str_starts_with(tmp, "car-blue ")) {
-			add_parked_vehicle(PARKED_CAR_BLUE, x);
-		} else if (str_starts_with(tmp, "car-silver ")) {
-			add_parked_vehicle(PARKED_CAR_SILVER, x);
-		} else if (str_starts_with(tmp, "car-yellow ")) {
-			add_parked_vehicle(PARKED_CAR_YELLOW, x);
-		} else if (str_starts_with(tmp, "coin-silver ")) {
-			add_level_entry(LVLENTRY_COIN_SILVER, x, token2, true);
-		} else if (str_starts_with(tmp, "coin-gold ")) {
-			add_level_entry(LVLENTRY_COIN_GOLD, x, token2, true);
-		} else if (str_starts_with(tmp, "crates ")) {
-			add_crates(x, token2, token3);
-		} else if (str_starts_with(tmp, "gush ")) {
-			add_level_entry(LVLENTRY_GUSH, x, -1, false);
-
-			if (num_gushes >= MAX_GUSHES) {
-				return LVLERR_INVALID;
-			}
-		} else if (str_starts_with(tmp, "gush-crack ")) {
-			add_level_entry(LVLENTRY_GUSH_CRACK, x, -1, false);
-		} else if (str_starts_with(tmp, "hydrant ")) {
-			add_hydrant(x);
-		} else if (str_starts_with(tmp, "overhead-sign ")) {
-			add_level_entry(LVLENTRY_OVERHEAD_SIGN, x, token2, true);
-		} else if (str_starts_with(tmp, "rope ")) {
-			add_horizontal_rope(x);
-			add_level_entry(LVLENTRY_ROPE, x, -1, false);
-		} else if (str_starts_with(tmp, "spring ")) {
-			//10 is the Y position corresponding to the floor
-			add_level_entry(LVLENTRY_SPRING, x, 10, true);
-		} else if (str_starts_with(tmp, "truck ")) {
-			add_parked_vehicle(PARKED_TRUCK, x);
-		} else if (str_starts_with(tmp, "trigger-car-blue ")) {
-			add_trigger(x, CAR_BLUE);
-		} else if (str_starts_with(tmp, "trigger-car-silver ")) {
-			add_trigger(x, CAR_SILVER);
-		} else if (str_starts_with(tmp, "trigger-car-yellow ")) {
-			add_trigger(x, CAR_YELLOW);
-		} else if (str_starts_with(tmp, "trigger-hen ")) {
-			add_trigger(x, TRIGGER_HEN);
-		} else if (str_starts_with(tmp, "respawn-point ")) {
-			add_respawn_point(x, token2);
-		} else if (str_starts_with(tmp, "deep-hole ")) {
-			add_deep_hole(x, token2);
-		} else if (str_starts_with(tmp, "passageway ")) {
-			add_passageway(x, token2);
-
-			//Spring under passageway exit (14 is the Y position corresponding
-			//to a passageway bottom)
-			add_level_entry(LVLENTRY_SPRING, x + token2 - 1, 14, true);
-
-			//Pushable crate over passageway entry
-			add_level_entry(LVLENTRY_PUSHABLE_CRATE, x, -1, false);
-			num_pushable_crates++;
-		} else if (str_starts_with(tmp, "passageway-arrow ")) {
-			add_passageway(x, token2);
-
-			//Spring under passageway exit (14 is the Y position corresponding
-			//to a passageway bottom)
-			add_level_entry(LVLENTRY_SPRING, x + token2 - 1, 14, true);
-
-			//Pushable crate over passageway entry
-			add_level_entry(LVLENTRY_PUSHABLE_CRATE, x, -1, false);
-			ctx->pushable_crates[num_pushable_crates].show_arrow = true;
-			num_pushable_crates++;
-		} else {
-			//Error: invalid entry
+		//Error: entry extends beyond or too close to the level's right boundary
+		if (x + width > max_x) {
 			return LVLERR_INVALID;
 		}
 
-		if (invalid) {
-			return LVLERR_INVALID;
-		}
-
-		no_entries = false;
+		entries[num_entries].x = x;
+		entries[num_entries].type = entry_type;
+		entries[num_entries].token2 = token2;
+		entries[num_entries].token3 = token3;
+		num_entries++;
 	}
 
 	//Error: no entries
-	if (no_entries) {
+	if (num_entries == 0) {
 		return LVLERR_INVALID;
 	}
 
-	//Error: not enough slots for all banana peels, which can be present in the
-	//level or thrown from cars
-	if (num_banana_peels + num_car_triggers > MAX_BANANA_PEELS) {
-		return LVLERR_INVALID;
-	}
-
-	//Error: the number of respawn points is not the same as the number of
-	//deep holes
-	if (num_respawn_points != num_deep_holes) {
-		return LVLERR_INVALID;
-	}
-
-	//Ensure there are no unpushable crates on deep holes or passageway edges
-	for (i = 0; i < MAX_LEVEL_COLUMNS; i++) {
-		int hole_type = ctx->level_columns[i].hole_type;
-		int num_crates = ctx->level_columns[i].num_crates;
-
-		if (hole_type != HOLE_NONE && hole_type != HOLE_PASSAGEWAY_MIDDLE) {
-			if (num_crates > 0) {
-				return LVLERR_INVALID;
-			}
-		}
-	}
-
-	validate_level_columns();
-	validate_positions();
-	convert_positions();
-	add_objects_to_lists();
-	add_solids();
-
-	if (invalid) {
-		return LVLERR_INVALID;
-	}
-
-	ctx->num_banana_peels = num_banana_peels;
-	ctx->num_coins = num_coins;
-	ctx->num_gushes = num_gushes;
-	ctx->num_overhead_signs = num_overhead_signs;
-	ctx->num_parked_vehicles = num_parked_vehicles;
-	ctx->num_respawn_points = num_respawn_points;
-	ctx->num_ropes = num_ropes;
-	ctx->num_solids = num_solids;
-	ctx->num_springs = num_springs;
-	ctx->num_triggers = num_triggers;
+	ctx->level_size_pixels = level_size_pixels;
+	ctx->num_level_columns = num_level_columns;
+	ctx->sky_color = sky_color;
+	ctx->bgm = bgm;
+	ctx->goal_scene = goal_scene;
 
 	return LVLERR_NONE;
 }
 
-//------------------------------------------------------------------------------
-
-static void add_level_entry(int type, int x, int y, bool use_y)
+//Checks if there are no more than the maximum number of entries of each type,
+//as well as if the number of respawn points is the same as the number of deep
+//holes
+static bool check_numbers()
 {
+	int num_banana_peels = 0;
+	int num_coins = 0;
+	int num_deep_holes = 0;
+	int num_gushes = 0;
+	int num_overhead_signs = 0;
+	int num_parked_vehicles = 0;
+	int num_passageways = 0;
+	int num_respawn_points = 0;
+	int num_ropes = 0;
+	int num_springs = 0;
+	int num_triggers = 0;
+	int num_car_triggers = 0;
 	int i;
-
-	if (invalid) {
-		return;
-	}
-
-	//Check if there are too many entries
-	if (num_entries >= MAX_LEVEL_ENTRIES) {
-		invalid = true;
-		return;
-	}
-
-	//Check if the entry's position is within the allowed range
-	if (y > 14 || (y != -1 && y < 2) || (use_y && y == -1) || x > x_max) {
-		invalid = true;
-		return;
-	}
-
-	//Check entry repetition
-	for (i = 0; i < num_entries; i++) {
-		LevelEntry entry = entries[i];
-
-		if (entry.type == type && entry.x == x && entry.y == y) {
-			invalid = true;
-			return;
-		}
-	}
-
-	//Increase the number of objects of the corresponding type
-	switch (type) {
-		case LVLENTRY_BANANA_PEEL:
-			num_banana_peels++;
-			break;
-
-		case LVLENTRY_COIN_SILVER:
-		case LVLENTRY_COIN_GOLD:
-			num_coins++;
-			break;
-
-		case LVLENTRY_GUSH:
-		case LVLENTRY_GUSH_CRACK:
-			num_gushes++;
-			break;
-
-		case LVLENTRY_OVERHEAD_SIGN:
-			num_overhead_signs++;
-			break;
-
-		case LVLENTRY_PUSHABLE_CRATE:
-			num_pushable_crates++;
-			break;
-
-		case LVLENTRY_ROPE:
-			num_ropes++;
-			break;
-
-		case LVLENTRY_SPRING:
-			num_springs++;
-			break;
-	}
-
-	//Check if the number of objects of different types is greater than the
-	//maximum
-	if (num_banana_peels > MAX_BANANA_PEELS
-			|| num_coins > MAX_COINS
-			|| num_gushes > MAX_GUSHES
-			|| num_overhead_signs > MAX_OVERHEAD_SIGNS
-			|| num_pushable_crates > MAX_PUSHABLE_CRATES
-			|| num_ropes > MAX_ROPES
-			|| num_springs > MAX_SPRINGS) {
-
-		invalid = true;
-		return;
-	}
-
-	entries[num_entries].type = type;
-	entries[num_entries].x = x;
-	entries[num_entries].y = y;
-	num_entries++;
-}
-
-//Add a set of unpushable crates
-static void add_crates(int x, int w, int h)
-{
-	int i;
-
-	if (invalid) {
-		return;
-	}
-
-	//Check if the size of the set is within the allowed range
-	if (w < 1 || w > 4 || h < 1 || h > 5) {
-		invalid = true;
-		return;
-	}
-
-	//Check if the position of the set is within the allowed range
-	if (x > x_max - 4) {
-		invalid = true;
-		return;
-	}
-
-	if (x + w > x_max - 4) {
-		//Error: crate set width extends beyond or too close to level's
-		//right boundary
-		invalid = true;
-		return;
-	}
-
-	if (ctx->level_columns[x - 1].num_crates == h) {
-		//Error: the set is adjacent to another set of crates with the
-		//same height
-		invalid = true;
-		return;
-	}
-
-	for (i = 0; i < w; i++) {
-		//Check repetition or overlap of crates
-		if (ctx->level_columns[x + i].num_crates != 0) {
-			invalid = true;
-			return;
-		}
-
-		//Add crates to level column
-		ctx->level_columns[x + i].num_crates = h;
-	}
-}
-
-static void add_deep_hole(int x, int w)
-{
-	int i;
-
-	if (invalid) {
-		return;
-	}
-
-	//Check if there are too many deep holes
-	if (num_deep_holes >= MAX_DEEP_HOLES) {
-		invalid = true;
-		return;
-	}
-
-	//Check if the hole's position and size are within the allowed range
-	if (x > x_max - 4 || w < 2 || w > 16) {
-		invalid = true;
-		return;
-	}
-
-	if (x + w > x_max - 2) {
-		//Error: hole width extends beyond or too close to level's right
-		//boundary
-		invalid = true;
-		return;
-	}
-
-	for (i = 0; i < w; i++) {
-		int hole_type;
-
-		//Check if the deep hole is being added to a level column that already
-		//has a deep hole or passageway
-		if (ctx->level_columns[x + i].hole_type != HOLE_NONE) {
-			invalid = true;
-			return;
-		}
-
-		hole_type = HOLE_DEEP_MIDDLE;
-		if (i == 0) {
-			hole_type = HOLE_DEEP_LEFT;
-		} else if (i == w - 1) {
-			hole_type = HOLE_DEEP_RIGHT;
-		}
-
-		//Insert deep hole into level columns
-		ctx->level_columns[x + i].hole_type = hole_type;
-	}
-
-	num_deep_holes++;
-}
-
-static void add_horizontal_rope(int x)
-{
-	int i;
-
-	//Check if the rope is too far to the right
-	if (x > x_max - 32) {
-		invalid = true;
-	}
-
-	//Check if the position corresponds to a light pole
-	if (x % 16 != 0) {
-		invalid = true;
-	}
-
-	//Check if there is already a rope at the position
-	if (ctx->level_columns[x + 1].has_rope) {
-		invalid = true;
-	}
-
-	if (invalid) {
-		return;
-	}
-
-	for (i = 0; i < 16; i++) {
-		ctx->level_columns[x + i + 1].has_rope = true;
-	}
-}
-
-static void add_hydrant(int x)
-{
-	//Check if the hydrant is too far to the right
-	if (x > x_max - 4) {
-		invalid = true;
-	}
-
-	//Check if a hydrant is already there
-	if (ctx->level_columns[x].has_hydrant) {
-		invalid = true;
-	}
-
-	if (invalid) {
-		return;
-	}
-
-	ctx->level_columns[x].has_hydrant = true;
-}
-
-static void add_parked_vehicle(int type, int x)
-{
-	if (num_parked_vehicles >= MAX_PARKED_VEHICLES) {
-		invalid = true;
-	}
-
-	if (x > x_max - 8) {
-		invalid = true;
-	}
-
-	if (invalid) {
-		return;
-	}
-
-	ctx->parked_vehicles[num_parked_vehicles].type = type;
-	ctx->parked_vehicles[num_parked_vehicles].x = x;
-	num_parked_vehicles++;
-}
-
-static void add_passageway(int x, int w)
-{
-	int i;
-
-	if (invalid) {
-		return;
-	}
-
-	//Check if there are too many passageways
-	if (num_passageways >= MAX_PASSAGEWAYS) {
-		invalid = true;
-		return;
-	}
-
-	//Check if the passageway's position and size are within the allowed range
-	if (x > x_max - 4 || w < 2 || w > 32) {
-		invalid = true;
-		return;
-	}
-
-	if (x + w > x_max - 2) {
-		//Error: passageway width extends beyond or too close to level's right
-		//boundary
-		invalid = true;
-		return;
-	}
-
-	//Check if there is already a deep hole or passageway on the occupied level
-	//columns
-	for (i = 0; i < w; i++) {
-		int hole_type;
-
-		//Check if the passageway is being added to a level column that already
-		//has a deep hole or passageway
-		if (ctx->level_columns[x + i].hole_type != HOLE_NONE) {
-			invalid = true;
-			return;
-		}
-
-		hole_type = HOLE_PASSAGEWAY_MIDDLE;
-		if (i == 0) {
-			hole_type = HOLE_PASSAGEWAY_LEFT;
-		} else if (i == w - 1) {
-			hole_type = HOLE_PASSAGEWAY_RIGHT;
-		}
-
-		//Insert passageway into level columns
-		ctx->level_columns[x + i].hole_type = hole_type;
-	}
-
-	ctx->passageways[num_passageways].x = x;
-	ctx->passageways[num_passageways].width = w;
-	ctx->passageways[num_passageways].exit_opened = false;
-	num_passageways++;
-}
-
-static void add_respawn_point(int x, int y)
-{
-	int i;
-
-	if (invalid) {
-		return;
-	}
-
-	//Check if there are too many respawn points
-	if (num_respawn_points >= MAX_RESPAWN_POINTS) {
-		invalid = true;
-		return;
-	}
-
-	//Check if the respawn point's position is within the allowed range
-	if (x > x_max || y < 3 || y > 15) {
-		invalid = true;
-		return;
-	}
-
-	//An X position cannot be shared by two or more respawn points
-	for (i = 0; i < num_respawn_points; i++) {
-		RespawnPoint rp = ctx->respawn_points[i];
-
-		if (rp.x == x) {
-			invalid = true;
-			return;
-		}
-	}
-
-	ctx->respawn_points[num_respawn_points].x = x;
-	ctx->respawn_points[num_respawn_points].y = y;
-	num_respawn_points++;
-}
-
-static void add_trigger(int x, int what)
-{
-	int i;
-
-	if (invalid) {
-		return;
-	}
-
-	//Check if there are too many triggers
-	if (num_triggers >= MAX_TRIGGERS) {
-		invalid = true;
-		return;
-	}
-
-	//Check if the trigger's position is within the allowed range
-	if (x > x_max - 20) {
-		invalid = true;
-		return;
-	}
-
-	//Check trigger repetition or excessive proximity
-	for (i = 0; i < num_triggers; i++) {
-		int tx = ctx->triggers[i].x;
-
-		if (tx == x || tx > x - 28) {
-			invalid = true;
-			return;
-		}
-	}
-
-	ctx->triggers[num_triggers].x = x;
-	ctx->triggers[num_triggers].what = what;
-	num_triggers++;
-
-	if (what != TRIGGER_HEN) {
-		num_car_triggers++;
-	}
-}
-
-static void validate_level_columns()
-{
-	int i;
-
-	for (i = 0; i < MAX_LEVEL_COLUMNS; i++) {
-		int hole_type = ctx->level_columns[i].hole_type;
-		int num_crates = ctx->level_columns[i].num_crates;
-		bool has_hydrant = ctx->level_columns[i].has_hydrant;
-		bool has_rope = ctx->level_columns[i].has_rope;
-
-		if (has_hydrant) {
-			if (has_rope || num_crates != 0 || hole_type != HOLE_NONE) {
-				invalid = true;
-			}
-		}
-
-		if (num_crates > 0) {
-			if (hole_type != HOLE_NONE && hole_type != HOLE_PASSAGEWAY_MIDDLE) {
-				invalid = true;
-			}
-		}
-
-		if (invalid) {
-			return;
-		}
-	}
-}
-
-static void validate_positions()
-{
-	int i;
-
-	if (invalid) {
-		return;
-	}
-
-	//Ensure every respawn point is at a valid Y position and close enough
-	//to the corresponding deep hole but not placed after it or over another
-	//deep hole
-	for (i = 0; i < num_respawn_points; i++) {
-		int x = ctx->respawn_points[i].x;
-		int y = ctx->respawn_points[i].y;
-		int hole_type = ctx->level_columns[x].hole_type;
-
-		if (y != 9 - ctx->level_columns[x].num_crates) {
-			invalid = true;
-			return;
-		}
-
-		if (hole_type != HOLE_NONE && hole_type != HOLE_DEEP_RIGHT) {
-			invalid = true;
-			return;
-		}
-
-		if (ctx->level_columns[x + 1].hole_type == HOLE_DEEP_LEFT) continue;
-		if (ctx->level_columns[x + 2].hole_type == HOLE_DEEP_LEFT) continue;
-
-		invalid = true;
-		return;
-	}
-
-	//Validate positions of level entries
-	for (i = 0; i < num_entries; i++) {
-		int x = entries[i].x;
-		int y = entries[i].y;
-
-		int col_hole_type  = ctx->level_columns[x].hole_type;
-		int col_num_crates = ctx->level_columns[x].num_crates;
-		bool col_has_hydrant = ctx->level_columns[x].has_hydrant;
-		bool col_has_rope = ctx->level_columns[x].has_rope;
-
-		if (y == 11) {
-			//Middle of the floor
-			invalid = true;
-			return;
-		}
-
-		if (y > 11) {
-			//An object's Y position can be greater than 11 only if it is in a
-			//passageway
-			if (col_hole_type != HOLE_PASSAGEWAY_LEFT
-					&& col_hole_type != HOLE_PASSAGEWAY_MIDDLE
-					&& col_hole_type != HOLE_PASSAGEWAY_RIGHT) {
-
-				invalid = true;
-				return;
-			}
-		}
-
-		if (col_has_rope && entries[i].type != LVLENTRY_ROPE) {
-			invalid = true;
-			return;
-		}
-
-		switch (entries[i].type) {
-			case LVLENTRY_BANANA_PEEL:
-				if (y != 14) {
-					if (y != 10 - col_num_crates) {
-						invalid = true;
-					}
-
-					if (col_has_hydrant) {
-						invalid = true;
-					}
-				}
-
-				break;
-
-			case LVLENTRY_COIN_SILVER:
-			case LVLENTRY_COIN_GOLD:
-				if (y < 11) {
-					if (y > 10 - col_num_crates) {
-						invalid = true;
-					}
-
-					if (col_has_hydrant && y > 9) {
-						invalid = true;
-					}
-				}
-
-				break;
-
-			case LVLENTRY_GUSH:
-			case LVLENTRY_GUSH_CRACK:
-				if (col_num_crates != 0) {
-					invalid = true;
-				}
-
-				if (col_hole_type != HOLE_NONE) {
-					invalid = true;
-				}
-
-				if (col_has_hydrant) {
-					invalid = true;
-				}
-
-				break;
-
-			case LVLENTRY_OVERHEAD_SIGN:
-				if (y > 4) {
-					invalid = true;
-				}
-
-				break;
-
-			case LVLENTRY_SPRING:
-				if (y == 10) {
-					if (col_num_crates != 0) {
-						invalid = true;
-					}
-
-					if (col_hole_type != HOLE_NONE
-							&& col_hole_type != HOLE_PASSAGEWAY_MIDDLE) {
-
-						invalid = true;
-					}
-
-					if (col_has_hydrant) {
-						invalid = true;
-					}
-				} else if (y == 14) {
-					if (col_hole_type != HOLE_PASSAGEWAY_RIGHT) {
-						invalid = true;
-					}
-				}
-
-				break;
-		}
-
-		if (invalid) {
-			return;
-		}
-	}
-
-	//Validate positions of parked vehicles
-	for (i = 0; i < num_parked_vehicles; i++) {
-		int x = ctx->parked_vehicles[i].x;
-		int w = (ctx->parked_vehicles[i].type == PARKED_TRUCK) ? 12 : 6;
-		int j;
-
-		for (j = 0; j < w; j++) {
-			int col_hole_type = ctx->level_columns[x + j].hole_type;
-			int col_has_crates = (ctx->level_columns[x + j].num_crates > 0);
-			bool col_has_hydrant = ctx->level_columns[x + j].has_hydrant;
-			bool col_has_rope = ctx->level_columns[x + j].has_rope;
-
-			if (col_has_crates || col_has_hydrant || col_has_rope) {
-				invalid = true;
-			}
-
-			if (col_hole_type != HOLE_NONE
-					&& col_hole_type != HOLE_PASSAGEWAY_MIDDLE) {
-
-				invalid = true;
-			}
-
-			if (invalid) {
-				return;
-			}
-		}
-	}
-}
-
-//Convert positions (and also the width in the case of passageways) from level
-//blocks to pixels
-static void convert_positions()
-{
-	int i;
-
-	if (invalid) {
-		return;
-	}
-
-	//Convert level entry positions
-	for (i = 0; i < num_entries; i++) {
-		int x = entries[i].x * LEVEL_BLOCK_SIZE;
-		int y = entries[i].y;
-
-		if (y >= 0) {
-			y *= LEVEL_BLOCK_SIZE;
-		}
-
-		switch (entries[i].type) {
-			case LVLENTRY_BANANA_PEEL:
-				x += 16;
-				y += 16;
-				break;
-
-			case LVLENTRY_COIN_SILVER:
-			case LVLENTRY_COIN_GOLD:
-				x += 8;
-				break;
-
-			case LVLENTRY_PUSHABLE_CRATE:
-				y = PUSHABLE_CRATE_Y;
-				break;
-
-			case LVLENTRY_GUSH:
-				y = GUSH_INITIAL_Y;
-				break;
-
-			case LVLENTRY_GUSH_CRACK:
-				y = GUSH_CRACK_Y;
-				break;
-
-			case LVLENTRY_OVERHEAD_SIGN:
-				y += 16;
-				break;
-
-			case LVLENTRY_ROPE:
-				x += 32;
-				y = ROPE_Y + 5;
-				break;
-
-			case LVLENTRY_SPRING:
-				x += 8;
-				y += 8;
-				break;
-		}
-
-		//Apply converted position
-		entries[i].x = x;
-		entries[i].y = y;
-	}
-
-	//Convert parked vehicle positions
-	for (i = 0; i < num_parked_vehicles; i++) {
-		ctx->parked_vehicles[i].x *= LEVEL_BLOCK_SIZE;
-	}
-
-	//Convert respawn point positions
-	for (i = 0; i < num_respawn_points; i++) {
-		ctx->respawn_points[i].x *= LEVEL_BLOCK_SIZE;
-		ctx->respawn_points[i].x += 3;
-
-		ctx->respawn_points[i].y *= LEVEL_BLOCK_SIZE;
-		ctx->respawn_points[i].y -= 12;
-	}
-
-	//Convert trigger positions
-	for (i = 0; i < num_triggers; i++) {
-		ctx->triggers[i].x *= LEVEL_BLOCK_SIZE;
-	}
-
-	//Convert passageway positions and widths
-	for (i = 0; i < num_passageways; i++) {
-		ctx->passageways[i].x *= LEVEL_BLOCK_SIZE;
-		ctx->passageways[i].width *= LEVEL_BLOCK_SIZE;
-	}
-}
-
-//Add objects of each type to the corresponding lists
-static void add_objects_to_lists()
-{
-	int i;
-
-	num_banana_peels = 0;
-	num_coins = 0;
-	num_gushes = 0;
-	num_overhead_signs = 0;
-	num_pushable_crates = 0;
-	num_ropes = 0;
-	num_springs = 0;
 
 	for (i = 0; i < num_entries; i++) {
 		switch (entries[i].type) {
 			case LVLENTRY_BANANA_PEEL:
-				ctx->banana_peels[num_banana_peels].x = entries[i].x;
-				ctx->banana_peels[num_banana_peels].y = entries[i].y;
 				num_banana_peels++;
 				break;
 
+			case LVLENTRY_CAR_BLUE:
+				num_parked_vehicles++;
+				break;
+
+			case LVLENTRY_CAR_SILVER:
+				num_parked_vehicles++;
+				break;
+
+			case LVLENTRY_CAR_YELLOW:
+				num_parked_vehicles++;
+				break;
+
 			case LVLENTRY_COIN_SILVER:
-				ctx->coins[num_coins].x = entries[i].x;
-				ctx->coins[num_coins].y = entries[i].y;
-				ctx->coins[num_coins].gold = false;
 				num_coins++;
 				break;
 
 			case LVLENTRY_COIN_GOLD:
-				ctx->coins[num_coins].x = entries[i].x;
-				ctx->coins[num_coins].y = entries[i].y;
-				ctx->coins[num_coins].gold = true;
 				num_coins++;
 				break;
 
+			case LVLENTRY_CRATES:
+				//No limit
+				break;
+
+			case LVLENTRY_DEEP_HOLE:
+				num_deep_holes++;
+				break;
+
 			case LVLENTRY_GUSH:
-				ctx->gushes[num_gushes].x = entries[i].x;
-				ctx->gushes[num_gushes].y = GUSH_INITIAL_Y;
-				ctx->gushes[num_gushes].move_pattern = data_gush_move_pattern_1;
-				ctx->gushes[num_gushes].move_pattern_pos = 0;
-				ctx->gushes[num_gushes].yvel = data_gush_move_pattern_1[0];
-				ctx->gushes[num_gushes].ydest = data_gush_move_pattern_1[1];
-				ctx->gushes[num_gushes].is_crack = false;
 				num_gushes++;
 				break;
 
 			case LVLENTRY_GUSH_CRACK:
-				ctx->gushes[num_gushes].x = entries[i].x;
-				ctx->gushes[num_gushes].y = GUSH_CRACK_Y;
-				ctx->gushes[num_gushes].move_pattern = data_gush_move_pattern_2;
-				ctx->gushes[num_gushes].move_pattern_pos = 0;
-				ctx->gushes[num_gushes].yvel = data_gush_move_pattern_1[0];
-				ctx->gushes[num_gushes].ydest = data_gush_move_pattern_1[1];
-				ctx->gushes[num_gushes].is_crack = true;
 				num_gushes++;
 				break;
 
+			case LVLENTRY_HYDRANT:
+				//No limit
+				break;
+
 			case LVLENTRY_OVERHEAD_SIGN:
-				ctx->overhead_signs[num_overhead_signs].x = entries[i].x;
-				ctx->overhead_signs[num_overhead_signs].y = entries[i].y;
 				num_overhead_signs++;
 				break;
 
-			case LVLENTRY_PUSHABLE_CRATE:
-				ctx->pushable_crates[num_pushable_crates].x = entries[i].x;
-				ctx->pushable_crates[num_pushable_crates].xmax = entries[i].x + LEVEL_BLOCK_SIZE;
-				num_pushable_crates++;
+			case LVLENTRY_PASSAGEWAY:
+				num_passageways++;
+				break;
+
+			case LVLENTRY_PASSAGEWAY_ARROW:
+				num_passageways++;
+				break;
+
+			case LVLENTRY_RESPAWN_POINT:
+				num_respawn_points++;
 				break;
 
 			case LVLENTRY_ROPE:
-				ctx->ropes[num_ropes].x = entries[i].x;
 				num_ropes++;
 				break;
 
 			case LVLENTRY_SPRING:
-				ctx->springs[num_springs].x = entries[i].x;
-				ctx->springs[num_springs].y = entries[i].y;
 				num_springs++;
+				break;
+
+			case LVLENTRY_TRIGGER_CAR_BLUE:
+				num_triggers++;
+				num_car_triggers++;
+				break;
+
+			case LVLENTRY_TRIGGER_CAR_SILVER:
+				num_triggers++;
+				num_car_triggers++;
+				break;
+
+			case LVLENTRY_TRIGGER_CAR_YELLOW:
+				num_triggers++;
+				num_car_triggers++;
+				break;
+
+			case LVLENTRY_TRIGGER_HEN:
+				num_triggers++;
+				break;
+
+			case LVLENTRY_TRUCK:
+				num_parked_vehicles++;
 				break;
 		}
 	}
+
+	if (num_banana_peels > MAX_BANANA_PEELS) return false;
+	if (num_coins > MAX_COINS) return false;
+	if (num_deep_holes > MAX_DEEP_HOLES) return false;
+	if (num_gushes > MAX_GUSHES) return false;
+	if (num_overhead_signs > MAX_OVERHEAD_SIGNS) return false;
+	if (num_parked_vehicles > MAX_PARKED_VEHICLES) return false;
+	if (num_passageways > MAX_PASSAGEWAYS) return false;
+	if (num_respawn_points > MAX_RESPAWN_POINTS) return false;
+	if (num_ropes > MAX_ROPES) return false;
+	if (num_springs > MAX_SPRINGS) return false;
+	if (num_triggers > MAX_TRIGGERS) return false;
+
+	//Ensure there are enough slots for the banana peels thrown from cars
+	if (num_banana_peels + num_car_triggers > MAX_BANANA_PEELS) return false;
+
+	//Ensure there are enough slots for springs in passageways
+	if (num_springs + num_passageways > MAX_SPRINGS) return false;
+
+	//Ensure there is exactly one respawn points for each deep hole
+	if (num_respawn_points != num_deep_holes) return false;
+
+	return true;
+}
+
+static bool add_deep_holes()
+{
+	int i;
+
+	for (i = 0; i < num_entries; i++) {
+		int x;
+		int width;
+		int j;
+
+		if (entries[i].type != LVLENTRY_DEEP_HOLE) continue;
+
+		x = entries[i].x;
+		width = entries[i].token2;
+
+		//Ensure the width is within the allowed range
+		if (width <= 2 || width > 16) {
+			return false;
+		}
+
+		for (j = 0; j < width; j++) {
+			if (ctx->level_columns[x + j].hole_type != HOLE_NONE) {
+				return false;
+			}
+
+			ctx->level_columns[x + j].hole_type = HOLE_DEEP_MIDDLE;
+		}
+
+		ctx->level_columns[x].hole_type = HOLE_DEEP_LEFT;
+		ctx->level_columns[x + width - 1].hole_type = HOLE_DEEP_RIGHT;
+	}
+
+	return true;
+}
+
+static bool add_passageways()
+{
+	int num_passageways = 0;
+	int i;
+
+	for (i = 0; i < num_entries; i++) {
+		int type;
+		int x;
+		int width;
+		int j;
+
+		type = entries[i].type;
+
+		if (type != LVLENTRY_PASSAGEWAY
+				&& type != LVLENTRY_PASSAGEWAY_ARROW) continue;
+
+		x = entries[i].x;
+		width = entries[i].token2;
+
+		//Ensure the width is within the allowed range
+		if (width <= 6 || width > 32) {
+			return false;
+		}
+
+		for (j = 0; j < width; j++) {
+			if (ctx->level_columns[x + j].hole_type != HOLE_NONE) {
+				return false;
+			}
+
+			ctx->level_columns[x + j].hole_type = HOLE_PASSAGEWAY_MIDDLE;
+		}
+
+		ctx->level_columns[x].hole_type = HOLE_PASSAGEWAY_LEFT;
+		ctx->level_columns[x + width - 1].hole_type = HOLE_PASSAGEWAY_RIGHT;
+
+		//Area occupied by the pushable crate, which is placed on the
+		//previous column and has a width of 3 to in order to ensure nothing
+		//obstructs it
+		if (!occupy_area(x - 1, 10, 3, 1)) {
+			return false;
+		}
+
+		x *= LEVEL_BLOCK_SIZE;
+		width *= LEVEL_BLOCK_SIZE;
+
+		//Add pushable crate
+		ctx->pushable_crates[num_passageways].x = x;
+		ctx->pushable_crates[num_passageways].xmax = x + LEVEL_BLOCK_SIZE;
+		if (type == LVLENTRY_PASSAGEWAY_ARROW) {
+			ctx->pushable_crates[num_passageways].show_arrow = true;
+		}
+
+		ctx->passageways[num_passageways].x = x;
+		ctx->passageways[num_passageways].width = width;
+		ctx->passageways[num_passageways].exit_opened = false;
+		num_passageways++;
+	}
+
+	return true;
+}
+
+static bool add_unpushable_crates()
+{
+	int i;
+
+	for (i = 0; i < num_entries; i++) {
+		int x;
+		int width;
+		int height;
+		int j;
+
+		if (entries[i].type != LVLENTRY_CRATES) continue;
+
+		x = entries[i].x;
+		width = entries[i].token2;
+		height = entries[i].token3;
+
+		if (!occupy_area(x, (11 - height), width, height)) {
+			return false;
+		}
+
+		//Cannot be adjacent to a level column with a stack of crates with the
+		//same height
+		if (ctx->level_columns[x - 1].num_crates == height) {
+			return false;
+		}
+
+		for (j = 0; j < width; j++) {
+			int hole_type = ctx->level_columns[x + j].hole_type;
+
+			if (hole_type != HOLE_NONE && hole_type != HOLE_PASSAGEWAY_MIDDLE) {
+				return false;
+			}
+
+			ctx->level_columns[x + j].num_crates = height;
+		}
+	}
+
+	return true;
+}
+
+static bool add_hydrants()
+{
+	int i;
+
+	for (i = 0; i < num_entries; i++) {
+		int x;
+
+		if (entries[i].type != LVLENTRY_HYDRANT) continue;
+
+		x = entries[i].x;
+
+		if (ctx->level_columns[x].hole_type != HOLE_NONE) {
+			return false;
+		}
+
+		if (!occupy_area(x, 10, 1, 1)) {
+			return false;
+		}
+
+		ctx->level_columns[x].has_hydrant = true;
+	}
+
+	return true;
+}
+
+static bool add_ropes()
+{
+	int num_ropes = 0;
+	int i;
+
+	for (i = 0; i < num_entries; i++) {
+		int x;
+		int j;
+
+		if (entries[i].type != LVLENTRY_ROPE) continue;
+
+		x = entries[i].x;
+
+		//Ensure the position corresponds to a light pole
+		if (x % 16 != 0) {
+			return false;
+		}
+
+		if (!occupy_area(x + 1, 2, 16, 9)) {
+			return false;
+		}
+
+		for (j = 0; j < 16; j++) {
+			int hole_type = ctx->level_columns[x + j].hole_type;
+
+			if (hole_type == HOLE_PASSAGEWAY_LEFT) {
+				return false;
+			}
+			if (hole_type == HOLE_PASSAGEWAY_MIDDLE) {
+				return false;
+			}
+			if (hole_type == HOLE_PASSAGEWAY_RIGHT) {
+				return false;
+			}
+
+			ctx->level_columns[x + j + 1].has_rope = true;
+		}
+
+		ctx->ropes[num_ropes].x = (x * LEVEL_BLOCK_SIZE + 32);
+		num_ropes++;
+	}
+
+	ctx->num_ropes = num_ropes;
+
+	return true;
+
+}
+
+static bool add_parked_vehicles()
+{
+	int num_parked_vehicles = 0;
+	int i;
+
+	for (i = 0; i < num_entries; i++) {
+		int type;
+		int width;
+		int x;
+		int j;
+
+		switch (entries[i].type) {
+			case LVLENTRY_CAR_BLUE:
+				type = PARKED_CAR_BLUE;
+				width = 6;
+				break;
+
+			case LVLENTRY_CAR_SILVER:
+				type = PARKED_CAR_SILVER;
+				width = 6;
+				break;
+
+			case LVLENTRY_CAR_YELLOW:
+				type = PARKED_CAR_YELLOW;
+				width = 6;
+				break;
+
+			case LVLENTRY_TRUCK:
+				type = PARKED_TRUCK;
+				width = 12;
+				break;
+
+			default:
+				continue;
+		}
+
+		x = entries[i].x;
+
+		//Add occupied level columns
+		if (type == PARKED_TRUCK) { //Truck
+			if (!occupy_area(x, 6, 10, 5)) {
+				return false;
+			}
+			if (!occupy_area(x + 10, 7, 2, 4)) {
+				return false;
+			}
+		} else { //Car
+			if (!occupy_area(x, 9, 4, 2)) {
+				return false;
+			}
+			if (!occupy_area(x + 4, 10, 2, 1)) {
+				return false;
+			}
+		}
+
+		for (j = 0; j < width; j++) {
+			int hole_type = ctx->level_columns[x + j].hole_type;
+
+			if (hole_type != HOLE_NONE && hole_type != HOLE_PASSAGEWAY_MIDDLE) {
+				return false;
+			}
+		}
+
+		ctx->parked_vehicles[num_parked_vehicles].type = type;
+		ctx->parked_vehicles[num_parked_vehicles].x = (x * LEVEL_BLOCK_SIZE);
+		num_parked_vehicles++;
+	}
+
+	ctx->num_parked_vehicles = num_parked_vehicles;
+
+	return true;
+}
+
+static bool add_springs()
+{
+	int num_springs = 0;
+	int i;
+
+	for (i = 0; i < num_entries; i++) {
+		int hole_type;
+		int x;
+
+		if (entries[i].type != LVLENTRY_SPRING) continue;
+
+		x = entries[i].x;
+		hole_type = ctx->level_columns[x].hole_type;
+
+		if (hole_type != HOLE_NONE && hole_type != HOLE_PASSAGEWAY_MIDDLE) {
+			return false;
+		}
+
+		if (!occupy_area(x, 10, 1, 1)) {
+			return false;
+		}
+
+		ctx->springs[num_springs].x = (x * LEVEL_BLOCK_SIZE + 8);
+		ctx->springs[num_springs].y = 248;
+		num_springs++;
+	}
+
+	//Add passageway springs
+	for (i = 0; i < MAX_PASSAGEWAYS; i++) {
+		int x;
+		int width;
+
+		x = ctx->passageways[i].x;
+		width = ctx->passageways[i].width;
+
+		//No more passageways
+		if (x <= 0) break;
+
+		occupy_area(((x + width - 16) / LEVEL_BLOCK_SIZE), 14, 1, 1);
+
+		ctx->springs[num_springs].x = (x + width - 16);
+		ctx->springs[num_springs].y = 344;
+		num_springs++;
+	}
+
+	//Sort springs by X position using the "selection sort" algorithm
+	if (num_springs > 1) {
+		for (i = 0; i < num_springs - 1; i++) {
+			int tmp_x;
+			int tmp_y;
+			int min_idx;
+			int j;
+
+			min_idx = i;
+
+			for (j = i + 1; j < num_springs; j++) {
+				if (ctx->springs[j].x < ctx->springs[min_idx].x) {
+					min_idx = j;
+				}
+			}
+
+			tmp_x = ctx->springs[i].x;
+			tmp_y = ctx->springs[i].y;
+			ctx->springs[i].x = ctx->springs[min_idx].x;
+			ctx->springs[i].y = ctx->springs[min_idx].y;
+			ctx->springs[min_idx].x = tmp_x;
+			ctx->springs[min_idx].y = tmp_y;
+		}
+	}
+
+	ctx->num_springs = num_springs;
+
+	return true;
+}
+
+static bool add_gushes()
+{
+	int num_gushes = 0;
+	int i;
+
+	for (i = 0; i < num_entries; i++) {
+		int type;
+		int x;
+
+		type = entries[i].type;
+
+		if (type != LVLENTRY_GUSH && type != LVLENTRY_GUSH_CRACK) continue;
+
+		x = entries[i].x;
+
+		if (ctx->level_columns[x].hole_type != HOLE_NONE) {
+			return false;
+		}
+
+		if (!occupy_area(x, 9, 1, 3)) {
+			return false;
+		}
+
+		ctx->gushes[num_gushes].x = (x * LEVEL_BLOCK_SIZE);
+		ctx->gushes[num_gushes].move_pattern_pos = 0;
+
+		if (type == LVLENTRY_GUSH_CRACK) {
+			ctx->gushes[num_gushes].y = GUSH_CRACK_Y;
+			ctx->gushes[num_gushes].move_pattern = data_gush_move_pattern_2;
+			ctx->gushes[num_gushes].yvel = data_gush_move_pattern_2[0];
+			ctx->gushes[num_gushes].ydest = data_gush_move_pattern_2[1];
+			ctx->gushes[num_gushes].is_crack = true;
+		} else {
+			ctx->gushes[num_gushes].y = GUSH_INITIAL_Y;
+			ctx->gushes[num_gushes].move_pattern = data_gush_move_pattern_1;
+			ctx->gushes[num_gushes].yvel = data_gush_move_pattern_1[0];
+			ctx->gushes[num_gushes].ydest = data_gush_move_pattern_1[1];
+			ctx->gushes[num_gushes].is_crack = false;
+		}
+
+		num_gushes++;
+	}
+
+	ctx->num_gushes = num_gushes;
+
+	return true;
+}
+
+static bool add_banana_peels()
+{
+	int num_banana_peels = 0;
+	int i;
+
+	for (i = 0; i < num_entries; i++) {
+		int hole_type;
+		int x;
+		int y;
+
+		if (entries[i].type != LVLENTRY_BANANA_PEEL) continue;
+
+		x = entries[i].x;
+		y = entries[i].token2;
+		hole_type = ctx->level_columns[x].hole_type;
+
+		if (hole_type == HOLE_PASSAGEWAY_LEFT) {
+			return false;
+		}
+		if (hole_type == HOLE_PASSAGEWAY_RIGHT) {
+			return false;
+		}
+
+		if (!occupy_area(x, y, 1, 1)) {
+			return false;
+		}
+
+		if (y > 10 && y != 14) {
+			return false;
+		} else if (y == 14) {
+			//Passageway bottom
+			if (hole_type != HOLE_PASSAGEWAY_MIDDLE) {
+				return false;
+			}
+		} else {
+			if (y != 10 - ctx->level_columns[x].num_crates) {
+				return false;
+			}
+
+			if (ctx->level_columns[x + 1].hole_type == HOLE_PASSAGEWAY_LEFT) {
+				//If an banana is placed right before a passageway left column,
+				//pushing the crate over it becomes impossible without slipping
+				//on the peel
+				return false;
+			}
+		}
+
+		ctx->banana_peels[num_banana_peels].x = (x * LEVEL_BLOCK_SIZE + 16);
+		ctx->banana_peels[num_banana_peels].y = (y * LEVEL_BLOCK_SIZE + 16);
+		num_banana_peels++;
+	}
+
+	ctx->num_banana_peels = num_banana_peels;
+
+	return true;
+}
+
+static bool add_triggers()
+{
+	int num_triggers = 0;
+	int i;
+
+	for (i = 0; i < num_entries; i++) {
+		int what;
+		int x;
+
+		switch (entries[i].type) {
+			case LVLENTRY_TRIGGER_CAR_BLUE:
+				what = CAR_BLUE;
+				break;
+
+			case LVLENTRY_TRIGGER_CAR_SILVER:
+				what = CAR_SILVER;
+				break;
+
+			case LVLENTRY_TRIGGER_CAR_YELLOW:
+				what = CAR_YELLOW;
+				break;
+
+			case LVLENTRY_TRIGGER_HEN:
+				what = TRIGGER_HEN;
+				break;
+
+			default:
+				continue;
+		}
+
+		x = entries[i].x;
+
+		ctx->triggers[num_triggers].x = (x * LEVEL_BLOCK_SIZE);
+		ctx->triggers[num_triggers].what = what;
+		num_triggers++;
+	}
+
+	ctx->num_triggers = num_triggers;
+
+	return true;
+}
+
+static bool add_overhead_signs()
+{
+	int num_overhead_signs = 0;
+	int i;
+
+	for (i = 0; i < num_entries; i++) {
+		int x;
+		int y;
+
+		if (entries[i].type != LVLENTRY_OVERHEAD_SIGN) continue;
+
+		x = entries[i].x;
+		y = entries[i].token2;
+
+		if (y < 2 || y > 4) {
+			return false;
+		}
+
+		if (!occupy_area(x, y, 2, 2)) {
+			return false;
+		}
+
+		//Validate the distance from the previous sign
+		if (num_overhead_signs > 0) {
+			int prev_x = ctx->overhead_signs[num_overhead_signs - 1].x;
+
+			if ((x * LEVEL_BLOCK_SIZE) - prev_x < 16) {
+				return false;
+			}
+		}
+
+		ctx->overhead_signs[num_overhead_signs].x = (x * LEVEL_BLOCK_SIZE);
+		ctx->overhead_signs[num_overhead_signs].y = (y * LEVEL_BLOCK_SIZE + 16);
+		num_overhead_signs++;
+	}
+
+	ctx->num_overhead_signs = num_overhead_signs;
+
+	return true;
+}
+
+static bool add_respawn_poins()
+{
+	int num_respawn_points = 0;
+	int i;
+
+	for (i = 0; i < num_entries; i++) {
+		int hole_type;
+		int x;
+		int y;
+
+		if (entries[i].type != LVLENTRY_RESPAWN_POINT) continue;
+
+		x = entries[i].x;
+		y = entries[i].token2;
+
+		if (!occupy_area(x, y, 1, 2)) {
+			return false;
+		}
+
+		hole_type = ctx->level_columns[x].hole_type;
+
+		if (hole_type != HOLE_NONE && hole_type != HOLE_DEEP_RIGHT) {
+			return false;
+		}
+
+		//Ensure the respawn point is close enough to a deep hole
+		if (ctx->level_columns[x + 1].hole_type != HOLE_DEEP_LEFT
+				&& ctx->level_columns[x + 2].hole_type != HOLE_DEEP_LEFT) {
+
+			return false;
+		}
+
+		if (y != 9 - ctx->level_columns[x].num_crates) {
+			return false;
+		}
+
+		ctx->respawn_points[num_respawn_points].x = (x * LEVEL_BLOCK_SIZE + 3);
+		ctx->respawn_points[num_respawn_points].y = (y * LEVEL_BLOCK_SIZE - 12);
+		num_respawn_points++;
+	}
+
+	ctx->num_respawn_points = num_respawn_points;
+
+	return true;
+}
+
+static bool add_coins()
+{
+	int num_coins = 0;
+	int i;
+
+	for (i = 0; i < num_entries; i++) {
+		int type;
+		int hole_type;
+		int x;
+		int y;
+
+		type = entries[i].type;
+
+		if (type != LVLENTRY_COIN_SILVER && type != LVLENTRY_COIN_GOLD) continue;
+
+		x = entries[i].x;
+		y = entries[i].token2;
+
+		if (!occupy_area(x, y, 1, 1)) {
+			return false;
+		}
+
+		hole_type = ctx->level_columns[x].hole_type;
+
+		if (y == 11) {
+			//Middle of the floor
+			return false;
+		} else if (y > 14) {
+			//Too far downwards
+			return false;
+		} else if (y > 11) {
+			//In a passageway
+			if (hole_type != HOLE_PASSAGEWAY_LEFT
+					&& hole_type != HOLE_PASSAGEWAY_MIDDLE
+					&& hole_type != HOLE_PASSAGEWAY_RIGHT) {
+
+				return false;
+			}
+		} else {
+			//Over the floor
+			int y_max = 10 - ctx->level_columns[x].num_crates;
+
+			if (ctx->level_columns[x].has_hydrant) {
+				y_max--;
+			}
+
+			if (y > y_max) {
+				return false;
+			}
+		}
+
+		ctx->coins[num_coins].x = (x * LEVEL_BLOCK_SIZE + 8);
+		ctx->coins[num_coins].y = (y * LEVEL_BLOCK_SIZE);
+		ctx->coins[num_coins].gold = (type == LVLENTRY_COIN_GOLD);
+		num_coins++;
+	}
+
+	ctx->num_coins = num_coins;
+
+	return true;
 }
 
 static int add_solid(int type, int x, int y, int width, int height)
 {
-	if (invalid) {
-		return -1;
-	}
-
 	//Check if there are too many solids
 	if (num_solids >= MAX_SOLIDS) {
-		invalid = true;
+		num_solids = MAX_SOLIDS + 1;
+
 		return -1;
 	}
 
@@ -1150,14 +1200,10 @@ static int add_solid(int type, int x, int y, int width, int height)
 	return num_solids - 1;
 }
 
-static void add_solids()
+static bool add_solids()
 {
 	int num_level_columns = (ctx->level_size_pixels / LEVEL_BLOCK_SIZE);
 	int i;
-
-	if (invalid) {
-		return;
-	}
 
 	//Add first floor solid
 	add_solid(SOL_FULL, 0, 264, LEVEL_BLOCK_SIZE, 80);
@@ -1189,17 +1235,15 @@ static void add_solids()
 				add_solid(SOL_FULL, x, 264, 0, 80);
 				break;
 		}
-
-		//Too many solids
-		if (invalid) {
-			return;
-		}
 	}
 
 	//Add passageway solids
-	for (i = 0; i < num_passageways; i++) {
+	for (i = 0; i < MAX_PASSAGEWAYS; i++) {
 		int x = ctx->passageways[i].x;
 		int w = ctx->passageways[i].width;
+
+		//No more passageways
+		if (x <= 0) break;
 
 		//Bottom solid
 		add_solid(SOL_FULL, x + 8, 360, w - 8, 4);
@@ -1218,7 +1262,7 @@ static void add_solids()
 	}
 
 	//Add solids for unpushable crates
-	for (i = 1; i < num_level_columns; i++) {
+	for (i = 1; i < ctx->num_level_columns; i++) {
 		int num_crates = ctx->level_columns[i].num_crates;
 		int num_crates_prev = ctx->level_columns[i - 1].num_crates;
 
@@ -1235,46 +1279,33 @@ static void add_solids()
 			int h = num_crates * LEVEL_BLOCK_SIZE;
 
 			add_solid(SOL_FULL, x, y, w, h);
-
-			//Too many solids
-			if (invalid) {
-				return;
-			}
 		}
 	}
 
-	//Add solids for pushable crates (there is exactly one pushable crate for
-	//each passageway)
-	for (i = 0; i < num_passageways; i++) {
+	//Add solids for pushable crates
+	for (i = 0; i < MAX_PUSHABLE_CRATES; i++) {
 		int x = (int)ctx->pushable_crates[i].x;
 		int y = PUSHABLE_CRATE_Y;
 		int w = LEVEL_BLOCK_SIZE;
 		int h = LEVEL_BLOCK_SIZE;
 
-		ctx->pushable_crates[i].solid = add_solid(SOL_FULL, x, y, w, h);
+		//No more pushable crates
+		if (x <= 0) break;
 
-		//Too many solids
-		if (invalid) {
-			return;
-		}
+		ctx->pushable_crates[i].solid = add_solid(SOL_FULL, x, y, w, h);
 	}
 
 	//Add solids for overhead signs
-	for (i = 0; i < num_overhead_signs; i++)
+	for (i = 0; i < ctx->num_overhead_signs; i++)
 	{
 		int x = ctx->overhead_signs[i].x;
 		int y = ctx->overhead_signs[i].y;
 
 		add_solid(SOL_FULL, x + 12, y, 4, 32);
-
-		//Too many solids
-		if (invalid) {
-			return;
-		}
 	}
 
 	//Add solids for parked vehicles
-	for (i = 0; i < num_parked_vehicles; i++) {
+	for (i = 0; i < ctx->num_parked_vehicles; i++) {
 		int type = ctx->parked_vehicles[i].type;
 		int x = ctx->parked_vehicles[i].x;
 		int y;
@@ -1295,11 +1326,6 @@ static void add_solids()
 			add_solid(SOL_KEEP_ON_TOP, x + 104, y + 22, 16, 4);
 			add_solid(SOL_FULL, x + 120, y + 24, 8, 4);
 		}
-
-		//Too many solids
-		if (invalid) {
-			return;
-		}
 	}
 
 	//Add solids for hydrants
@@ -1310,11 +1336,51 @@ static void add_solids()
 		if (ctx->level_columns[i].has_hydrant) {
 			add_solid(SOL_FULL, x + 4, y + 8, 8, 4);
 		}
-
-		//Too many solids
-		if (invalid) {
-			return;
-		}
 	}
+
+	if (num_solids > MAX_SOLIDS) {
+		return false;
+	}
+
+	ctx->num_solids = num_solids;
+
+	return true;
+}
+
+static bool occupy_area(int x, int y, int width, int height)
+{
+	int this_left   = x;
+	int this_top    = y;
+	int this_right  = (x + width  - 1);
+	int this_bottom = (y + height - 1);
+	int i;
+
+	if (num_occupied_areas >= MAX_OCCUPIED_AREAS ) {
+		return false;
+	}
+
+	//Check if the block is already occupied
+	for (i = 0; i < num_occupied_areas; i++) {
+		int other_left   = occupied_areas[i].left;
+		int other_top    = occupied_areas[i].top;
+		int other_right  = occupied_areas[i].right;
+		int other_bottom = occupied_areas[i].bottom;
+
+		if (this_left    > other_right)  continue;
+		if (this_top     > other_bottom) continue;
+		if (this_right   < other_left)   continue;
+		if (this_bottom  < other_top)    continue;
+
+		//The area is already occupied
+		return false;
+	}
+
+	occupied_areas[num_occupied_areas].left   = this_left;
+	occupied_areas[num_occupied_areas].top    = this_top;
+	occupied_areas[num_occupied_areas].right  = this_right;
+	occupied_areas[num_occupied_areas].bottom = this_bottom;
+	num_occupied_areas++;
+
+	return true;
 }
 

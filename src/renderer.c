@@ -445,26 +445,30 @@ static void draw_play()
 		y = BUS_Y;
 		draw_sprite(SPR_BUS, x, y, 0);
 
-		//Character at bus front door
-		switch (ctx->bus.front_character) {
-			case BUS_FRONT_CHAR_PLAYER:
-				draw_sprite(SPR_PLAYER_STAND, x + 342, y + 36, 0);
-				break;
+		//Character at bus front door (if the door is not fully closed)
+		if (ctx->anims[ANIM_BUS_DOOR_FRONT].frame != 0) {
+			switch (ctx->bus.front_character) {
+				case BUS_FRONT_CHAR_PLAYER:
+					draw_sprite(SPR_PLAYER_STAND, x + 342, y + 36, 0);
+					break;
 
-			case BUS_FRONT_CHAR_BEARDED_MAN:
-				draw_sprite(SPR_BEARDED_MAN_STAND, x + 337, y + 35, 0);
-				break;
+				case BUS_FRONT_CHAR_BEARDED_MAN:
+					draw_sprite(SPR_BEARDED_MAN_STAND, x + 337, y + 35, 0);
+					break;
+			}
 		}
 
-		//Characters at bus rear door
-		if (ctx->bus.num_rear_characters >= 1) {
-			draw_sprite(SPR_BUS_REAR_CHARACTER_1, x + 72, y + 24, 0);
-		}
-		if (ctx->bus.num_rear_characters >= 2) {
-			draw_sprite(SPR_BUS_REAR_CHARACTER_2, x + 64, y + 24, 0);
-		}
-		if (ctx->bus.num_rear_characters >= 3) {
-			draw_sprite(SPR_BUS_REAR_CHARACTER_3, x + 80, y + 24, 0);
+		//Characters at bus rear door (if the door is not fully closed)
+		if (ctx->anims[ANIM_BUS_DOOR_REAR].frame != 0) {
+			if (ctx->bus.num_rear_characters >= 1) {
+				draw_sprite(SPR_BUS_REAR_CHARACTER_1, x + 72, y + 24, 0);
+			}
+			if (ctx->bus.num_rear_characters >= 2) {
+				draw_sprite(SPR_BUS_REAR_CHARACTER_2, x + 64, y + 24, 0);
+			}
+			if (ctx->bus.num_rear_characters >= 3) {
+				draw_sprite(SPR_BUS_REAR_CHARACTER_3, x + 80, y + 24, 0);
+			}
 		}
 
 		//Bus route sign

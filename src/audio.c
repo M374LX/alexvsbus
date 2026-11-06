@@ -166,11 +166,11 @@ void audio_handle_toggling()
 	if (audio_enabled != config->audio_enabled) {
 		audio_enabled = config->audio_enabled;
 		audio_toggled = true;
-    }
+	}
 	if (music_enabled != config->music_enabled) {
 		music_enabled = config->music_enabled;
 		music_toggled = true;
-    }
+	}
 	if (sfx_enabled != config->sfx_enabled) {
 		sfx_enabled = config->sfx_enabled;
 		sfx_toggled = true;

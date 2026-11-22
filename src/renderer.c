@@ -235,7 +235,9 @@ void renderer_draw(int screen_type, int input_state, int wipe_value)
 	}
 
 	//Draw screen wiping effects
-	draw_sprite_stretch(SPR_BG_BLACK, 0, 0, wipe_value, vscreen_height);
+	draw_sprite_stretch(SPR_BG_BLACK, 0, 0, vscreen_width, wipe_value);
+	draw_sprite_stretch(SPR_BG_BLACK, 0, (vscreen_height - wipe_value),
+		vscreen_width, wipe_value);
 
 	//Finish drawing on vscreen
 	EndTextureMode();

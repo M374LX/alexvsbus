@@ -208,20 +208,21 @@ void renderer_draw(int screen_type, int input_state, int wipe_value)
 	draw_sprite_stretch(SPR_BG_BLACK, 0, 0, vscreen_width, vscreen_height);
 
 	switch (screen_type) {
-		case SCR_BLANK:
-			//Do nothing
-			break;
-
-		case SCR_PLAY:
-		case SCR_PLAY_FREEZE:
-			if (!(menu_is_open() && menu_ctx->fill_screen)) {
+		case SCR_MENU:
+			if (!menu_ctx->fill_screen) {
 				draw_play();
 				draw_hud();
 			}
+			draw_menu();
 			break;
 
 		case SCR_FINALSCORE:
 			draw_final_score();
+			break;
+
+		case SCR_PLAY:
+			draw_play();
+			draw_hud();
 			break;
 	}
 
@@ -231,10 +232,6 @@ void renderer_draw(int screen_type, int input_state, int wipe_value)
 		int x = ((vscreen_width / TILE_SIZE) - len) / 2;
 
 		draw_text(msg, TXTCOL_WHITE, TILE_SIZE * x, TILE_SIZE * 3);
-	}
-
-	if (menu_is_open()) {
-		draw_menu();
 	}
 
 	//Draw screen wiping effects
@@ -380,7 +377,8 @@ static void draw_play()
 	for (i = 0; i < MAX_PASSAGEWAYS; i++) {
 		int w = ctx->passageways[i].width;
 
-		if (ctx->passageways[i].exit_opened) continue;
+		//Skip if the passageway exit has been opened
+		if (ctx->passageway_opened_exits & (1 << i)) continue;
 
 		spr = SPR_PASSAGEWAY_RIGHT_CLOSED;
 		x = ctx->passageways[i].x + (w - LEVEL_BLOCK_SIZE);
@@ -493,8 +491,19 @@ static void draw_play()
 	draw_sprite(SPR_POLE, ctx->pole_x, POLE_Y, 0);
 	draw_sprite(SPR_POLE, ctx->pole_x + POLE_DISTANCE, POLE_Y, 0);
 
-	//Bus stop sign
-	draw_sprite(SPR_BUS_STOP_SIGN, ctx->bus_stop_sign_x, BUS_STOP_SIGN_Y, 0);
+	//Bus stop signs
+	if (ctx->bus_stop_signs[0].x > 0) {
+		x = ctx->bus_stop_signs[0].x;
+		y = BUS_STOP_SIGN_Y;
+
+		draw_sprite(SPR_BUS_STOP_SIGN, x, y, 0);
+	}
+	if (ctx->bus_stop_signs[1].x > 0) {
+		x = ctx->bus_stop_signs[1].x;
+		y = BUS_STOP_SIGN_Y;
+
+		draw_sprite(SPR_BUS_STOP_SIGN, x, y, 0);
+	}
 
 	//Parked vehicles
 	for (i = 0; i < ctx->num_parked_vehicles; i++) {

@@ -49,18 +49,19 @@
 
 //Screen types
 enum {
-	SCR_BLANK = 0,
-	SCR_PLAY = 1,
-	SCR_PLAY_FREEZE = 2, //Render a play session without updating it
-	SCR_FINALSCORE = 3,
+	SCR_NONE = 0,
+	SCR_MENU = 1,
+	SCR_FINALSCORE = 2,
+	SCR_PLAY = 3,
 };
 
 //Delayed action types
 enum {
 	DELACT_NONE = 0,
-	DELACT_TITLE = 1,
-	DELACT_NEXT_DIFFICULTY = 2,
-	DELACT_TRY_AGAIN = 3,
+	DELACT_START_PLAY = 1,
+	DELACT_TRY_AGAIN = 2,
+	DELACT_NEXT_DIFFICULTY = 3,
+	DELACT_TITLE = 4,
 };
 
 //Difficulty
@@ -722,6 +723,9 @@ typedef struct {
 	int text_height;
 	bool text_border;
 
+	int selected_difficulty;
+	int selected_level_num;
+
 	bool level_selected;
 	bool selected_visible;
 
@@ -732,7 +736,6 @@ typedef struct {
 	bool fill_screen;
 
 	int action; //MENUACT_* constants
-	int action_param;
 } MenuCtx;
 
 
@@ -867,6 +870,10 @@ typedef struct {
 	float grav;
 } CutsceneObject;
 
+typedef struct {
+	int x;
+} BusStopSign;
+
 //An invisible area the player character cannot pass through, which is placed
 //along with the floor, crates, and so on
 typedef struct {
@@ -876,7 +883,6 @@ typedef struct {
 //Underground passageway
 typedef struct {
 	int x, width;
-	bool exit_opened;
 } Passageway;
 
 //Position the player character can reappear at after falling into a deep hole
@@ -958,7 +964,6 @@ typedef struct {
 	bool last_level; //Last level of current difficulty
 	bool ending; //True if it is the ending sequence
 
-	int bus_stop_sign_x;
 	int pole_x;
 
 	float crate_push_remaining;
@@ -996,12 +1001,17 @@ typedef struct {
 
 	GrabbedRope grabbed_rope;
 
+	BusStopSign bus_stop_signs[2];
+
 	//Index within springs[] of the last spring hit by the player character
 	int hit_spring;
 
 	//Index within passageways[] of the passageway the player character is in,
 	//if any, or -1 if none
 	int cur_passageway;
+
+	//Bitfield with the passageways whose exits have been opened
+	int passageway_opened_exits;
 
 	//Objects that appear when triggered
 	PassingCar car;

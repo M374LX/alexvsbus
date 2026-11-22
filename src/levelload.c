@@ -617,7 +617,6 @@ static bool add_passageways()
 
 		ctx->passageways[num_passageways].x = x;
 		ctx->passageways[num_passageways].width = width;
-		ctx->passageways[num_passageways].exit_opened = false;
 		num_passageways++;
 	}
 

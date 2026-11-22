@@ -2,17 +2,12 @@ This document briefly describes the basic technical concepts found in the
 source code.
 
 
-## Screen types and menus
+## Screen types
 
 In ``main.c``, the variable ``screen_type`` keeps track of the current screen
-type (blank, play, or final score). The different screen types are identified by
-constants defined in ``defs.h``: ``SCR_BLANK``, ``SCR_PLAY``,
-``SCR_PLAY_FREEZE``, and ``SCR_FINALSCORE``.
-
-The menus, which enable the player to select the difficulty, the level to
-play, and so on, are handled by the file ``menu.c`` independently of the screen
-type. This enables the main menu to be show over a blank screen and the pause
-menu to be shown over the play screen, for instance.
+type (none, menu, final score, or play). The different screen types are
+identified by constants defined in ``defs.h``: ``SCR_NONE``, ``SCR_MENU``,
+``SCR_FINALSCORE``, and ``SCR_PLAY``.
 
 
 ## Game objects

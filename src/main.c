@@ -161,6 +161,7 @@ static bool progress_checked;
 static int screen_type;
 
 //Gameplay
+static bool playing;
 static PlayCtx* play_ctx;
 
 //Delayed action
@@ -195,6 +196,7 @@ static void main_loop();
 static void cleanup();
 static void get_delta_time();
 static void handle_input();
+static void update_current_screen();
 static void handle_menu_action();
 static void handle_pause();
 static void check_game_progress();
@@ -589,24 +591,7 @@ static void main_loop()
 		get_delta_time();
 		handle_input();
 		audio_update();
-
-		if (menu_is_open()) {
-			menu_handle_keys(input_held, input_hit);
-			menu_update(delta_time);
-			handle_menu_action();
-
-			//Menu just closed
-			if (!menu_is_open()) {
-				wait_input_up = true;
-			}
-		} else if (screen_type == SCR_PLAY) {
-			play_set_input(input_held);
-			play_update(delta_time);
-			handle_pause();
-			check_game_progress();
-			handle_level_end();
-		}
-
+		update_current_screen();
 		handle_delayed_action();
 		audio_handle_toggling();
 		update_screen_wipe();
@@ -643,9 +628,6 @@ static void handle_input()
 	if (config.touch_enabled) {
 		//Determine if the touchscreen controls should be shown
 		config.show_touch_controls = true;
-		if (menu_is_open()) {
-			config.show_touch_controls = false;
-		}
 		if (screen_type != SCR_PLAY) {
 			config.show_touch_controls = false;
 		}
@@ -674,37 +656,54 @@ static void handle_input()
 	}
 }
 
+static void update_current_screen()
+{
+	if (screen_type == SCR_MENU) {
+		menu_handle_keys(input_held, input_hit);
+		menu_update(delta_time);
+		handle_menu_action();
+
+		//Menu just closed
+		if (!menu_is_open()) {
+			wait_input_up = true;
+		}
+	} else if (screen_type == SCR_PLAY) {
+		play_set_input(input_held);
+		play_update(delta_time);
+		check_game_progress();
+		handle_level_end();
+		handle_pause();
+	}
+}
+
 static void handle_menu_action()
 {
-	int param = menu_ctx->action_param;
-	int level_num = (param & 0xF);
-	int difficulty = (param >> 4);
-
 	switch (menu_ctx->action) {
 		case MENUACT_TITLE:
 			show_title();
 			break;
 
 		case MENUACT_PLAY:
-			menu_close_all();
-			start_level(level_num, difficulty, false);
+			play_ctx->difficulty = menu_ctx->selected_difficulty;
+			play_ctx->level_num  = menu_ctx->selected_level_num;
+			delayed_action_type  = DELACT_START_PLAY;
+			action_delay = 0.7f;
 			break;
 
 		case MENUACT_RESUME:
 			menu_close_all();
+			screen_type = SCR_PLAY;
 			break;
 
 		case MENUACT_TRY_AGAIN:
-			menu_close_all();
 			delayed_action_type = DELACT_TRY_AGAIN;
 			action_delay = 0;
 			break;
 
 		case MENUACT_QUIT:
-			if (screen_type == SCR_PLAY) {
+			if (playing) {
 				show_title();
 			} else {
-				menu_close_all();
 				quit = true;
 			}
 			break;
@@ -719,6 +718,7 @@ static void handle_pause()
 	bool pause_touch = (input_hit & INPUT_PAUSE_TOUCH) > 0;
 
 	if (play_ctx->can_pause && (pause || pause_touch)) {
+		screen_type = SCR_MENU;
 		menu_ctx->use_cursor = !pause_touch;
 		menu_open(MENU_PAUSE);
 		audio_stop_all_sfx();
@@ -764,7 +764,7 @@ static void handle_level_end()
 	if (play_ctx->ending) {
 		show_final_score();
 	} else if (play_ctx->time_up) {
-		screen_type = SCR_BLANK;
+		screen_type = SCR_MENU;
 		wipe_cmd = WIPECMD_CLEAR;
 		audio_stop_bgm();
 		menu_open(MENU_TRYAGAIN_TIMEUP);
@@ -787,17 +787,22 @@ static void handle_delayed_action()
 	if (action_delay > 0) return;
 
 	switch (delayed_action_type) {
-		case DELACT_TITLE:
-			show_title();
+		case DELACT_START_PLAY:
+			play_ctx->score = 0;
+			start_level(play_ctx->level_num, play_ctx->difficulty, false);
+			break;
+
+		case DELACT_TRY_AGAIN:
+			play_ctx->score = 0;
+			start_level(play_ctx->level_num, play_ctx->difficulty, true);
 			break;
 
 		case DELACT_NEXT_DIFFICULTY:
 			start_level(1, play_ctx->difficulty + 1, false);
 			break;
 
-		case DELACT_TRY_AGAIN:
-			play_ctx->score = 0;
-			start_level(play_ctx->level_num, play_ctx->difficulty, true);
+		case DELACT_TITLE:
+			show_title();
 			break;
 	}
 
@@ -860,7 +865,7 @@ static void adapt_to_screen_size()
 		scale_manual_vscreen();
 	}
 
-	if (screen_type == SCR_PLAY || screen_type == SCR_PLAY_FREEZE) {
+	if (playing) {
 		play_adapt_to_screen_size();
 	}
 
@@ -871,8 +876,9 @@ static void adapt_to_screen_size()
 
 static void show_title()
 {
-	screen_type = SCR_BLANK;
+	screen_type = SCR_MENU;
 
+	playing = false;
 	play_ctx->score = 0;
 	play_ctx->level_num = -1;
 
@@ -937,7 +943,7 @@ static void start_level(int level_num, int difficulty, bool skip_initial_sequenc
 		strcat(msg, ":\n");
 		strcat(msg, file_from_path(filename));
 
-		screen_type = SCR_BLANK;
+		screen_type = SCR_MENU;
 		wipe_cmd = WIPECMD_CLEAR;
 		menu_show_error(msg);
 
@@ -947,12 +953,16 @@ static void start_level(int level_num, int difficulty, bool skip_initial_sequenc
 	progress_checked = false;
 	screen_type = SCR_PLAY;
 
+	menu_close_all();
+
+	playing = true;
 	play_ctx->difficulty = difficulty;
 	play_ctx->level_num = level_num;
 	play_ctx->last_level = (level_num == data_difficulty_num_levels[difficulty]);
 	play_ctx->sequence_step = SEQ_INITIAL;
 	play_ctx->skip_initial_sequence = skip_initial_sequence;
 
+	//Determine the number of characters at the bus rear door
 	if (play_ctx->last_level) {
 		play_ctx->bus.num_rear_characters = 3;
 	} else {
@@ -970,6 +980,15 @@ static void start_level(int level_num, int difficulty, bool skip_initial_sequenc
 	//numbered one and thus value 1 refers to sign 2 while value 2 refers to
 	//sign 3 and so on
 	play_ctx->bus.route_sign = level_num - 1;
+
+	//Position the first bus stop sign (absent if it is the first level)
+	play_ctx->bus_stop_signs[0].x = 0;
+	if (level_num > 1) {
+		play_ctx->bus_stop_signs[0].x = 176;
+	}
+
+	//Position the second bus stop sign
+	play_ctx->bus_stop_signs[1].x = play_ctx->level_size_pixels - 40;
 
 	play_ctx->cam.fixed_at_leftmost = true;
 
@@ -989,6 +1008,9 @@ static void start_ending_sequence(int difficulty)
 	progress_checked = false;
 	screen_type = SCR_PLAY;
 
+	menu_close_all();
+
+	playing = true;
 	play_ctx->difficulty = difficulty;
 	play_ctx->ending = true;
 	play_ctx->level_size_pixels = 8 * VSCREEN_MAX_WIDTH;

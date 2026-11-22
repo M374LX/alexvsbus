@@ -59,9 +59,6 @@ static bool wait_input_up;
 static int cursor_direction;
 static int prev_cursor_direction;
 static float cursor_delay;
-static int difficulty; //Selected difficulty
-static int level_num;  //Selected level number
-static float level_start_delay;
 static int cheat_pos;
 
 //If the selected item is between store_sel_min and store_sel_max (inclusive),
@@ -97,15 +94,29 @@ MenuCtx* menu_init(DisplayParams* dp, Config* cfg)
 	display_params = dp;
 	config = cfg;
 
-	difficulty = DIFFICULTY_NORMAL;
 	cursor_direction = MENUDIR_NONE;
 	prev_cursor_direction = MENUDIR_NONE;
 
 	ctx.display_name = "";
-	ctx.action = MENUACT_NONE;
-	ctx.use_cursor = !config->touch_enabled;
-	ctx.selected_visible = true;
+	ctx.stack_size = 0;
+	ctx.num_items = 0;
+
 	ctx.text[0] = '\0';
+	ctx.text_border = false;
+
+	ctx.selected_difficulty = 0;
+	ctx.selected_level_num  = 0;
+
+	ctx.level_selected   = false;
+	ctx.selected_visible = true;
+
+	ctx.use_cursor  = !config->touch_enabled;
+	ctx.show_logo   = false;
+	ctx.green_bg    = false;
+	ctx.show_frame  = false;
+	ctx.fill_screen = false;
+
+	ctx.action = MENUACT_NONE;
 
 	return &ctx;
 }
@@ -270,17 +281,8 @@ void menu_update(float dt)
 	if (!menu_is_open()) return;
 
 	if (ctx.level_selected) {
-		level_start_delay -= dt;
-
 		//Flash selected item
 		ctx.selected_visible = !ctx.selected_visible;
-
-		if (level_start_delay <= 0) {
-			ctx.action = MENUACT_PLAY;
-			ctx.action_param = level_num | (difficulty << 4);
-			ctx.level_selected = false;
-			ctx.selected_visible = true;
-		}
 
 		return;
 	}
@@ -605,17 +607,17 @@ static void confirm(int item, bool change_item)
 		case MENU_DIFFICULTY:
 			switch (item) {
 				case 0:
-					difficulty = DIFFICULTY_NORMAL;
+					ctx.selected_difficulty = DIFFICULTY_NORMAL;
 					open(MENU_LEVEL);
 					break;
 
 				case 1:
-					difficulty = DIFFICULTY_HARD;
+					ctx.selected_difficulty = DIFFICULTY_HARD;
 					open(MENU_LEVEL);
 					break;
 
 				case 2:
-					difficulty = DIFFICULTY_SUPER;
+					ctx.selected_difficulty = DIFFICULTY_SUPER;
 					open(MENU_LEVEL);
 					break;
 
@@ -628,8 +630,8 @@ static void confirm(int item, bool change_item)
 		case MENU_LEVEL:
 			if (item < ctx.num_items - 1) {
 				ctx.level_selected = true;
-				level_num = item + 1;
-				level_start_delay = 0.7f;
+				ctx.selected_level_num = item + 1;
+				ctx.action = MENUACT_PLAY;
 			} else {
 				//Return
 				close();
@@ -893,6 +895,9 @@ static void open(int menu_type)
 {
 	int sel = 0;
 
+	ctx.level_selected = false;
+	ctx.selected_visible = true;
+
 	ctx.stack[ctx.stack_size].type = menu_type;
 	ctx.stack_size++;
 
@@ -926,7 +931,7 @@ static void open(int menu_type)
 			//Highest unlocked level
 			sel = config->progress_level - 1;
 
-			if (difficulty < config->progress_difficulty) {
+			if (ctx.selected_difficulty < config->progress_difficulty) {
 				sel = ctx.num_items - 2;
 			}
 			if (config->progress_cheat) {
@@ -1336,7 +1341,7 @@ static void load_menu(int menu_type)
 			}
 		}
 	} else if (menu_type == MENU_LEVEL) {
-		int num_levels = data_difficulty_num_levels[difficulty];
+		int num_levels = data_difficulty_num_levels[ctx.selected_difficulty];
 
 		//Hide levels that do not exist in selected difficulty
 		for (i = 0; i < 5; i++) {
@@ -1346,11 +1351,13 @@ static void load_menu(int menu_type)
 		}
 		position_items_center(0, 4, false, 6, 0);
 
-		if (difficulty == config->progress_difficulty && !config->progress_cheat) {
-			//Disable selection of locked levels
-			for (i = config->progress_level; i <= num_levels - 1; i++) {
-				ctx.items[i].icon_sprite = SPR_MENU_LOCKED;
-				ctx.items[i].disabled = true;
+		if (ctx.selected_difficulty == config->progress_difficulty) {
+			if (!config->progress_cheat) {
+				//Disable selection of locked levels
+				for (i = config->progress_level; i <= num_levels - 1; i++) {
+					ctx.items[i].icon_sprite = SPR_MENU_LOCKED;
+					ctx.items[i].disabled = true;
+				}
 			}
 		}
 	}

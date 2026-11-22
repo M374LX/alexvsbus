@@ -85,7 +85,6 @@ static void keep_player_within_limits();
 static void handle_player_animation_change();
 static void update_animations();
 static void move_push_arrow();
-static void position_bus_stop_sign();
 static void position_light_pole();
 static void update_sequence();
 
@@ -128,6 +127,9 @@ void play_clear()
 	ctx.can_pause = false;
 	ctx.last_level = false;
 	ctx.ending = false;
+
+	ctx.bus_stop_signs[0].x = 0;
+	ctx.bus_stop_signs[1].x = 0;
 
 	ctx.crate_push_remaining = 0.7f;
 
@@ -177,6 +179,8 @@ void play_clear()
 	ctx.hit_spring = -1;
 	ctx.cur_passageway = -1;
 
+	ctx.passageway_opened_exits = 0;
+
 	for (i = 0; i < MAX_LEVEL_COLUMNS; i++) {
 		ctx.level_columns[i].hole_type = HOLE_NONE;
 		ctx.level_columns[i].num_crates = 0;
@@ -190,7 +194,6 @@ void play_clear()
 
 	for (i = 0; i < MAX_PASSAGEWAYS; i++) {
 		ctx.passageways[i].x = 0;
-		ctx.passageways[i].exit_opened = false;
 	}
 
 	for (i = 0; i < MAX_PUSHABLE_CRATES; i++) {
@@ -296,7 +299,6 @@ void play_update(float dt)
 	handle_player_animation_change();
 	update_animations();
 	move_push_arrow();
-	position_bus_stop_sign();
 	position_light_pole();
 	update_sequence();
 }
@@ -959,10 +961,18 @@ static void handle_passageways()
 			//only if moving upwards at a high enough velocity, as is the case 
 			//when hitting a spring
 			if (pl->yvel < -162 && pl_top < FLOOR_Y + 8) {
-				if (!pw->exit_opened) {
-					audio_play_sfx(SFX_HOLE);
+				int  pw_bit = (1 << ctx.cur_passageway);
+				bool exit_opened = false;
+
+				if (ctx.passageway_opened_exits & pw_bit) {
+					exit_opened = true;
+				}
+
+				if (!exit_opened) {
+					ctx.passageway_opened_exits |= pw_bit;
+
 					add_crack_particles(pw_right - 16, 276);
-					pw->exit_opened = true;
+					audio_play_sfx(SFX_HOLE);
 				}
 			}
 
@@ -1005,8 +1015,10 @@ static void handle_player_interactions()
 		if (coin->x <= 0) continue;
 
 		//Check if the bounding boxes overlap and skip if not
-		if (pl_right  < coin_left || pl_left > coin_right)  continue;
-		if (pl_bottom < coin_top  || pl_top  > coin_bottom) continue;
+		if (pl_left   > coin_right)  continue;
+		if (pl_right  < coin_left)   break;    //No more coins to check
+		if (pl_bottom < coin_top)    continue;
+		if (pl_top    > coin_bottom) continue;
 
 		//The coin has been collected
 		collected_coin = true;
@@ -1048,14 +1060,20 @@ static void handle_player_interactions()
 		int x = (int)ctx.player.x + 24;
 		int y = (int)ctx.player.y + 48;
 
-		//Skip crates that do not exist or have been pushed
-		if (crate->x <= 0 || crate->pushed) continue;
+		//If the X position of the crate is zero or negative, there are no more
+		//crates to check
+		if (crate->x <= 0) break;
+
+		//Skip pushed crates
+		if (crate->pushed) continue;
 
 		//If the point at offset (24, 48) from the player character does not
 		//overlap the crate's solid, the player is not pushing the crate
 		sol = &ctx.solids[crate->solid];
-		if (x < sol->left || x > sol->right)  continue;
-		if (y < sol->top  || y > sol->bottom) continue;
+		if (x < sol->left)   break;    //No more crates to check
+		if (x > sol->right)  continue;
+		if (y < sol->top)    continue;
+		if (y > sol->bottom) continue;
 
 		//If we got here, the player is pushing the crate
 		ctx.crate_push_remaining -= delta_time;
@@ -1084,8 +1102,10 @@ static void handle_player_interactions()
 		if (ctx.banana_peels[i].x <= 0) continue;
 
 		//Check if the bounding boxes overlap and skip if not
-		if (pl_right  < peel_left || pl_left > peel_right)  continue;
-		if (pl_bottom < peel_top  || pl_top  > peel_bottom) continue;
+		if (pl_right  < peel_left)   continue;
+		if (pl_left   > peel_right)  continue;
+		if (pl_bottom < peel_top)    continue;
+		if (pl_top    > peel_bottom) continue;
 
 		pl->state = PLAYER_STATE_SLIP;
 
@@ -1118,8 +1138,10 @@ static void handle_player_interactions()
 		int gush_bottom = gush_top  + 24;
 
 		//Check if the bounding boxes overlap and skip if not
-		if (pl_right  < gush_left || pl_left > gush_right)  continue;
-		if (pl_bottom < gush_top  || pl_top  > gush_bottom) continue;
+		if (pl_right  < gush_left)   break;    //No more gushes to check
+		if (pl_left   > gush_right)  continue;
+		if (pl_bottom < gush_top)    continue;
+		if (pl_top    > gush_bottom) continue;
 
 		pl->state = PLAYER_STATE_THROWBACK;
 
@@ -1146,8 +1168,10 @@ static void handle_player_interactions()
 		int spring_bottom = spring_top;
 
 		//Check if the bounding boxes overlap and skip if not
-		if (pl_right  < spring_left || pl_left > spring_right)  continue;
-		if (pl_bottom < spring_top  || pl_top  > spring_bottom) continue;
+		if (pl_right  < spring_left)   break;    //No more springs to check
+		if (pl_left   > spring_right)  continue;
+		if (pl_bottom < spring_top)    continue;
+		if (pl_top    > spring_bottom) continue;
 
 		if (pl->yvel >= 0) {
 			pl->yvel = -246;
@@ -1173,8 +1197,10 @@ static void handle_player_interactions()
 
 		//Check if the point at offset (21, 28) from the player character
 		//overlaps the rope's bounding box and skip if not
-		if (px < rope_left || px > rope_right)  continue;
-		if (py < rope_top  || py > rope_bottom) continue;
+		if (px < rope_left)   break;    //No more ropes to check
+		if (px > rope_right)  continue;
+		if (py < rope_top)    continue;
+		if (py > rope_bottom) continue;
 
 		pl->state = PLAYER_STATE_GRABROPE;
 
@@ -1609,18 +1635,6 @@ static void move_push_arrow()
 			ctx.push_arrow.xvel = 30;
 			ctx.push_arrow.delay = 1;
 		}
-	}
-}
-
-//Positions the bus stop sign
-static void position_bus_stop_sign()
-{
-	if (ctx.level_num == 1 || ctx.cam.x > VSCREEN_MAX_WIDTH) {
-		//The sign is at the end of the level
-		ctx.bus_stop_sign_x = ctx.level_size_pixels - 40;
-	} else {
-		//The sign is at the start of the level
-		ctx.bus_stop_sign_x = 176;
 	}
 }
 

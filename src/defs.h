@@ -891,15 +891,14 @@ typedef struct {
 	int what; //CAR_BLUE, CAR_SILVER, CAR_YELLOW, or TRIGGER_HEN
 } Trigger;
 
-//Either a single car that appears when triggered and throws a banana peel or
-//the traffic jam of the ending sequence, but not used for parked cars
+//The car that appears when triggered and throws a banana peel
 typedef struct {
 	float x;
 	float xvel;
 	int type; //CAR_BLUE, CAR_SILVER, CAR_YELLOW, or TRAFFIC_JAM
 	bool threw_peel;
 	int peel_throw_x; //Throw a banana peel when the car reaches this X position
-} Car;
+} PassingCar;
 
 typedef struct {
 	float x;
@@ -1005,7 +1004,7 @@ typedef struct {
 	int cur_passageway;
 
 	//Objects that appear when triggered
-	Car car;
+	PassingCar car;
 	Hen hen;
 
 	//Visual effects

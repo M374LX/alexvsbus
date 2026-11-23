@@ -1734,7 +1734,7 @@ static void update_sequence()
 			ignore_user_input = true;
 			ctx.time_running = false;
 
-			if (ctx.level_num == 1 || ctx.skip_initial_sequence) {
+			if (ctx.skip_initial_sequence) {
 				move_bus_to_end();
 				ctx.sequence_step = SEQ_NORMAL_PLAY_START;
 			} else {

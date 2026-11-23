@@ -955,6 +955,10 @@ static void start_level(int level_num, int difficulty, bool skip_initial_sequenc
 
 	menu_close_all();
 
+	if (level_num == 1) {
+		skip_initial_sequence = true;
+	}
+
 	playing = true;
 	play_ctx->difficulty = difficulty;
 	play_ctx->level_num = level_num;
